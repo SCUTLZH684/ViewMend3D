@@ -1,0 +1,128 @@
+debug: false
+experiment:
+  budget: 300
+  exp_id: original
+  output_dir: /workspace/ViewMend3D/runs/20261005-office0-original-02/experiments
+  record_global_path: true
+  record_interval: 60
+  record_rgbd: false
+  run_id: 0
+gui:
+  background:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  bound:
+  - 0.1
+  - 10.0
+  fov:
+  - 60
+  - 60
+  resolution_render:
+  - 512
+  - 512
+  resolution_win:
+  - 1200
+  - 2100
+mapper:
+  gaussian_map:
+    background:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    bound:
+    - 0.001
+    - 10.0
+    error_thres: 0.25
+    optimization_steps: 10
+    optimizer:
+      harmonic_lr: 0.0001
+      mean_lr: 0.0005
+      opacity_lr: 0.01
+      rotation_lr: 0.0005
+      scale_lr: 0.01
+    prune_interval: 5
+    sampler:
+      active_size: 3
+      batch_size: 8
+      sampler_type: weighted
+    scale_factor: 0.01
+    sparse_ratio: 0.1
+    use_view_distribution: true
+  mapper_type: incremental
+  use_voxel_filter: false
+  voxel_map:
+    map_resolution:
+    - 0.2
+    - 0.2
+    - 0.2
+    min_gaussian_per_voxel: 5
+    safety_margin: 0.3
+planner:
+  explore_weight: 1000.0
+  init_pose:
+  - - 0
+    - 0
+    - 1
+    - 0
+  - - -1
+    - 0
+    - 0
+    - 0
+  - - 0
+    - -1
+    - 0
+    - 0
+  - - 0
+    - 0
+    - 0
+    - 1
+  max_roi_sample_num: 30
+  path_length_factor: 0.5
+  pitch_angle: null
+  planner_name: confidence
+  radius: 0.5
+  render_ratio: 0.25
+  robot_size: 0.3
+  sample_num: 100
+  type: confidence
+  use_confidence: true
+scene:
+  has_missing_surface: true
+  mesh_path: data/replica_v1/office_0/mesh.ply
+  scene_id: data/replica_v1/office_0/habitat/replicaSDK_stage.stage_config.json
+  scene_name: replica/office0
+simulator:
+  physics:
+    enable: false
+    gravity:
+    - 0.0
+    - 0.0
+    - -10.0
+  sensor:
+    depth_noise_co: 0.01
+    depth_range:
+    - 0.0
+    - 5.0
+    fov:
+    - 60
+    - 60
+    fps: 20
+    normalize: true
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    resolution:
+    - 512
+    - 512
+    sensor_type:
+    - color
+    - depth
+use_gui: false

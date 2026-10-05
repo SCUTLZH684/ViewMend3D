@@ -1,0 +1,4 @@
+*.sh text eol=lf
+*.py text eol=lf
+# A unified diff prefixes blank context lines with one space.
+*.patch text eol=lf whitespace=-blank-at-eol

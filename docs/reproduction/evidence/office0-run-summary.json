@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-05",
+  "method": "ActiveGS",
+  "planner": "confidence",
+  "dataset": "Replica office0",
+  "verification": "passed_after_startup_compatibility_fix",
+  "unmodified_upstream_attempt": "failed: multiprocessing context has already been set",
+  "algorithm_changed": false,
+  "metric_implementation_changed": false,
+  "compatibility_patch": "patches/activegs/multiprocessing-start-method.patch",
+  "patch_sha256": "7852f9ac331cc987cee075dca053489d99534b298111b2cb79cfe42f9ddefe1d",
+  "pipeline_exit_code_observed": 0,
+  "checkpoint_count": 5,
+  "observation_count": 186,
+  "task_budget_seconds": 300,
+  "last_recorded_task_time_seconds": 300.1304336488247,
+  "test_pose_count": 1000,
+  "last_mesh": {
+    "vertex": 291273,
+    "face": 578175
+  },
+  "metric_units": {
+    "mesh_accuracy": "cm",
+    "mesh_completion": "cm",
+    "mesh_completion_ratio": "%",
+    "mesh_chamfer_distance": "m"
+  },
+  "last_checkpoint_metrics": {
+    "mesh_accuracy": 0.830842009366606,
+    "mesh_completion": 0.8998473697995991,
+    "mesh_completion_ratio": 96.56680226325989,
+    "mesh_chamfer_distance": 0.008653446895831026
+  },
+  "gpu": "NVIDIA A100-SXM4-80GB",
+  "python": "3.9.19",
+  "upstream_has_missing_surface": true,
+  "random_seed": null,
+  "gui_verified": false,
+  "rendering_evaluation_verified": false,
+  "paper_table_reproduced": false,
+  "imath_commit": "50c62962835bbab237c6f0c3ebbbb8c694dc5033",
+  "source_edits_verified": "Only the two documented startup calls changed; rasterizer unchanged"
+}

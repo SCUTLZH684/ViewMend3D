@@ -1,0 +1,48 @@
+{
+  "artifact_chain_passed": true,
+  "checkpoint_count": 5,
+  "artifacts": [
+    {
+      "checkpoint": 40,
+      "mesh": {
+        "vertex": 305305,
+        "face": 585735
+      }
+    },
+    {
+      "checkpoint": 78,
+      "mesh": {
+        "vertex": 298437,
+        "face": 586704
+      }
+    },
+    {
+      "checkpoint": 115,
+      "mesh": {
+        "vertex": 296360,
+        "face": 584777
+      }
+    },
+    {
+      "checkpoint": 153,
+      "mesh": {
+        "vertex": 294243,
+        "face": 581665
+      }
+    },
+    {
+      "checkpoint": 186,
+      "mesh": {
+        "vertex": 291273,
+        "face": 578175
+      }
+    }
+  ],
+  "last_checkpoint_metrics": {
+    "mesh_accuracy": 0.830842009366606,
+    "mesh_completion": 0.8998473697995991,
+    "mesh_completion_ratio": 96.56680226325989,
+    "mesh_chamfer_distance": 0.008653446895831026
+  },
+  "scope": "single-run execution and output validation; paper-level results not reproduced"
+}

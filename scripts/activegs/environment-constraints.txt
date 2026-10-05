@@ -1,0 +1,10 @@
+# Compatibility pins for the original PyTorch 2.1.2 implementation.
+numpy==1.26.4
+setuptools==69.5.1
+torch==2.1.2
+torchvision==0.16.2
+torchaudio==2.1.2
+e3nn==0.5.1
+timm==0.9.16
+lpips==0.1.4
+moviepy<2

@@ -1,0 +1,22 @@
+{
+  "simulator_render_passed": true,
+  "torch_version": "2.1.2+cu121",
+  "torch_cuda_version": "12.1",
+  "gpu": "NVIDIA A100-SXM4-80GB",
+  "scene": "replica/office0",
+  "rgb_shape": [
+    512,
+    512,
+    3
+  ],
+  "depth_shape": [
+    512,
+    512
+  ],
+  "valid_depth_fraction": 1.0,
+  "positive_depth_range_m": [
+    0.6587839722633362,
+    2.2407491207122803
+  ],
+  "has_missing_surface": true
+}

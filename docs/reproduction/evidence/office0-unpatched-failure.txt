@@ -1,0 +1,22 @@
+Excerpt from the unmodified upstream attempt (2026-10-05).
+
+Error executing job with overrides: ['scene=replica/office0', 'use_gui=false', 'dataset_path=/workspace/ViewMend3D/runs/20261005-office0-original-01/dataset']
+Traceback (most recent call last):
+  File "/workspace/ViewMend3D/external/active-gs/data_generation.py", line 38, in main
+    mp.set_start_method("spawn")
+  File "/workspace/ViewMend3D/.envs/activegs/lib/python3.9/multiprocessing/context.py", line 243, in set_start_method
+    raise RuntimeError('context has already been set')
+RuntimeError: context has already been set
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+
+ ----------configure habitat simulator----------
+
+ scene: replica/office0
+ bounding_box: [[-2.005615234375, -3.1536941528320312, -1.168869137763977], [2.394385814666748, 1.8561344146728516, 1.8229918479919434]]
+ resolution: [512, 512]
+ fov: [60, 60]
+ depth_range: [0.0, 5.0]
+ depth_noise_co: 0.0
+
+ ----------load habitat simulator----------

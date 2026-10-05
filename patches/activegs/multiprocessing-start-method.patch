@@ -1,0 +1,24 @@
+diff --git a/main.py b/main.py
+--- a/main.py
++++ b/main.py
+@@ -50,7 +50,7 @@
+     planner = get_planner(cfg, device)
+ 
+     # set up gui messages
+-    mp.set_start_method("spawn")
++    mp.set_start_method("spawn", force=True)
+     if cfg.use_gui:
+         init_event = mp.Event()
+         q_mapper2gui = mp.Queue()
+diff --git a/data_generation.py b/data_generation.py
+--- a/data_generation.py
++++ b/data_generation.py
+@@ -35,7 +35,7 @@
+     converged = 0
+ 
+     # set up gui messages
+-    mp.set_start_method("spawn")
++    mp.set_start_method("spawn", force=True)
+     if cfg.use_gui:
+         init_event = mp.Event()
+         q_mapper2gui = mp.Queue()

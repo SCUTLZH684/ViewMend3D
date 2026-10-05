@@ -1,0 +1,33 @@
+{
+  "file_id": "1MZzwlHga5B29KMvj6uMNR9QfNvoomENY",
+  "file_name": "office_0.zip",
+  "size_bytes": 744494396,
+  "uncompressed_bytes": 1000725289,
+  "sha256": "0dc0be9445d441652fa76afe60cddbac964731573a4cc6a9506eef66ac995d86",
+  "zip_crc_verified": true,
+  "members": [
+    "office_0/",
+    "office_0/glass.sur",
+    "office_0/preseg.bin",
+    "office_0/semantic.json",
+    "office_0/mesh.ply",
+    "office_0/semantic.bin",
+    "office_0/preseg.json",
+    "office_0/textures/",
+    "office_0/textures/3-color-ptex.hdr",
+    "office_0/textures/1-color-ptex.hdr",
+    "office_0/textures/0-color-ptex.hdr",
+    "office_0/textures/parameters.json",
+    "office_0/textures/2-color-ptex.hdr",
+    "office_0/habitat/",
+    "office_0/habitat/replicaSDK_stage.stage_config.json",
+    "office_0/habitat/mesh_semantic.navmesh",
+    "office_0/habitat/mesh_preseg_semantic.ply",
+    "office_0/habitat/info_preseg_semantic.json",
+    "office_0/habitat/info_semantic.json",
+    "office_0/habitat/mesh_semantic.ply",
+    "office_0/habitat/mesh_preseg_semantic.navmesh",
+    "office_0/habitat/replica_stage.stage_config.json",
+    "office_0/habitat/sorted_faces.bin"
+  ]
+}

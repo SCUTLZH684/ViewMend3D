@@ -1,0 +1,89 @@
+{
+  "habitat_commit": "3023da6e8617a3b676b3e9f8845788631f8377d5",
+  "dependencies": [
+    {
+      "name": "assimp",
+      "repo": "assimp/assimp",
+      "commit": "8f0c6b04b2257a520aaab38421b2e090204b69df",
+      "archive_sha256": "dcb99cd9d62e2d79d74be877ed6048785646ee4904eb7d09b29cb22e7aea8d90"
+    },
+    {
+      "name": "bullet3",
+      "repo": "bulletphysics/bullet3",
+      "commit": "e306b274f1885f32b7e9d65062aa942b398805c2",
+      "archive_sha256": "ad37d8f81f6064e5749d996c1b68fb0a93749af68187061e802187833c6fe00f"
+    },
+    {
+      "name": "corrade",
+      "repo": "mosra/corrade",
+      "commit": "68d0216383edaf2c8f03da9c404e2158c4790c27",
+      "archive_sha256": "0c25b0cbb5a3779a364554b2bb3a2dbd9750f513086c75989d9b818a2a5a2a51"
+    },
+    {
+      "name": "eigen",
+      "repo": "libeigen/eigen",
+      "commit": "3147391d946bb4b6c68edd901f2add6ac1f31f8c",
+      "archive_sha256": "0c8c490764f9c2a793133491adca0cd073b73e0bde965c68cbe58d91b5ed4261"
+    },
+    {
+      "name": "glfw",
+      "repo": "glfw/glfw",
+      "commit": "0a49ef0a00baa3ab520ddc452f0e3b1e099c5589",
+      "archive_sha256": "ddd809731b1a1e4e73ff921277f62459c89c0704a23c8074f19716058453b9b4"
+    },
+    {
+      "name": "magnum",
+      "repo": "mosra/magnum",
+      "commit": "b38d3eea89d20e3c6ff67864df041f7c76a6c7be",
+      "archive_sha256": "d6cfb769f01d7f0e8dd4a9eac32f9690f31349efa66c41fdeb4b980707e1befd"
+    },
+    {
+      "name": "magnum-bindings",
+      "repo": "mosra/magnum-bindings",
+      "commit": "e2642033b3e77559e7d521c2e5714876555661fe",
+      "archive_sha256": "8a50fa5720aaf1eea75eb532424b5c23015aa1c41e747ce22dab20a467265a21"
+    },
+    {
+      "name": "magnum-integration",
+      "repo": "mosra/magnum-integration",
+      "commit": "d1eebad0cd71cb80b0d3631a45f112af533f8a6d",
+      "archive_sha256": "16dc06c85ce53d90405f058f222cfb2c0a307115da9808838914d28ca933ec24"
+    },
+    {
+      "name": "magnum-plugins",
+      "repo": "mosra/magnum-plugins",
+      "commit": "b7d34388879cfcc5e7f1108032a4d3a13b723723",
+      "archive_sha256": "163e0fef745347f24d91eb551f175bf1c420360e192889d2deb3799425e5d293"
+    },
+    {
+      "name": "openexr",
+      "repo": "AcademySoftwareFoundation/openexr",
+      "commit": "44d2d0eaf289f54d4f86f45f4b6b68fac2d15f0e",
+      "archive_sha256": "edbf319e4953895243a10338b4c9b9418ddb25aafadf3e64471d72a69ed3e13d"
+    },
+    {
+      "name": "pybind11",
+      "repo": "pybind/pybind11",
+      "commit": "5b0a6fc2017fcc176545afe3e09c9f9885283242",
+      "archive_sha256": "22f3782335704a1ff9a8f49471fb0f665815e8822a7403d095efb84a6c881d15"
+    },
+    {
+      "name": "rapidjson",
+      "repo": "Tencent/rapidjson",
+      "commit": "73063f5002612c6bf64fe24f851cd5cc0d83eef9",
+      "archive_sha256": "896eb817fb2bc62a0a84ca65fac3e3c385b410e6dbf70d69c411e25776663e39"
+    },
+    {
+      "name": "recastnavigation",
+      "repo": "erikwijmans/recastnavigation",
+      "commit": "8eef00be6003a6bf9c49cb4c126662e05e58d508",
+      "archive_sha256": "b237275985282fe9d38a184de37e06da57da475601cf1e853da203570ef3ada7"
+    },
+    {
+      "name": "tinyobjloader",
+      "repo": "syoyo/tinyobjloader",
+      "commit": "e52dfdbecdf8893b161a65e508bc009746fa6042",
+      "archive_sha256": "704dac8444b668206ce42dbef8299db12103ae30f934a651278c5a2531cbbda8"
+    }
+  ]
+}

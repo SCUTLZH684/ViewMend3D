@@ -203,6 +203,23 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Research checkouts, environments, datasets and generated experiment artifacts
+/external/
+/.envs/
+/.sysroot/
+/setup/
+/logs/
+/runs/
+/data/
+/dataset/
+/experiments/
+*.th
+*.ckpt
+*.pkl
+*.npy
+*.zip
+*.tar.gz
+
 # Ruff stuff:
 .ruff_cache/
 
