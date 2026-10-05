@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-05",
+  "preview_source": "20261005-office0-original-02",
+  "preview_checkpoints": 5,
+  "acquisition_cameras": 186,
+  "motion_path_positions": 2930,
+  "backend_tests_passed": 6,
+  "browser": "Microsoft Edge / Playwright automated browser test",
+  "webgl_page_errors": 0,
+  "tested_browser_controls": [
+    "checkpoint switch",
+    "metric curve checkpoint selection",
+    "wireframe",
+    "roof clipping",
+    "motion trajectory visibility",
+    "camera frustum visibility"
+  ],
+  "mobile_width_px": 390,
+  "mobile_horizontal_overflow": false,
+  "occupied_gpu_request_status": 409,
+  "new_gpu_jobs_created_during_interface_verification": 0,
+  "ui_launched_gpu_pipeline_completed": false,
+  "limitation": "All eight GPUs were occupied; the real UI-launched end-to-end GPU run remains unverified. Isolated process fixtures exercised successful and failed job lifecycle."
+}
