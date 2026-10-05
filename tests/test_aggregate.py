@@ -25,6 +25,7 @@ class EvidenceAuditTests(unittest.TestCase):
                                  "future_candidate_depth_mask": False},
                     "prefix_sha256": str(seed) * 64, "prefix_camera_sha256": "fixture",
                     "eval_seed": 10, "source_versions": {"fixture_only": True},
+                    "scene": "office0", "scene_mesh_sha256": "a" * 64, "context_hash": "b" * 64,
                     "cost": {"mission_seconds": 10, "wall_seconds": 11, "planning_seconds": 1,
                              "mapping_seconds": 8, "sensor_seconds": 1, "path_length_m": 1,
                              "observations": 60, "optimizer_steps": 600}}
@@ -73,6 +74,19 @@ class EvidenceAuditTests(unittest.TestCase):
         self.mutate(path, "final_result.json", lambda value: value.update(observation_count=[20, 20, 20]))
         self.mutate(path, "protocol.json", lambda value: value["cost"].update(observations=20))
         self.assertEqual(read_run(path)["result"]["update_event"][-1], 60)
+
+    def test_rejects_cross_seed_scene_or_configuration_changes(self):
+        paths = [self.fixture(method, seed) for method in ("confidence_nooracle", "defect") for seed in (0, 1)]
+        for key, different, original in (("scene", "office1", "office0"),
+                                         ("scene_mesh_sha256", "c" * 64, "a" * 64),
+                                         ("context_hash", "d" * 64, "b" * 64)):
+            with self.subTest(key=key):
+                for path in (paths[1], paths[3]):
+                    self.mutate(path, "protocol.json", lambda value: value.update({key: different}))
+                with self.assertRaisesRegex(ValueError, "Mixed scenes"):
+                    aggregate(paths, ["confidence_nooracle", "defect"], [0, 1])
+                for path in (paths[1], paths[3]):
+                    self.mutate(path, "protocol.json", lambda value: value.update({key: original}))
 
 
 if __name__ == "__main__":

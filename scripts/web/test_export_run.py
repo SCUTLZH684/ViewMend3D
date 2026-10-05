@@ -51,6 +51,14 @@ class ExportSchemaTests(unittest.TestCase):
         self.assertIsNone(metadata["seed"])
         self.assertTrue(metadata["protocol"]["candidate_oracle_mask"])
 
+    def test_comparison_identity_includes_scene_and_configuration(self):
+        metadata = export_run.experiment_metadata(self.run, self.experiment)
+        for key, value in (("scene", "office1"), ("scene_mesh_sha256", "a" * 64),
+                           ("context_hash", "b" * 64)):
+            with self.subTest(key=key):
+                self.write_protocol({**self.protocol, key: value})
+                self.assertNotEqual(metadata["comparison_id"], export_run.experiment_metadata(self.run, self.experiment)["comparison_id"])
+
     def test_author_float_checkpoint_ids_from_saved_real_evidence(self):
         evidence = Path(__file__).resolve().parents[2] / "docs/reproduction/evidence/office0-final-result.json"
         metrics = json.loads(evidence.read_text(encoding="utf-8"))

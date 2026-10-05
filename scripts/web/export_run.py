@@ -63,6 +63,9 @@ def experiment_metadata(run, experiment):
                     "rng_seed_fixed": False, "budget_type": "mission_time"}
         scope = "原作者流程的单次执行验证，含候选真值掩码；与公平对照分开展示。"
     comparison = {"protocol": protocol.get("protocol", protocol),
+                  "scene": scene,
+                  "scene_mesh_sha256": protocol.get("scene_mesh_sha256"),
+                  "context_hash": protocol.get("context_hash"),
                   "prefix_sha256": protocol.get("prefix_sha256"),
                   "prefix_camera_sha256": protocol.get("prefix_camera_sha256"),
                   "eval_seed": protocol.get("eval_seed"),

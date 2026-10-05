@@ -13,6 +13,7 @@ VERSION = "viewmend-observed-only-v1"
 METRICS = ("mesh_accuracy", "mesh_completion", "mesh_completion_ratio", "mesh_chamfer_distance")
 COSTS = ("mission_seconds", "wall_seconds", "planning_seconds", "mapping_seconds",
          "sensor_seconds", "path_length_m", "observations", "optimizer_steps")
+IDENTITY = ("scene", "scene_mesh_sha256", "context_hash")
 
 
 def number(value, name):
@@ -29,6 +30,12 @@ def read_run(experiment):
     seed = protocol.get("seed")
     if type(seed) is not int or seed < 0 or not isinstance(protocol.get("method"), str):
         raise ValueError("Method and RNG seed must be recorded explicitly")
+    if not isinstance(protocol.get("scene"), str) or not protocol["scene"]:
+        raise ValueError("Scene identity must be recorded explicitly")
+    for key in ("scene_mesh_sha256", "context_hash"):
+        digest = protocol.get(key)
+        if not isinstance(digest, str) or len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+            raise ValueError(f"An exact scene/configuration digest is required: {key}")
     recipe = protocol["protocol"]
     if recipe.get("future_candidate_depth_mask") is not False:
         raise ValueError("Future candidate masks are forbidden in a fair comparison")
@@ -89,12 +96,15 @@ def aggregate(experiments, methods, expected_seeds):
     eval_seed = runs[0]["protocol"]["eval_seed"]
     evaluation = runs[0]["result"]["evaluation"]
     source = runs[0]["protocol"]["source_versions"]
+    identity = {key: runs[0]["protocol"][key] for key in IDENTITY}
     for run in runs:
         current = run["protocol"]
         if current["protocol"] != recipe or current["eval_seed"] != eval_seed:
             raise ValueError("Mixed acquisition/optimization/randomness protocols")
         if run["result"]["evaluation"] != evaluation or current["source_versions"] != source:
             raise ValueError("Mixed evaluator or source versions")
+        if {key: current[key] for key in IDENTITY} != identity:
+            raise ValueError("Mixed scenes, scene assets or resolved configurations")
     for seed in expected_seeds:
         digests = {pairs[method, seed]["protocol"]["prefix_sha256"] for method in methods}
         cameras = {pairs[method, seed]["protocol"].get("prefix_camera_sha256") for method in methods}
@@ -122,9 +132,10 @@ def aggregate(experiments, methods, expected_seeds):
                 paired[method][key] = {**stats(differences), "differences_by_seed": dict(zip(map(str, expected_seeds), differences)),
                                       "improved_seeds": sum(value > 0 if higher_better else value < 0 for value in differences)}
     return {"version": VERSION, "protocol": recipe, "evaluation": evaluation, "source_versions": source,
+            **identity,
             "seeds": expected_seeds, "methods": by_method, "per_run": per_run,
             "paired_difference_vs_confidence": paired,
-            "scope": "Descriptive paired statistics on office0; no statistical significance or cross-scene generalization claim."}
+            "scope": "Descriptive paired statistics on the recorded single scene; no statistical significance or cross-scene generalization claim."}
 
 
 def markdown(report):
@@ -136,7 +147,7 @@ def markdown(report):
         return f"{mean:.4f}" if std is None else f"{mean:.4f} ± {std * scale:.4f}"
     for method, metrics in report["methods"].items():
         lines.append(f"| {method} | {cell(metrics['mesh_accuracy'])} | {cell(metrics['mesh_completion'])} | {cell(metrics['mesh_completion_ratio'])} | {cell(metrics['mesh_chamfer_distance'], 1000)} | {cell(metrics['cost']['observations'])} | {cell(metrics['cost']['planning_seconds'])} |")
-    lines += ["", "结果范围为 office0 的配对描述统计，不表示统计显著，也不能推广到其他场景。完整的逐种子数据、成本、来源版本与配对差值见同名 JSON。", ""]
+    lines += ["", f"结果范围为 {report['scene']} 的配对描述统计，不表示统计显著，也不能推广到其他场景。完整的逐种子数据、成本、来源版本与配对差值见同名 JSON。", ""]
     return "\n".join(lines)
 
 

@@ -295,6 +295,8 @@ def run_branch(cfg, protocol, seed, method, simulator, device, prefix_path, pref
     experiment_protocol = {"version": protocol.as_dict()["version"], "protocol": protocol.as_dict(),
                            "seed": seed, "method": method, "source_versions": versions,
                            "scene": simulator.scene_name,
+                           "context_hash": prefix_meta["context_hash"],
+                           "scene_mesh_sha256": prefix_meta["context"]["scene_mesh_sha256"],
                            "eval_seed": domain_seed(0, "evaluation", 0),
                            "prefix_sha256": prefix_meta["cache_sha256"],
                            "prefix_camera_sha256": prefix_meta["camera_sha256"],
@@ -474,6 +476,7 @@ def run_benchmark(upstream, run_dir, gpu, protocol, methods, seeds, scene="repli
                                                          "use_gui=false", "debug=false"])
         cfg.planner.sample_num = protocol.candidate_count
         cfg.planner.max_roi_sample_num = protocol.roi_count
+        cfg.mapper.gaussian_map.optimization_steps = protocol.as_dict()["mapping_optimizer_steps_per_event"]
         cfg.scene.has_missing_surface = False
         cfg.experiment.record_rgbd = False
         cfg.experiment.record_global_path = True
