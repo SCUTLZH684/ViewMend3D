@@ -1,9 +1,13 @@
 # ViewMend3D
 Geometry-Aware Next-Best-View Selection for Active 3D Reconstruction
 
-当前处于探索阶段：ActiveGS + Replica office0 的原始 confidence 方法已在 GPU 上完成单场景闭环验证（含两行启动兼容修复），ViewMend3D 自研视角评分尚未实现。
+当前处于探索阶段：ActiveGS + Replica office0 的原始 confidence 方法已完成单场景 GPU 验证（含两行启动兼容修复）。ViewMend3D 第一版几何缺陷评分及公平对照入口已实现，CPU 检查通过，完整 GPU 闭环与质量提升仍待验证。
 
 队员可先阅读 [当前项目说明](docs/project-overview.md)，了解目标、数据形式、baseline 实测结果、运行方式与下一阶段任务。
+
+本轮按 [优化框架](docs/optimization-framework.md) 执行，运行参数、公共前缀、对照消融和结果审计见 [受控实验说明](docs/controlled-experiments.md)。
+
+第一版扩展的 46 项 CPU 检查与真实旧结果展示验证已通过，范围和 GPU 待验收项见 [优化验证记录](docs/reproduction/optimization-v1.md)。
 
 ## 可视化实验界面
 

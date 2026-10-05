@@ -6,6 +6,13 @@ const $ = id => document.getElementById(id);
 const activeStates = new Set(['starting', 'running', 'exporting']);
 let manifest, assetBase, selected = 0, loadVersion = 0, playing = false;
 let state, polling = false, submitting = false, seenJobStatus;
+const runSummaries = new Map();
+const methodLabels = {
+  suite: '配对对照 · 三种主策略',
+  confidence_nooracle: 'Confidence · 无未来掩码', random_matched: 'Random · 匹配采样',
+  defect: 'Defect · 几何缺陷评分', defect_no_gate: 'Defect · 移除跳变门控',
+  refine_only: 'Refine only · 仅优化已有观测', confidence: 'ActiveGS · 原作者流程'
+};
 let renderer, scene, camera, controls, mesh, grid, pathLine, cameraLines;
 const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
 const viewer = $('viewer');
@@ -122,14 +129,86 @@ function metricValue(id, value, unit, digits) {
   $(id).append(label);
 }
 
+const observationCount = checkpoint => checkpoint.observation_count ?? checkpoint.camera_count;
+const updateEvent = checkpoint => checkpoint.update_event ?? checkpoint.step;
+const seedLabel = data => Number.isInteger(data.seed) ? `种子 ${data.seed}` : '种子未固定';
+const originalRun = data => !data.method_id || data.method_id === 'confidence';
+function protocolLabel(data) {
+  if (originalRun(data)) return '原作者流程 · 时间预算';
+  const final = data.checkpoints?.at(-1) || data.final;
+  const definition = data.protocol?.protocol || data.protocol || {};
+  const fixedTime = definition.budget_type === 'mission_time' || definition.mode === 'mission_time' || definition.mode === 'time';
+  return fixedTime ? '公平对照 · 时间预算' : `公平对照 · ${updateEvent(final)} 次更新`;
+}
+
+function renderMetadata(data) {
+  $('result-method').textContent = data.method;
+  $('result-scope').textContent = data.scope || '原始 baseline 单次执行验证。';
+  $('experiment-meta').textContent = `${data.method} · ${seedLabel(data)} · ${protocolLabel(data)}`;
+  const original = originalRun(data);
+  const definition = data.protocol?.protocol || data.protocol || {};
+  const lines = original ? ['作者原配置；候选真值有效深度掩码开启。', '原记录中的 run_id 是目录编号，随机种子未固定。']
+    : [`协议 ${data.protocol?.version || definition.version || '未记录'} · ${seedLabel(data)}`,
+       `共享前缀 ${definition.prefix ?? '未记录'} 次观测 · 候选 ${definition.candidate_count ?? '未记录'} / ROI 最多 ${definition.roi_count ?? '未记录'}`,
+       `每次更新 ${definition.mapping_optimizer_steps_per_event ?? '未记录'} 步建图优化 · 候选未来深度查询关闭。`,
+       `共享场景包围盒先验 · 配对组 ${data.comparison_id || '未记录'}`];
+  $('protocol-description').replaceChildren(...lines.map(text => {
+    const line = document.createElement('div'); line.textContent = text; return line;
+  }));
+  $('boundary-description').textContent = original
+    ? '原作者 office0 流程使用候选真值有效深度掩码；本结果是执行证明，应与公平对照分开展示。'
+    : '候选评分只使用当前地图，共享场景包围盒先验。前缀后各策略的轨迹会分叉，候选生成规则保持一致。';
+  $('chart-note').textContent = `点击记录点查看三维结果。${data.method_id === 'refine_only' ? '采集数保持不变，横轴的更新次数包含已有观测的继续优化。' : '曲线描述当前实验；跨方法结论请结合相同批次、协议和种子的结果。'}`;
+}
+
+function renderDiagnostic(checkpoint) {
+  const diagnostic = checkpoint.diagnostic;
+  const image = $('diagnostic-heatmap');
+  image.hidden = !diagnostic?.heatmap;
+  if (diagnostic?.heatmap) image.src = `${assetBase}/${diagnostic.heatmap}`;
+  else image.removeAttribute('src');
+  $('diagnostic-event').textContent = diagnostic ? `更新 ${diagnostic.event}` : '未导出';
+  if (!diagnostic) {
+    $('diagnostic-content').textContent = '此阶段未导出选中候选的几何诊断。';
+    return;
+  }
+  const candidate = diagnostic.candidate || {};
+  const lines = [`候选 ${diagnostic.selected_index + 1} / ${diagnostic.candidate_count}`,
+    diagnostic.geometry_measured === false ? '此策略未计算几何项' : `几何项${diagnostic.geometry_active ? '已激活' : '未激活'}`];
+  for (const [key, label] of [['E', '未探索比例 E'], ['U', '不确定性 U'], ['D', '几何缺陷 D'],
+    ['final_score', '最终得分'], ['path_length', '路径长度 / m'], ['valid_fraction', '稳定有效比例']]) {
+    if (Number.isFinite(candidate[key])) lines.push(`${label}：${candidate[key].toPrecision(4)}`);
+  }
+  if (Number.isFinite(diagnostic.heatmap_max)) lines.push(`热图范围 0–1 · 当前最大值 ${diagnostic.heatmap_max.toPrecision(4)}`);
+  $('diagnostic-content').replaceChildren(...lines.map(text => {
+    const line = document.createElement('div'); line.textContent = text; return line;
+  }));
+}
+
+function configureLaunch() {
+  const original = $('protocol').value === 'original';
+  const current = $('method').value;
+  const keys = original ? ['confidence'] : ['suite', 'defect', 'confidence_nooracle', 'random_matched', 'defect_no_gate', 'refine_only'];
+  $('method').replaceChildren(...keys.map(key => {
+    const option = document.createElement('option'); option.value = key; option.textContent = methodLabels[key]; return option;
+  }));
+  if (keys.includes(current)) $('method').value = current;
+  $('budget-row').hidden = !original;
+  $('seed-row').hidden = original;
+  $('frames-row').hidden = original;
+  $('launch-note').textContent = original
+    ? '预算是原作者累计任务时间。此流程含候选真值掩码，保留为独立复现入口。网格与评估耗时另计。'
+    : '公平对照关闭未来观测掩码，前 20 次采集使用统一策略。仅优化分支随后只优化已有 20 次观测。';
+}
+
 async function showCheckpoint(index) {
   if (!manifest) return;
   selected = Math.max(0, Math.min(manifest.checkpoints.length - 1, index));
   const checkpoint = manifest.checkpoints[selected];
   const version = ++loadVersion;
   $('checkpoint').value = String(selected);
-  $('checkpoint-description').textContent = `${checkpoint.time.toFixed(1)} 秒任务时间 · ${checkpoint.camera_count} 个采集视角`;
-  $('viewer-step').textContent = `观测 ${checkpoint.step} / ${manifest.checkpoints.at(-1).step}`;
+  $('checkpoint-description').textContent = `${checkpoint.time.toFixed(1)} 秒任务时间 · ${observationCount(checkpoint)} 个采集视角 · 更新 ${updateEvent(checkpoint)}`;
+  $('viewer-step').textContent = `采集 ${observationCount(checkpoint)} · 更新 ${updateEvent(checkpoint)} / ${updateEvent(manifest.checkpoints.at(-1))}`;
   $('mesh-caption').textContent = `原始 ${checkpoint.original.vertices.toLocaleString()} 顶点 / ${checkpoint.original.faces.toLocaleString()} 面`;
   metricValue('accuracy', checkpoint.accuracy_cm, 'cm', 3);
   metricValue('completion', checkpoint.completion_cm, 'cm', 3);
@@ -137,6 +216,7 @@ async function showCheckpoint(index) {
   metricValue('chamfer', checkpoint.chamfer_mm, 'mm', 2);
   [...$('checkpoint-labels').children].forEach((button, i) => button.classList.toggle('selected', i === selected));
   drawChart();
+  renderDiagnostic(checkpoint);
   if (!renderer) return;
   if (mesh) mesh.visible = false;
   if (pathLine) pathLine.visible = false;
@@ -178,14 +258,16 @@ async function loadRun(id) {
     const data = await fetchJSON(`/assets/${encodeURIComponent(id)}/manifest.json`, {}, 60000);
     if (currentVersion !== loadVersion) return;
     manifest = data;
+    runSummaries.set(id, { ...data, final: data.checkpoints.at(-1) });
+    renderMetadata(data);
     $('path-label').textContent = data.trajectory_kind === 'motion_path' ? '运动轨迹' : '视角连线';
     assetBase = `/assets/${encodeURIComponent(id)}`;
     $('run-select').value = id;
     $('checkpoint').max = String(data.checkpoints.length - 1);
     $('checkpoint-labels').replaceChildren(...data.checkpoints.map((checkpoint, i) => {
       const button = document.createElement('button');
-      button.textContent = `${Math.round(checkpoint.time)} s`;
-      button.setAttribute('aria-label', `查看 ${checkpoint.time.toFixed(1)} 秒的重建`);
+      button.textContent = data.plot_axis === 'update_event' ? `更新 ${updateEvent(checkpoint)}` : `${Math.round(checkpoint.time)} s`;
+      button.setAttribute('aria-label', `查看更新 ${updateEvent(checkpoint)}，采集 ${observationCount(checkpoint)} 次的重建`);
       button.addEventListener('click', () => showCheckpoint(i));
       return button;
     }));
@@ -217,7 +299,9 @@ function drawChart() {
   const padding = Math.max((high - low) * 0.3, high * 0.01, 0.02);
   low = Math.max(0, low - padding); high += padding;
   const width = 640, left = 53, right = 618, top = 20, bottom = 142;
-  const x = row => left + (right - left) * row.time / Math.max(1, rows.at(-1).time);
+  const updates = manifest.plot_axis === 'update_event';
+  const axis = row => updates ? updateEvent(row) : row.time;
+  const x = row => left + (right - left) * axis(row) / Math.max(1, axis(rows.at(-1)));
   const y = value => bottom - (bottom - top) * (value - low) / (high - low);
   const parts = [`<svg viewBox="0 0 ${width} 180" role="img" aria-label="各记录阶段的几何质量指标曲线">`];
   for (let i = 0; i < 4; i++) {
@@ -227,10 +311,10 @@ function drawChart() {
   parts.push(`<text x="${left}" y="10" fill="#a4adbd" font-size="9">${unit}</text><line x1="${x(rows[selected])}" x2="${x(rows[selected])}" y1="${top}" y2="${bottom}" stroke="#dcdaf6"/>`);
   for (const item of series) {
     parts.push(`<polyline points="${rows.map(row => `${x(row)},${y(row[item.key])}`).join(' ')}" fill="none" stroke="${item.color}" stroke-width="2" stroke-linejoin="round"/>`);
-    rows.forEach((row, i) => parts.push(`<circle data-index="${i}" tabindex="0" role="button" aria-label="${Math.round(row.time)}秒，${item.label} ${row[item.key].toFixed(3)} ${unit}" cx="${x(row)}" cy="${y(row[item.key])}" r="${i === selected ? 5 : 3.5}" fill="${item.color}" stroke="white" stroke-width="2"><title>${row.time.toFixed(1)} s · ${item.label}: ${row[item.key].toFixed(3)} ${unit}</title></circle>`));
+    rows.forEach((row, i) => parts.push(`<circle data-index="${i}" tabindex="0" role="button" aria-label="更新 ${updateEvent(row)}，采集 ${observationCount(row)}，${item.label} ${row[item.key].toFixed(3)} ${unit}" cx="${x(row)}" cy="${y(row[item.key])}" r="${i === selected ? 5 : 3.5}" fill="${item.color}" stroke="white" stroke-width="2"><title>更新 ${updateEvent(row)} · 采集 ${observationCount(row)} · ${item.label}: ${row[item.key].toFixed(3)} ${unit}</title></circle>`));
   }
-  rows.forEach(row => parts.push(`<text x="${x(row)}" y="161" text-anchor="middle" fill="#a4adbd" font-size="9">${Math.round(row.time)}</text>`));
-  parts.push(`<text x="${right}" y="177" text-anchor="end" fill="#a4adbd" font-size="9">任务时间 / s</text></svg>`);
+  rows.forEach(row => parts.push(`<text x="${x(row)}" y="161" text-anchor="middle" fill="#a4adbd" font-size="9">${Math.round(axis(row))}</text>`));
+  parts.push(`<text x="${right}" y="177" text-anchor="end" fill="#a4adbd" font-size="9">${updates ? '建图更新次数' : '任务时间 / s'}</text></svg>`);
   $('chart').innerHTML = parts.join('');
   $('chart-legend').replaceChildren(...series.map(item => {
     const span = document.createElement('span'), dot = document.createElement('i');
@@ -244,6 +328,46 @@ function drawChart() {
   });
 }
 
+async function refreshComparison(runs) {
+  await Promise.all(runs.filter(run => !runSummaries.has(run.id)).map(async run => {
+    try {
+      let data;
+      try { data = await fetchJSON(`/assets/${encodeURIComponent(run.id)}/summary.json`, {}, 20000); }
+      catch { data = await fetchJSON(run.manifest, {}, 60000); }
+      if (data.status === 'completed') runSummaries.set(run.id, { ...data, final: data.final || data.checkpoints.at(-1) });
+    } catch { /* Leave unreadable results out of the comparison, without inventing values. */ }
+  }));
+  const completed = runs.map(run => ({ id: run.id, data: runSummaries.get(run.id) })).filter(row => row.data?.final);
+  $('comparison-count').textContent = `${completed.length} 次`;
+  const rows = completed.map(({ id, data }) => {
+    const option = [...$('run-select').options].find(item => item.value === id);
+    if (option) option.textContent = `${methodLabels[data.method_id] || data.method} · ${seedLabel(data)}`;
+    const tr = document.createElement('tr');
+    tr.className = originalRun(data) ? 'original-row' : '';
+    tr.dataset.runId = id;
+    const method = document.createElement('td'), button = document.createElement('button');
+    button.className = 'comparison-link'; button.textContent = `${methodLabels[data.method_id] || data.method} / ${seedLabel(data)}`;
+    button.addEventListener('click', () => loadRun(id));
+    method.append(button);
+    const batch = document.createElement('small'); batch.textContent = data.run_id || id; method.append(batch);
+    if (!originalRun(data)) {
+      const pair = document.createElement('small'); pair.textContent = `协议 / 前缀组 ${data.comparison_id || '未记录'}`; method.append(pair);
+    }
+    tr.append(method);
+    const final = data.final;
+    const values = [protocolLabel(data), `${observationCount(final)} / ${updateEvent(final)}`,
+      `${final.accuracy_cm.toFixed(3)} cm`, `${final.completion_cm.toFixed(3)} cm`,
+      `${final.coverage_percent.toFixed(2)} %`, `${final.chamfer_mm.toFixed(2)} mm`,
+      `${final.time.toFixed(1)} s / ${Number.isFinite(data.cost?.wall_seconds) ? `${data.cost.wall_seconds.toFixed(1)} s` : '未记录'}`];
+    for (const text of values) { const td = document.createElement('td'); td.textContent = text; tr.append(td); }
+    return tr;
+  });
+  if (!rows.length) {
+    const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 8; td.textContent = '暂无可读取的已完成实验。'; tr.append(td); rows.push(tr);
+  }
+  $('comparison-body').replaceChildren(...rows);
+}
+
 function renderJob(job) {
   if (!job) return;
   const labels = { starting: '准备启动', running: '执行中', exporting: '导出中', completed: '已完成', failed: '失败', interrupted: '已中断' };
@@ -251,13 +375,16 @@ function renderJob(job) {
   const detail = document.createElement('div'); detail.className = 'job-detail';
   const heading = document.createElement('strong');
   heading.textContent = job.status === 'completed' ? '三维结果已就绪' : job.status === 'failed' || job.status === 'interrupted' ? job.message : job.stage;
-  const info = document.createElement('div'); info.textContent = `GPU ${job.gpu} · 预算 ${job.budget} s · 耗时 ${job.wall_seconds} s`;
+  const info = document.createElement('div');
+  info.textContent = job.protocol === 'observations'
+    ? `GPU ${job.gpu} · ${methodLabels[job.method] || job.method} · 种子 ${job.seed} · ${job.frames} 次更新 · 耗时 ${job.wall_seconds} s`
+    : `GPU ${job.gpu} · 预算 ${job.budget} s · 耗时 ${job.wall_seconds} s`;
   const id = document.createElement('div'); id.className = 'small'; id.textContent = job.id;
   detail.append(heading, info, id);
   if (job.status === 'completed') {
     const button = document.createElement('button');
     button.className = 'job-link'; button.style.cssText = 'border:0;background:none;padding:0;font-size:11px;';
-    button.textContent = '查看这次实验的三维结果 →'; button.addEventListener('click', () => loadRun(job.id));
+    button.textContent = '查看这次实验的三维结果 →'; button.addEventListener('click', () => loadRun(job.result_id || job.id));
     detail.append(button);
   }
   $('job-content').replaceChildren(detail);
@@ -292,16 +419,17 @@ async function pollStatus() {
     if (oldRunIds !== state.runs.map(run => run.id).join(',')) {
       $('run-select').replaceChildren(...state.runs.map(run => {
         const option = document.createElement('option'); option.value = run.id;
-        option.textContent = run.id.startsWith('web-') ? `新实验 · ${run.id.slice(4, 20)}` : '首轮 baseline · 300 s';
+        option.textContent = run.id;
         option.title = run.id; return option;
       }));
       if (state.runs.some(run => run.id === selectedRun)) $('run-select').value = selectedRun;
     }
     if (!manifest && state.runs.length) await loadRun(state.runs[0].id);
+    await refreshComparison(state.runs);
     if (!state.runs.length) showError($('page-error'), '尚无导出的三维结果。先完成实验，或按使用说明导出已有实验。');
     const job = state.jobs[0];
     renderJob(job);
-    if (job && job.status === 'completed' && seenJobStatus === `${job.id}:running`) await loadRun(job.id);
+    if (job && job.status === 'completed' && seenJobStatus === `${job.id}:running`) await loadRun(job.result_id || job.id);
     if (job) seenJobStatus = `${job.id}:${job.status === 'exporting' ? 'running' : job.status}`;
   } catch (error) {
     $('connection-dot').className = 'online-dot error'; $('connection-label').textContent = '服务连接中断';
@@ -317,13 +445,17 @@ $('launch-form').addEventListener('submit', async event => {
   submitting = true; $('launch').disabled = true;
   showError($('launch-error'), '');
   try {
+    const payload = $('protocol').value === 'original'
+      ? { gpu: Number($('gpu').value), budget: Number($('budget').value) }
+      : { gpu: Number($('gpu').value), protocol: 'observations', method: $('method').value, seed: Number($('seed').value), frames: 60 };
     const job = await fetchJSON('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-ViewMend3D': '1' },
-      body: JSON.stringify({ gpu: Number($('gpu').value), budget: Number($('budget').value) }) });
+      body: JSON.stringify(payload) });
     renderJob(job); $('logs-details').open = true;
   } catch (error) { showError($('launch-error'), error.message); }
   finally { submitting = false; await pollStatus(); }
 });
-$('new-experiment').addEventListener('click', () => { $('launch-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('budget').focus({ preventScroll: true }); });
+$('protocol').addEventListener('change', configureLaunch);
+$('new-experiment').addEventListener('click', () => { $('launch-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('protocol').focus({ preventScroll: true }); });
 $('run-select').addEventListener('change', event => loadRun(event.target.value));
 $('checkpoint').addEventListener('input', event => showCheckpoint(Number(event.target.value)));
 $('reset-view').addEventListener('click', resetView);
@@ -347,5 +479,6 @@ $('play').addEventListener('click', async () => {
 });
 try { setupViewer(); }
 catch (error) { $('viewer-loading').textContent = `此浏览器无法初始化 WebGL：${error.message}。指标与实验启动仍可使用。`; }
+configureLaunch();
 await pollStatus();
 setInterval(pollStatus, 5000);

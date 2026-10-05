@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-06",
+  "framework_version": "v1",
+  "protocol_version": "viewmend-observed-only-v1",
+  "cpu_checks": {
+    "scoring_and_planner_adapter": 17,
+    "protocol": 7,
+    "randomness": 2,
+    "aggregation_audit": 4,
+    "web_controller": 8,
+    "export_schema": 8,
+    "total_passed": 46,
+    "cuda_visible_devices": "",
+    "uses_test_doubles": true
+  },
+  "real_existing_baseline_export": {
+    "checkpoints": 5,
+    "acquisition_cameras": 186,
+    "motion_path_positions": 2930,
+    "legacy_float_checkpoint_ids_supported": true
+  },
+  "browser_checks": {
+    "engine": "Edge with software WebGL for automated testing",
+    "actual_baseline_artifacts_loaded": true,
+    "first_checkpoint_accuracy_cm_display": "0.899",
+    "last_checkpoint_accuracy_cm_display": "0.831",
+    "last_coverage_percent_display": "96.57",
+    "original_seed_marked_unfixed": true,
+    "new_protocol_payload_tested_with_fixture": true,
+    "page_errors": 0,
+    "mobile_width_px": 390,
+    "mobile_horizontal_overflow": false
+  },
+  "real_gpu_admission": {
+    "busy_gpu_count": 8,
+    "http_status": 409,
+    "web_jobs_created": 0,
+    "cli_run_directory_created": false,
+    "other_tasks_interrupted": false
+  },
+  "new_method_gpu_reconstruction_verified": false,
+  "new_method_quality_gain_verified": false,
+  "scope": "Implementation, CPU boundaries, actual old-result export and interface validation only; no new GPU reconstruction or paired quality results."
+}

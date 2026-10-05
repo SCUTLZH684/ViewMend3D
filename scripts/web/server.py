@@ -25,6 +25,7 @@ STAGES = [("preflight.log", "环境与初始观测"), ("data_generation.log", "�
           ("main.log", "主动采集与重建"), ("mesh_generation.log", "生成三维网格"),
           ("eval.log", "几何评估")]
 ACTIVE = {"starting", "running", "exporting"}
+BENCHMARK_METHODS = ("confidence_nooracle", "random_matched", "defect", "defect_no_gate", "refine_only")
 ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 START_LOCK = threading.Lock()
 STATIC_CACHE = {}
@@ -66,6 +67,21 @@ def validate_job(payload, gpus):
     return gpu, budget
 
 
+def parse_job(payload, gpus):
+    """Accept only the original demo or the frozen 60-event benchmark protocol."""
+    if isinstance(payload, dict) and set(payload) == {"gpu", "budget"}:
+        gpu, budget = validate_job(payload, gpus)
+        return {"gpu": gpu, "budget": budget, "mode": "original"}
+    if not isinstance(payload, dict) or set(payload) != {"gpu", "protocol", "method", "seed", "frames"}:
+        raise ValueError("需要原始预算参数或完整的固定观测协议参数")
+    if (payload["protocol"] != "observations" or payload["method"] not in BENCHMARK_METHODS + ("suite",)
+            or type(payload["seed"]) is not int or payload["seed"] not in (0, 1, 2)
+            or type(payload["frames"]) is not int or payload["frames"] != 60):
+        raise ValueError("公平协议只支持 60 次更新、种子 0/1/2 和列出的算法")
+    gpu, _ = validate_job({"gpu": payload["gpu"], "budget": 180}, gpus)
+    return dict(payload, gpu=gpu, mode="benchmark", budget=180)
+
+
 def tail(path, limit=14000):
     if not path.exists():
         return ""
@@ -96,6 +112,10 @@ def jobs(root):
             candidate = root / "runs" / job["id"] / "logs" / name
             if candidate.exists():
                 log_path, stage = candidate, label
+        benchmark_log = root / "runs" / job["id"] / "logs/benchmark.log"
+        if job.get("mode") == "benchmark":
+            worker_log = root / "runs/web-jobs" / f"{job['id']}.log"
+            log_path, stage = (benchmark_log if benchmark_log.exists() else worker_log), "公共前缀、算法对照与几何评估"
         if job["status"] == "exporting" or (root / "runs" / job["id"] / "logs/export.log").exists():
             stage = "导出浏览器预览"
             log_path = root / "runs" / job["id"] / "logs/export.log"
@@ -126,14 +146,23 @@ def worker(root, job_path):
         gpus, error = gpu_status()
         if error:
             raise RuntimeError(error)
-        validate_job({"gpu": job["gpu"], "budget": job["budget"]}, gpus)
+        request = ({key: job[key] for key in ("gpu", "protocol", "method", "seed", "frames")}
+                   if job.get("mode") == "benchmark" else {"gpu": job["gpu"], "budget": job["budget"]})
+        parse_job(request, gpus)
         job.update(status="running", worker_pid=os.getpid())
         atomic_json(job_path, job)
         env = environment(root, job["gpu"], job["budget"], run)
+        runner = "run_original.sh"
+        if job.get("mode") == "benchmark":
+            runner = "run_benchmark.sh"
+            methods = ",".join(BENCHMARK_METHODS[:3]) if job["method"] == "suite" else job["method"]
+            env.update(BENCHMARK_METHODS=methods, BENCHMARK_SEEDS=str(job["seed"]),
+                       BENCHMARK_FRAMES="60", BENCHMARK_PREFIX="20", BENCHMARK_PROTOCOL="observations",
+                       BENCHMARK_BUDGET="180")
         # The original runner requires a directory that does not yet exist.
         runner_log = root / "runs/web-jobs" / f"{job['id']}.log"
         with runner_log.open("w") as log:
-            process = subprocess.Popen(["bash", str(root / "scripts/activegs/run_original.sh")],
+            process = subprocess.Popen(["bash", str(root / "scripts/activegs" / runner)],
                                        env=env, stdout=log, stderr=subprocess.STDOUT)
             job["pipeline_pid"] = process.pid
             atomic_json(job_path, job)
@@ -141,13 +170,24 @@ def worker(root, job_path):
         if run.exists():
             shutil.copyfile(runner_log, run / "logs/runner.log")
         if code != 0:
-            raise RuntimeError(f"原始流水线退出码 {code}，请查看阶段日志")
+            raise RuntimeError(f"实验流水线退出码 {code}，请查看阶段日志")
         job.update(status="exporting")
         atomic_json(job_path, job)
         with (run / "logs/export.log").open("w") as log:
-            subprocess.run([env["ACTIVEGS_PYTHON"], str(root / "scripts/web/export_run.py"),
-                            str(run), str(root / "runs/web-assets" / job["id"])],
-                           env=env, stdout=log, stderr=subprocess.STDOUT, check=True)
+            experiments = sorted((run / "experiments/benchmark/replica/office0").glob("*/*/final_result.json")) if job.get("mode") == "benchmark" else []
+            if job.get("mode") == "benchmark" and not experiments:
+                raise RuntimeError("对照流水线未生成指标，没有可导出的完成结果")
+            result_ids = []
+            for result in experiments or [None]:
+                identifier = job["id"] if result is None else f"{job['id']}-{result.parent.parent.name}-s{result.parent.name}"
+                command = [env["ACTIVEGS_PYTHON"], str(root / "scripts/web/export_run.py"),
+                           str(run), str(root / "runs/web-assets" / identifier)]
+                if result is not None:
+                    command.extend(["--experiment", str(result.parent)])
+                subprocess.run(command, env=env, stdout=log, stderr=subprocess.STDOUT, check=True)
+                result_ids.append(identifier)
+        job["result_ids"] = result_ids
+        job["result_id"] = next((identifier for identifier in result_ids if "-defect-s" in identifier), result_ids[0])
         job.update(status="completed", message="重建、几何评估和浏览器预览已完成")
     except Exception as error:
         job.update(status="failed", message=str(error))
@@ -182,9 +222,11 @@ class Handler(BaseHTTPRequestHandler):
             for manifest in sorted((ROOT / "runs/web-assets").glob("*/manifest.json"), reverse=True):
                 # Avoid repeatedly reading the full trajectory in the status poll.
                 available_runs.append({"id": manifest.parent.name,
-                                       "manifest": f"/assets/{manifest.parent.name}/manifest.json"})
+                                       "manifest": f"/assets/{manifest.parent.name}/manifest.json",
+                                       "summary": f"/assets/{manifest.parent.name}/summary.json" if (manifest.parent / "summary.json").exists() else None})
             return self.json({"gpus": gpus, "gpu_error": error, "jobs": jobs(ROOT),
-                              "runs": available_runs, "method": "ActiveGS confidence", "scene": "Replica office0"})
+                              "runs": available_runs, "method": "ActiveGS confidence", "scene": "Replica office0",
+                              "benchmark_methods": list(BENCHMARK_METHODS), "benchmark_frames": 60})
         if path.startswith("/api/"):
             return self.json({"error": "接口不存在"}, 404)
         base = ROOT / "runs/web-assets" if path.startswith("/assets/") else ROOT / "web"
@@ -240,12 +282,15 @@ class Handler(BaseHTTPRequestHandler):
                 gpus, error = gpu_status()
                 if error:
                     raise RuntimeError(error)
-                gpu, budget = validate_job(payload, gpus)
+                spec = parse_job(payload, gpus)
+                gpu, budget = spec["gpu"], spec["budget"]
                 if not (ROOT / ".envs/activegs/bin/python").is_file():
                     raise RuntimeError("服务器尚未配置 ActiveGS 环境")
                 identifier = datetime.now(timezone.utc).strftime("web-%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:6]
-                job = {"id": identifier, "gpu": gpu, "budget": budget, "record_interval": budget // 5,
+                job = {**spec, "id": identifier, "record_interval": budget // 5,
                        "status": "starting", "started_unix": time.time(), "message": "准备执行原始 baseline"}
+                if spec["mode"] == "benchmark":
+                    job["message"] = "准备执行固定观测协议；前 20 次为共享 confidence 前缀"
                 job_path = ROOT / "runs/web-jobs" / f"{identifier}.json"
                 atomic_json(job_path, job)
                 with (ROOT / "runs/web-jobs" / f"{identifier}-worker.log").open("w") as log:

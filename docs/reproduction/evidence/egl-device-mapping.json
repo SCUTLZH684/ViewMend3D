@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-06",
+  "scope": "EGL device metadata only; no display or rendering context was created. This is not a complete nonzero-GPU rendering test.",
+  "unmasked_cuda_ordinals_by_egl_index": {"0": 3, "1": 2, "2": 1, "3": 0, "4": 7, "5": 6, "6": 5, "7": 4},
+  "masked_cuda_visible_devices_5_2": [
+    {"egl_index": 1, "cuda_ordinal": 1},
+    {"egl_index": 6, "cuda_ordinal": 0}
+  ],
+  "masked_cuda_visible_devices_2": [0],
+  "conclusion": "The installed driver remaps EGL_CUDA_DEVICE_NV according to CUDA_VISIBLE_DEVICES; Habitat logical gpu_device_id=0 is retained. No GPU-index source patch was applied."
+}
