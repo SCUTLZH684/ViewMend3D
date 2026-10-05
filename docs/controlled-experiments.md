@@ -2,6 +2,8 @@
 
 本入口实现 [下一阶段优化框架](optimization-framework.md)。它与 `run_original.sh` 分开，禁止规划阶段查询候选真值，使用持久化的公共采集前缀，并保存种子、配置、源码摘要、完整指标和成本。新方法已经实现并通过评分与协议的 CPU 检查；完整 GPU 闭环和质量对照仍待实际验证。
 
+不占 GPU 的效率优化、当前文件审计和等待空闲后的顺序推进入口，见 [CPU 准备记录](reproduction/cpu-preparation-v2.md)。
+
 ## 1 运行环境
 
 先完成 [已验证的 ActiveGS 环境](reproduction/activegs-office0.md)。当前服务器布局中的上游、Python 和私有 EGL 库如下；其他机器需替换路径。
@@ -99,7 +101,7 @@ python scripts/activegs/aggregate_benchmark.py \
 
 前端显示方法、种子、协议、更新次数与实际观测数，按真实协议和前缀摘要标记可配对结果。原作者含候选真值掩码的结果单列。只有真实导出的诊断才显示缺陷热力图；未提供诊断或尚未执行的实验不会生成示意性指标。
 
-分支还记录场景名称、场景网格内容哈希和解析配置上下文哈希。汇总拒绝跨种子混入不同场景或配置，并要求产物验收通过且对应实际阶段和观测数；网页也将场景与配置身份纳入配对分组。
+分支还记录场景名称、包含纹理的场景输入指纹、场景网格内容哈希和解析配置上下文哈希。汇总拒绝跨种子混入不同场景或配置，并要求当前产物重新验收且对应实际事件、阶段、预算和成本；网页也将场景与配置身份纳入配对分组。
 
 ## 6 不分配 GPU 的检查
 
@@ -111,6 +113,9 @@ python scripts/web/test_export_run.py
 # 以下评分检查需 Torch，可在已配置的环境中禁用 CUDA。
 CUDA_VISIBLE_DEVICES='' "$ACTIVEGS_PYTHON" tests/test_scoring.py
 CUDA_VISIBLE_DEVICES='' "$ACTIVEGS_PYTHON" scripts/activegs/check_prefix_cpu.py --upstream "$ACTIVEGS_ROOT"
+CUDA_VISIBLE_DEVICES='' "$ACTIVEGS_PYTHON" scripts/activegs/check_environment_cpu.py --upstream "$ACTIVEGS_ROOT"
+python tests/test_artifacts.py
+python tests/test_campaign.py
 ```
 
 这些检查验证评分边界、信息隔离、记录与接口，不能代替 GPU 模拟器、CUDA 渲染、网格提取和评估的完整运行。新增 GPU 证据必须记录在 `docs/reproduction/`，并更新本文状态。

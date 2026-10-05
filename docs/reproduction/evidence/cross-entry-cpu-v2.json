@@ -1,0 +1,58 @@
+{
+  "passed": true,
+  "scope": "Real CPU HTTP + flock + Popen + /proc; fake idle GPU; worker sleep stubs only",
+  "gpu_runtime_imported": false,
+  "trials": [
+    {
+      "order": "web_first",
+      "winner": "web",
+      "worker_launches": 1,
+      "http_status": 202,
+      "tick_status": "waiting",
+      "actual_process_identity": true,
+      "real_linux_flock": true,
+      "blocking_reason": "live_process"
+    },
+    {
+      "order": "campaign_first",
+      "winner": "campaign",
+      "worker_launches": 1,
+      "http_status": 409,
+      "tick_status": "running",
+      "actual_process_identity": true,
+      "real_linux_flock": true,
+      "blocking_reason": "live_process"
+    },
+    {
+      "order": "simultaneous",
+      "winner": "web",
+      "worker_launches": 1,
+      "http_status": 202,
+      "tick_status": "waiting",
+      "actual_process_identity": true,
+      "real_linux_flock": true,
+      "blocking_reason": "live_process"
+    }
+  ],
+  "wait_lock_trial": {
+    "actual_child_wait": true,
+    "launch_lock_available_during_wait": true,
+    "nonzero_exit_preserved": 7,
+    "child_handle_observed": true,
+    "registered_live_handle_remains_blocking": true
+  },
+  "reviewed_snapshot": "cpu-optimization-20261006-v3",
+  "checked_at": "2026-10-05T18:55:09.752809+00:00",
+  "reviewed_source_sha256": {
+    "src/viewmend3d/launch_coordination.py": "db8a168a54f7230db4403ec3b62a4256f123e98ad1af57baa434a1ef381ac622",
+    "scripts/activegs/run_campaign.py": "8d7c13ca5759b6b51ee55c2c63eb6c71b3bc894e87ee1f4f6b29f16463ab394c",
+    "scripts/web/server.py": "8b6d8fe69151f26690a1febe4df34a0e121c969ca572cc2ddab7cac1ab7274c8"
+  },
+  "current_local_source_matches_snapshot": true,
+  "current_local_source_sha256": {
+    "src/viewmend3d/launch_coordination.py": "db8a168a54f7230db4403ec3b62a4256f123e98ad1af57baa434a1ef381ac622",
+    "scripts/activegs/run_campaign.py": "8d7c13ca5759b6b51ee55c2c63eb6c71b3bc894e87ee1f4f6b29f16463ab394c",
+    "scripts/web/server.py": "8b6d8fe69151f26690a1febe4df34a0e121c969ca572cc2ddab7cac1ab7274c8"
+  },
+  "wait_lock_trial_scope": "Actual live CPU child was observed; launcher lock was independently acquired while worker waited; occupancy check remained blocked by a registered live handle. This does not test an orphaned child in isolation."
+}

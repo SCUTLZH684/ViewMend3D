@@ -1,0 +1,10 @@
+{
+  "scope": "CPU unit and process-control checks; synthetic fixtures do not prove reconstruction quality",
+  "tests_run": 118,
+  "tests_passed": 118,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [],
+  "cuda_visible_devices": "",
+  "cuda_initialized": false
+}

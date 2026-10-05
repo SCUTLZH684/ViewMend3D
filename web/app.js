@@ -391,11 +391,55 @@ function renderJob(job) {
   $('job-log').textContent = job.log || job.message || '等待日志…';
 }
 
+function renderCampaign(campaign) {
+  const labels = { not_started: '尚未建立计划', waiting: '等待空闲设备', running: '执行中',
+    failed: '失败', completed: '已完成', unavailable: '状态不可读取' };
+  const stages = { smoke: '短实验验证', observations: '固定观测对照与消融', time: '固定时间对照' };
+  const badge = $('campaign-badge');
+  const content = $('campaign-content');
+  if (!campaign || campaign.schema !== 'viewmend-campaign-status-v1') {
+    badge.textContent = '尚未建立计划';
+    content.textContent = '服务端尚未提供优化实验计划记录。';
+    return;
+  }
+  badge.textContent = labels[campaign.status] || '状态待核查';
+  const lines = [];
+  if (!campaign.configured) lines.push('尚未建立执行计划，没有启动计划内实验。');
+  else if (campaign.status === 'running' && campaign.process_state !== 'live') {
+    badge.textContent = campaign.process_state === 'starting' ? '身份确认中' : '状态待核查';
+    lines.push(campaign.process_state === 'starting'
+      ? '已登记的启动进程仍在执行，正在确认完整身份。'
+      : '记录为执行中，当前无法确认已登记进程；需要核查服务端状态。');
+  } else if (campaign.status === 'waiting') {
+    if (campaign.waiting_reason === 'managed_web_job') {
+      badge.textContent = '等待其他实验';
+      lines.push('已有网页实验或启动记录待核查，计划等待该任务结束。');
+    } else if (campaign.waiting_reason === 'gpu_busy') lines.push('显卡正被使用，等待空闲设备。');
+    else {
+      badge.textContent = '等待下一次检查';
+      lines.push('等待下一次计划检查。');
+    }
+  }
+  if (campaign.stage) lines.push(`当前阶段：${stages[campaign.stage] || '阶段待核查'}`);
+  if (Number.isInteger(campaign.completed_stages) && Number.isInteger(campaign.completed_experiments)) {
+    lines.push(`已验收 ${campaign.completed_stages} / ${campaign.total_stages} 阶段 · ${campaign.completed_experiments} / ${campaign.total_experiments} 个实验条目`);
+  }
+  if (Number.isInteger(campaign.gpu)) lines.push(`登记设备：GPU ${campaign.gpu}`);
+  const formatTime = value => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+  if (campaign.checked_at) lines.push(`最近设备检查：${formatTime(campaign.checked_at)}（北京时间）`);
+  if (campaign.updated_at) lines.push(`记录更新：${formatTime(campaign.updated_at)}（北京时间）`);
+  if (campaign.error) lines.push(`错误：${campaign.error}`);
+  content.replaceChildren(...lines.map(text => {
+    const line = document.createElement('div'); line.textContent = text; return line;
+  }));
+}
+
 async function pollStatus() {
   if (polling) return;
   polling = true;
   try {
     state = await fetchJSON('/api/status');
+    renderCampaign(state.campaign);
     $('connection-dot').className = 'online-dot connected'; $('connection-label').textContent = '实验服务已连接';
     const chosenGPU = $('gpu').value;
     const available = state.gpus.filter(gpu => gpu.available);
@@ -432,6 +476,8 @@ async function pollStatus() {
     if (job && job.status === 'completed' && seenJobStatus === `${job.id}:running`) await loadRun(job.result_id || job.id);
     if (job) seenJobStatus = `${job.id}:${job.status === 'exporting' ? 'running' : job.status}`;
   } catch (error) {
+    $('campaign-badge').textContent = '连接中断';
+    $('campaign-content').textContent = '无法读取当前计划状态，检查实验服务与 SSH 转发。';
     $('connection-dot').className = 'online-dot error'; $('connection-label').textContent = '服务连接中断';
     $('launch').disabled = true;
     $('gpu-summary').textContent = `无法连接实验服务：${error.message}。检查服务与 SSH 转发。`;

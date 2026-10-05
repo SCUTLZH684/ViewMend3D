@@ -65,6 +65,7 @@ def experiment_metadata(run, experiment):
     comparison = {"protocol": protocol.get("protocol", protocol),
                   "scene": scene,
                   "scene_mesh_sha256": protocol.get("scene_mesh_sha256"),
+                  "scene_assets_sha256": protocol.get("scene_assets_sha256"),
                   "context_hash": protocol.get("context_hash"),
                   "prefix_sha256": protocol.get("prefix_sha256"),
                   "prefix_camera_sha256": protocol.get("prefix_camera_sha256"),

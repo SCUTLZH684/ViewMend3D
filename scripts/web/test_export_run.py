@@ -54,6 +54,7 @@ class ExportSchemaTests(unittest.TestCase):
     def test_comparison_identity_includes_scene_and_configuration(self):
         metadata = export_run.experiment_metadata(self.run, self.experiment)
         for key, value in (("scene", "office1"), ("scene_mesh_sha256", "a" * 64),
+                           ("scene_assets_sha256", "c" * 64),
                            ("context_hash", "b" * 64)):
             with self.subTest(key=key):
                 self.write_protocol({**self.protocol, key: value})

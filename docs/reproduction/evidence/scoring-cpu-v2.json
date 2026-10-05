@@ -1,0 +1,22 @@
+{
+  "scope": "CPU scoring adapter with 100 synthetic 128x128 rendered images and a constant visible-mask test double; no Habitat, CUDA renderer, reconstruction, or GPU timing",
+  "torch": "2.1.2+cu121",
+  "cuda_initialized": false,
+  "exact_equivalence": ["confidence_nooracle", "defect", "defect_no_gate"],
+  "timings_threads": {
+    "1": {
+      "old_ms": [645.3817390138283, 641.7371940042358, 641.8345939891879, 657.3579200048698, 641.729809998651, 640.0470480002696, 642.173936998006],
+      "new_ms": [633.8077769905794, 632.8337619925151, 633.8308569975197, 652.8251320123672, 635.8531970035983, 634.8351070046192, 631.7484730097931]
+    },
+    "8": {
+      "old_ms": [953.0372459994396, 990.4116350080585, 968.4902729932219, 967.992088990286, 980.7422699959716, 955.2400410029804, 990.1638839946827],
+      "new_ms": [1002.8312540089246, 939.9403990100836, 940.393545999541, 969.1612020105822, 954.4117729965365, 966.7225690063788, 944.1477689979365]
+    }
+  },
+  "profiler_counts": {
+    "old": {"aten::clone": 300, "aten::_local_scalar_dense": 711},
+    "new": {"aten::clone": 0, "aten::_local_scalar_dense": 311}
+  },
+  "validation": {"scoring_and_interface_tests_passed": 19, "range_validation_preserves_float32_overflow_rejection": true, "renderer_input_images_unchanged": true},
+  "interpretation": "The CPU profiler proves eliminated copies and scalar extraction calls. Timings are narrow CPU fixture timings on a shared server, with variation; they do not establish full-pipeline or GPU speed or reconstruction quality. GPU bounds are now host metadata in the actual planner; GPU effect remains unmeasured."
+}

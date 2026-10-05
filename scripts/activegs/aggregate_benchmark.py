@@ -9,11 +9,14 @@ import math
 import statistics
 from pathlib import Path
 
+from check_artifacts import check as check_current_artifacts
+
 VERSION = "viewmend-observed-only-v1"
 METRICS = ("mesh_accuracy", "mesh_completion", "mesh_completion_ratio", "mesh_chamfer_distance")
 COSTS = ("mission_seconds", "wall_seconds", "planning_seconds", "mapping_seconds",
          "sensor_seconds", "path_length_m", "observations", "optimizer_steps")
 IDENTITY = ("scene", "scene_mesh_sha256", "context_hash")
+METHODS = ("confidence_nooracle", "random_matched", "defect", "defect_no_gate", "refine_only")
 
 
 def number(value, name):
@@ -22,21 +25,111 @@ def number(value, name):
     return value
 
 
+def equal_number(actual, expected, name):
+    number(actual, name)
+    number(expected, name)
+    if not math.isclose(actual, expected, rel_tol=1e-8, abs_tol=1e-7):
+        raise ValueError(f"Recorded {name} values disagree")
+
+
+def digest(value, name):
+    if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
+        raise ValueError(f"An exact digest is required: {name}")
+    return value
+
+
+def audit_execution(experiment, protocol, result):
+    """Audit the event ledger and actual stopping condition, not a success flag."""
+    recipe, cost = protocol["protocol"], protocol["cost"]
+    steps = json.loads((experiment / "steps.json").read_text(encoding="utf-8"))
+    checkpoints = json.loads((experiment / "checkpoints.json").read_text(encoding="utf-8"))
+    summary = json.loads((experiment / "run-summary.json").read_text(encoding="utf-8"))
+    events = cost.get("events")
+    if type(events) is not int or events < recipe["prefix"] or not isinstance(steps, list) or len(steps) != events:
+        raise ValueError("Complete ordered event ledger is required")
+    previous_mission = previous_path = 0.0
+    for event, step in enumerate(steps, 1):
+        if not isinstance(step, dict) or type(step.get("event")) is not int or step["event"] != event:
+            raise ValueError("Event ledger must record each update exactly once")
+        expected_observations = min(event, recipe["prefix"]) if protocol["method"] == "refine_only" else event
+        if type(step.get("observations")) is not int or step["observations"] != expected_observations:
+            raise ValueError("Event ledger observation counts disagree with the method")
+        for name in ("mission_seconds", "path_length_m", "planning_seconds", "mapping_seconds", "sensor_seconds"):
+            number(step.get(name), name)
+        if step["mission_seconds"] < previous_mission or step["path_length_m"] < previous_path:
+            raise ValueError("Event ledger mission time/path cannot decrease")
+        increment = step["mission_seconds"] - previous_mission
+        if increment + 1e-7 < step["planning_seconds"] + step["mapping_seconds"]:
+            raise ValueError("Event mission time excludes recorded planning/mapping work")
+        if protocol["method"] == "refine_only" and event > recipe["prefix"]:
+            if step["planning_seconds"] != 0 or step["sensor_seconds"] != 0 or step["path_length_m"] != previous_path:
+                raise ValueError("Refinement events must not plan, acquire sensors or move")
+            equal_number(increment, step["mapping_seconds"], "refinement mission increment")
+        previous_mission, previous_path = step["mission_seconds"], step["path_length_m"]
+    if not isinstance(checkpoints, list) or len(checkpoints) != len(result["step"]):
+        raise ValueError("Actual checkpoint ledger does not match evaluated checkpoints")
+    for index, checkpoint in enumerate(checkpoints):
+        event = result["step"][index]
+        if (type(checkpoint.get("event")) is not int or checkpoint["event"] != event
+                or type(checkpoint.get("observations")) is not int
+                or checkpoint["observations"] != result["observation_count"][index]):
+            raise ValueError("Checkpoint ledger does not match evaluated events/observations")
+        for field, source in (("time", "mission_seconds"), ("path_length", "path_length_m")):
+            equal_number(checkpoint.get(source), result[field][index], field)
+            equal_number(checkpoint.get(source), steps[event - 1][source], field)
+    if result["step"][-1] != events:
+        raise ValueError("The evaluated final map must be the actual last update")
+    for name in COSTS + ("events", "simulated_flight_seconds", "branch_observation_calls", "blocked_future_observation_calls", "checkpoint_count"):
+        equal_number(summary.get(name), cost.get(name), name)
+    if summary.get("method") != protocol["method"] or summary.get("seed") != protocol["seed"]:
+        raise ValueError("Run summary method/seed disagree with the protocol")
+    equal_number(cost["mission_seconds"], previous_mission, "mission_seconds")
+    equal_number(cost["path_length_m"], previous_path, "path_length_m")
+    for name in ("planning_seconds", "mapping_seconds", "sensor_seconds"):
+        equal_number(cost[name], sum(step[name] for step in steps), name)
+    equal_number(cost["mission_seconds"], cost["planning_seconds"] + cost["mapping_seconds"] + cost["simulated_flight_seconds"], "mission cost decomposition")
+    equal_number(cost["checkpoint_count"], len(checkpoints), "checkpoint_count")
+    equal_number(cost["optimizer_steps"], events * recipe["mapping_optimizer_steps_per_event"], "optimizer_steps")
+    expected_calls = 0 if protocol["method"] == "refine_only" else events - recipe["prefix"]
+    equal_number(cost["branch_observation_calls"], expected_calls, "branch_observation_calls")
+    if cost["blocked_future_observation_calls"] != 0:
+        raise ValueError("The controlled run attempted a forbidden future observation")
+    if recipe["mode"] == "observations":
+        if (summary.get("stop_reason") != "event_limit" or cost.get("stop_reason") != "event_limit"
+                or events != recipe["observations"]):
+            raise ValueError("Observation protocol did not stop at its requested event limit")
+    else:
+        budget = number(recipe.get("seconds"), "time budget")
+        if budget <= 0 or summary.get("stop_reason") != "time_budget" or cost.get("stop_reason") != "time_budget":
+            raise ValueError("Time protocol must finish by its actual time budget")
+        if previous_mission < budget or steps[recipe["prefix"] - 1]["mission_seconds"] >= budget:
+            raise ValueError("Time protocol budget was not completed after a usable prefix")
+        if any(step["mission_seconds"] >= budget for step in steps[:-1]):
+            raise ValueError("Time protocol continued after exhausting its budget")
+        if events > recipe["safety_event_cap"]:
+            raise ValueError("Time protocol exceeded its safety event cap")
+
+
 def read_run(experiment):
     protocol = json.loads((experiment / "protocol.json").read_text(encoding="utf-8"))
     result = json.loads((experiment / "final_result.json").read_text(encoding="utf-8"))
     if protocol.get("version") != VERSION:
         raise ValueError(f"Unsupported/original protocol: {experiment}")
     seed = protocol.get("seed")
-    if type(seed) is not int or seed < 0 or not isinstance(protocol.get("method"), str):
+    if type(seed) is not int or seed < 0 or protocol.get("method") not in METHODS:
         raise ValueError("Method and RNG seed must be recorded explicitly")
     if not isinstance(protocol.get("scene"), str) or not protocol["scene"]:
         raise ValueError("Scene identity must be recorded explicitly")
     for key in ("scene_mesh_sha256", "context_hash"):
-        digest = protocol.get(key)
-        if not isinstance(digest, str) or len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
-            raise ValueError(f"An exact scene/configuration digest is required: {key}")
+        digest(protocol.get(key), key)
     recipe = protocol["protocol"]
+    if recipe.get("mode") not in ("observations", "time"):
+        raise ValueError("Unsupported controlled budget mode")
+    for key in ("prefix", "observations", "mapping_optimizer_steps_per_event", "safety_event_cap"):
+        if type(recipe.get(key)) is not int or recipe[key] <= 0:
+            raise ValueError(f"Positive integer protocol field required: {key}")
+    if recipe["prefix"] >= recipe["observations"] or recipe["prefix"] >= recipe["safety_event_cap"]:
+        raise ValueError("Protocol limits must extend past the common prefix")
     if recipe.get("future_candidate_depth_mask") is not False:
         raise ValueError("Future candidate masks are forbidden in a fair comparison")
     n = len(result.get("step", []))
@@ -50,6 +143,8 @@ def read_run(experiment):
             number(value, key)
     if result["step"] != result["update_event"] or any(b <= a for a, b in zip(result["step"], result["step"][1:])):
         raise ValueError("Checkpoint events must be unique, ordered and correctly labelled")
+    if any(type(value) is not int or value <= 0 for field in ("step", "update_event", "observation_count") for value in result[field]):
+        raise ValueError("Controlled event and observation counts must be positive integers")
     check_file = experiment / "artifact-check.json"
     if not check_file.is_file():
         raise ValueError("Completed artifact validation is required before aggregation")
@@ -58,6 +153,13 @@ def read_run(experiment):
             or check.get("observation_count") != result["observation_count"]
             or [item.get("checkpoint") for item in check.get("artifacts", [])] != result["step"]):
         raise ValueError("Artifact validation does not match the completed checkpoints")
+    # A saved success report can survive deleted/truncated/replaced artifacts.
+    # Reinspect the actual files every time before statistics are produced.
+    fresh = check_current_artifacts(experiment)
+    if check.get("files") is not None and check["files"] != fresh["files"]:
+        raise ValueError("Artifact validation fingerprints are stale; revalidate current files")
+    if check.get("last_checkpoint_metrics") is not None and check["last_checkpoint_metrics"] != fresh["last_checkpoint_metrics"]:
+        raise ValueError("Artifact validation metrics are stale; revalidate current files")
     for accuracy, completion, coverage, chamfer in zip(*(result[key] for key in METRICS)):
         if coverage > 100 or not math.isclose(chamfer, (accuracy + completion) / 200, rel_tol=1e-6, abs_tol=1e-9):
             raise ValueError("Invalid coverage or mismatched distance units")
@@ -74,9 +176,9 @@ def read_run(experiment):
         number(cost.get(key), key)
     if cost["observations"] != result["observation_count"][-1]:
         raise ValueError("Cost and checkpoint observation counts disagree")
-    prefix_hash = protocol.get("prefix_sha256")
-    if not isinstance(prefix_hash, str) or len(prefix_hash) != 64:
-        raise ValueError("An exact common-prefix cache digest is required")
+    digest(protocol.get("prefix_sha256"), "prefix_sha256")
+    digest(protocol.get("prefix_camera_sha256"), "prefix_camera_sha256")
+    audit_execution(experiment, protocol, result)
     return {"method": protocol["method"], "seed": seed, "protocol": protocol,
             "result": result, "cost": cost, "experiment": experiment}
 
@@ -88,6 +190,10 @@ def stats(values):
 
 
 def aggregate(experiments, methods, expected_seeds):
+    if (not methods or len(methods) != len(set(methods)) or any(method not in METHODS for method in methods)
+            or not expected_seeds or len(expected_seeds) != len(set(expected_seeds))
+            or any(type(seed) is not int or seed < 0 for seed in expected_seeds)):
+        raise ValueError("Requested methods/seeds must be nonempty, valid and unique")
     runs = [read_run(path) for path in experiments]
     if not runs:
         raise ValueError("No completed controlled experiments found")

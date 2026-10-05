@@ -1,0 +1,119 @@
+{
+  "static_environment_passed": true,
+  "scope": "CPU input checks only; CUDA/EGL/rendering unverified",
+  "gpu_modules_imported": false,
+  "sources": {
+    "activegs_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+    "startup_fix_files": [
+      "data_generation.py",
+      "main.py"
+    ]
+  },
+  "packages": {
+    "torch": "2.1.2+cu121",
+    "torchvision": "0.16.2+cu121",
+    "numpy": "1.26.4",
+    "open3d": "0.17.0",
+    "trimesh": "4.4.1",
+    "lpips": "0.1.4",
+    "habitat-sim": "0.2.4"
+  },
+  "scene": "replica/office0",
+  "scene_assets_sha256": "39952360dfbf16321e7649f6572d514fc40e3dd2e49af7c4cb7834ae890fee66",
+  "assets": [
+    {
+      "path": "data/replica_v1/office_0/habitat/info_semantic.json",
+      "bytes": 56790,
+      "sha256": "8abf9fbe38c28df326c5e13a4829e3d78985546a4e361fbffd9c5c05800ec9ba"
+    },
+    {
+      "path": "data/replica_v1/office_0/habitat/mesh_semantic.navmesh",
+      "bytes": 4532,
+      "sha256": "a565db613fb13e9cd86279bcb3cacdbeba2836c3e963a1d3906a79e8e65e0ae7"
+    },
+    {
+      "path": "data/replica_v1/office_0/habitat/mesh_semantic.ply",
+      "bytes": 27103742,
+      "sha256": "9e172c36255ecd34ecd8a59c9625cda61b87cc177db2d3af9ddb7348d03dd395"
+    },
+    {
+      "path": "data/replica_v1/office_0/habitat/replicaSDK_stage.stage_config.json",
+      "bytes": 172,
+      "sha256": "0d36d3ea71fbf28bb3990758307c87beed33ae2686067c8fcbfb2bc37092c252"
+    },
+    {
+      "path": "data/replica_v1/office_0/mesh.ply",
+      "bytes": 25926155,
+      "sha256": "cdb6ede0b9d455f491ef8fd63cd916a86a505b777842aabd6aa428edf9ff9032"
+    },
+    {
+      "path": "data/replica_v1/office_0/textures/0-color-ptex.hdr",
+      "bytes": 333551616,
+      "sha256": "1f26fc841040babb3a047f5dcbb1164404562176f5f26007d3abf563f9dd0cc7"
+    },
+    {
+      "path": "data/replica_v1/office_0/textures/1-color-ptex.hdr",
+      "bytes": 224139264,
+      "sha256": "1df4bd7b144c8b21c234f158f89a2cac5f70984e6013bf7fa15d4cc98174894b"
+    },
+    {
+      "path": "data/replica_v1/office_0/textures/2-color-ptex.hdr",
+      "bytes": 237233664,
+      "sha256": "c857e6203bccf923a6374ad4f1a1d908a2eff7da78e47c8c5de1fbcf2b4737d6"
+    },
+    {
+      "path": "data/replica_v1/office_0/textures/3-color-ptex.hdr",
+      "bytes": 111974400,
+      "sha256": "800b8d04c220daf96ba9a3a6dc6884a85e9c341490de3cb908a8dd0390d1b82b"
+    },
+    {
+      "path": "data/replica_v1/office_0/textures/parameters.json",
+      "bytes": 39,
+      "sha256": "7ba6d867f40840147b2c3c5ac5d1c1fe7407c0af334966b03b48ec69adece868"
+    }
+  ],
+  "free_disk_bytes": 469683634176,
+  "simulator_config": {
+    "physics": {
+      "enable": false,
+      "gravity": [
+        0.0,
+        0.0,
+        -10.0
+      ]
+    },
+    "sensor": {
+      "sensor_type": [
+        "color",
+        "depth"
+      ],
+      "fps": 20,
+      "resolution": [
+        512,
+        512
+      ],
+      "fov": [
+        60,
+        60
+      ],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orientation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normalize": true,
+      "depth_noise_co": 0.01,
+      "depth_range": [
+        0.0,
+        5.0
+      ]
+    }
+  },
+  "source_future_candidate_mask": true,
+  "controlled_future_candidate_mask": false
+}

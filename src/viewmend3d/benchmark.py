@@ -52,8 +52,11 @@ def source_versions(upstream):
 
 def prefix_context(cfg, protocol, versions):
     from omegaconf import OmegaConf
+    from .input_assets import scene_assets
+    assets, asset_hash = scene_assets(Path.cwd(), cfg.scene.mesh_path, cfg.scene.scene_id)
     context = {"config": OmegaConf.to_container(cfg, resolve=True), "protocol": protocol.as_dict(),
-               "source_versions": versions, "scene_mesh_sha256": sha256_file(cfg.scene.mesh_path)}
+               "source_versions": versions, "scene_mesh_sha256": sha256_file(cfg.scene.mesh_path),
+               "scene_assets_sha256": asset_hash, "scene_asset_manifest": assets}
     encoded = json.dumps(context, sort_keys=True, separators=(",", ":")).encode()
     return context, hashlib.sha256(encoded).hexdigest()
 
@@ -297,6 +300,7 @@ def run_branch(cfg, protocol, seed, method, simulator, device, prefix_path, pref
                            "scene": simulator.scene_name,
                            "context_hash": prefix_meta["context_hash"],
                            "scene_mesh_sha256": prefix_meta["context"]["scene_mesh_sha256"],
+                           "scene_assets_sha256": prefix_meta["context"]["scene_assets_sha256"],
                            "eval_seed": domain_seed(0, "evaluation", 0),
                            "prefix_sha256": prefix_meta["cache_sha256"],
                            "prefix_camera_sha256": prefix_meta["camera_sha256"],
@@ -437,13 +441,9 @@ def validate_artifacts(destination):
     specification.loader.exec_module(module)
     report = module.check(destination)
     results = json.loads((destination / "final_result.json").read_text(encoding="utf-8"))
-    for event, count in zip(results["step"], results["observation_count"]):
-        with (destination / "map" / f"cameras_{event:03}.pkl").open("rb") as stream:
-            cameras = pickle.load(stream)
-        if len(cameras) != count:
-            raise ValueError("Checkpoint camera count disagrees with actual observation count")
-    report["scope"] = "controlled run execution and map/camera/mesh/metric chain validation"
-    report["observation_count"] = results["observation_count"]
+    if report["observation_count"] != results["observation_count"]:
+        raise ValueError("Checkpoint camera count disagrees with actual observation count")
+    report["execution_context"] = "Controlled run output validation; CPU checker limitations retained in scope"
     atomic_json(destination / "artifact-check.json", report)
     return report
 

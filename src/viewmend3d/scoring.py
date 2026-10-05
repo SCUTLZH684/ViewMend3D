@@ -93,8 +93,14 @@ def geometry_defect(depth, normal, depth_normal, opacity, confidence,
         values[name] = _image_batch(value, batch, height, width, name).to(normal)
     depth, opacity, confidence = (values[n] for n in ("depth", "opacity", "confidence"))
     depth_normal = depth_normal.to(normal)
-    bounds = torch.as_tensor(depth_range, device=depth.device, dtype=depth.dtype).reshape(-1)
-    if bounds.numel() != 2 or not bool(torch.isfinite(bounds).all()) or not bool(bounds[1] > bounds[0]):
+    # Camera bounds are metadata. Validate them on the host, so a planner
+    # that passes its shared CPU bounds does not synchronize CUDA twice for
+    # every candidate. Casting first preserves the image dtype's bounds.
+    bounds = torch.as_tensor(depth_range, device="cpu", dtype=depth.dtype).reshape(-1)
+    if bounds.numel() != 2:
+        raise ValueError("depth_range must contain finite near < far")
+    near, far = bounds.tolist()
+    if not math.isfinite(near) or not math.isfinite(far) or far <= near:
         raise ValueError("depth_range must contain finite near < far")
 
     finite_normals = torch.isfinite(normal).all(dim=1) & torch.isfinite(depth_normal).all(dim=1)
@@ -103,7 +109,7 @@ def geometry_defect(depth, normal, depth_normal, opacity, confidence,
     normal_length = clean_normal.norm(dim=1)
     depth_normal_length = clean_depth_normal.norm(dim=1)
     valid = (finite_normals & torch.isfinite(depth) & torch.isfinite(opacity)
-             & torch.isfinite(confidence) & (depth >= bounds[0]) & (depth <= bounds[1])
+             & torch.isfinite(confidence) & (depth >= near) & (depth <= far)
              & (depth > 0) & (opacity >= thresholds.opacity)
              & (normal_length > thresholds.normal_norm)
              & (depth_normal_length > thresholds.normal_norm))

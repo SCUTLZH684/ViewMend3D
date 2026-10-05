@@ -102,6 +102,24 @@ class GeometryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             GeometryThresholds(residual_deadzone=1.0)
 
+    def test_depth_bounds_preserve_dtype_cast_and_validation(self):
+        data = plane()
+        data["depth_normal"] *= -1
+        reference = geometry_defect(**data)
+        for bounds in (torch.tensor([0.1, 10.0]), [[0.1, 10.0]],
+                       torch.tensor([0.1, 10.0], dtype=torch.float64)):
+            with self.subTest(bounds=bounds):
+                actual = geometry_defect(**{**data, "depth_range": bounds})
+                self.assertTrue(torch.equal(actual["mask"], reference["mask"]))
+                self.assertTrue(torch.equal(actual["score"], reference["score"]))
+        for bounds in ((1.0,), (1.0, 1.0), (2.0, 1.0),
+                       (float("nan"), 10), (0.1, float("inf")),
+                       (0.1, 3.5e38)):
+            # The last range is finite as Python floats but overflows the
+            # float32 image dtype; it must keep failing after host validation.
+            with self.subTest(bounds=bounds), self.assertRaises(ValueError):
+                geometry_defect(**{**data, "depth_range": bounds})
+
 
 class UtilityTests(unittest.TestCase):
     def test_lambda_zero_equivalence_including_unreachable(self):
@@ -229,6 +247,26 @@ class PlannerInterfaceTests(unittest.TestCase):
         self.assertTrue(torch.equal(baseline_scores, defect_scores))
         self.assertEqual(defect.last_diagnostics["future_candidate_observation_queries"], 0)
         self.assertGreater(defect.last_diagnostics["defect"][1], 0)
+
+    def test_renderer_images_are_unchanged_during_utility_scoring(self):
+        Planner, Renderer = self.load_planner()
+        cfg, simulator, gaussian, voxel, candidates = self.fixtures()
+        data = plane()
+        data["depth"][3, 3] = float("nan")
+        data["depth"][4, 4] = 0.0
+        data["depth"][5, 5] = 12.0
+        data["confidence"][6, 6] = float("nan")
+        data["depth_normal"] *= -1
+        images = (torch.zeros(3, 16, 16), data["depth"].unsqueeze(0),
+                  data["normal"], data["opacity"].unsqueeze(0),
+                  data["depth_normal"], data["confidence"].unsqueeze(0))
+        original = [value.clone() for value in images]
+        with patch.object(Renderer, "render_view", return_value=(*images, None, None, None)):
+            planner = Planner(cfg, "cpu")
+            utility, _ = planner.cal_utility(gaussian, voxel, candidates, simulator)
+        self.assertTrue(bool(torch.isfinite(utility).all()))
+        for actual, expected in zip(images, original):
+            torch.testing.assert_close(actual, expected, rtol=0, atol=0, equal_nan=True)
 
     def test_reachable_normalization_and_diagnostics(self):
         Planner, _ = self.load_planner()

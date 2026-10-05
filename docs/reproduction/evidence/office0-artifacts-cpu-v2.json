@@ -1,0 +1,135 @@
+{
+  "artifact_chain_passed": true,
+  "checkpoint_count": 5,
+  "artifacts": [
+    {
+      "checkpoint": 40,
+      "mesh": {
+        "vertex": 305305,
+        "face": 585735
+      },
+      "camera_count": 40
+    },
+    {
+      "checkpoint": 78,
+      "mesh": {
+        "vertex": 298437,
+        "face": 586704
+      },
+      "camera_count": 78
+    },
+    {
+      "checkpoint": 115,
+      "mesh": {
+        "vertex": 296360,
+        "face": 584777
+      },
+      "camera_count": 115
+    },
+    {
+      "checkpoint": 153,
+      "mesh": {
+        "vertex": 294243,
+        "face": 581665
+      },
+      "camera_count": 153
+    },
+    {
+      "checkpoint": 186,
+      "mesh": {
+        "vertex": 291273,
+        "face": 578175
+      },
+      "camera_count": 186
+    }
+  ],
+  "observation_count": [
+    40,
+    78,
+    115,
+    153,
+    186
+  ],
+  "files": {
+    "map/record_info.txt": {
+      "bytes": 200,
+      "sha256": "61918bd584c684e61a67f6b7539432f3c12658c0c52cd116490b5bc3214d8950"
+    },
+    "final_result.json": {
+      "bytes": 1108,
+      "sha256": "bf27220dce04c8d6a3db3e239718d33b235736f8d00af0ae34763a7a54dd8e58"
+    },
+    "map/map_040.th": {
+      "bytes": 40664060,
+      "sha256": "2c2664e09294782fd99fe6cd27d707c40c8824dc19ca1529b62ec9c9819c4430"
+    },
+    "map/cameras_040.pkl": {
+      "bytes": 9176,
+      "sha256": "f397035ec976d10edec7cfc2b6fe5df4c79281b2ca07bb3241f07c9e042f1ac1"
+    },
+    "map/mesh_040.ply": {
+      "bytes": 15858059,
+      "sha256": "ca29d71ea1fac4c0ac25453385686c69c05edea0c8b0d53767c423b240f24991"
+    },
+    "map/map_078.th": {
+      "bytes": 35028540,
+      "sha256": "86af1098f4b91eda12a82d4e74dcd8c71601df3281a4ae3aefbe61f5db454e36"
+    },
+    "map/cameras_078.pkl": {
+      "bytes": 17878,
+      "sha256": "277fb96624922411ea6588af2a167c3d3569e561ec8dfb1ec14a4e63cc2ecd57"
+    },
+    "map/mesh_078.ply": {
+      "bytes": 15685220,
+      "sha256": "1d44888716c7910611387ad870ad8bcd0f20787ab725ee786051ce5eb79387a7"
+    },
+    "map/map_115.th": {
+      "bytes": 30934908,
+      "sha256": "2ab237288c23349539aaebc1b992fb71a742e0115de5ed68ab09a59bad42a9a0"
+    },
+    "map/cameras_115.pkl": {
+      "bytes": 26351,
+      "sha256": "f8a9c17be1b8a5be459429408078c24e519f6ab16186ca9465ccb4ec927ef9ee"
+    },
+    "map/mesh_115.ply": {
+      "bytes": 15604090,
+      "sha256": "11bda41436c7e3d7520065363536c58ced358be0c3038c9ed352f8a3b0d35612"
+    },
+    "map/map_153.th": {
+      "bytes": 29713468,
+      "sha256": "ff2cd2e09dab414df7c944a6a6d01329968fb376cec74db655e66e821903c68c"
+    },
+    "map/cameras_153.pkl": {
+      "bytes": 35053,
+      "sha256": "91a6ea2e94ee20d29fb393f23662390d608aea051ca99c3f36211991d2c20356"
+    },
+    "map/mesh_153.ply": {
+      "bytes": 15506475,
+      "sha256": "be6c7390cd639fdd4f1ea3f5ab9e66237ce78fa41eb0716d55cc84e54ca02675"
+    },
+    "map/map_186.th": {
+      "bytes": 27955068,
+      "sha256": "b2eb1e9f75a23be0f3040a16fb649da1eb24913f71233fa5c7e50aaa7c9c0b63"
+    },
+    "map/cameras_186.pkl": {
+      "bytes": 42610,
+      "sha256": "fceb8287acb29e131174f5ef7a0cad047e230c01ea80f9b84e8209e364c79370"
+    },
+    "map/mesh_186.ply": {
+      "bytes": 15380915,
+      "sha256": "35adc355d1ad5e393500dfc29d1edddeb30433ec156a5f6ba9d082cd02a86ee7"
+    },
+    "global_path.pkl": {
+      "bytes": 5571217,
+      "sha256": "218d84978c6f505b017e35ff2e55b65abb665fbab1a6443cc2da316c641980e6"
+    }
+  },
+  "last_checkpoint_metrics": {
+    "mesh_accuracy": 0.830842009366606,
+    "mesh_completion": 0.8998473697995991,
+    "mesh_completion_ratio": 96.56680226325989,
+    "mesh_chamfer_distance": 0.008653446895831026
+  },
+  "validation_version": "stdlib-current-artifacts-v2",
+  "scope": "current file integrity, camera prefixes and checkpoint/metric alignment; tensor contents, global-path poses and evaluator logic are not decoded by this standard-library check"
+}

@@ -121,10 +121,11 @@ class DefectPlanner(PlanBase):
             height, width = (int(value) for value in resolution)
             if height < 1 or width < 1:
                 raise ValueError("render resolution must be positive")
-            bounds = torch.as_tensor(simulator.depth_range, device=self.device,
+            bounds = torch.as_tensor(simulator.depth_range, device="cpu",
                                      dtype=torch.float32).reshape(-1)
             if bounds.numel() != 2 or not bool(torch.isfinite(bounds).all()) or not bool(bounds[1] > bounds[0]):
                 raise ValueError("simulator depth range must contain finite near < far")
+            near, far = bounds.tolist()
             poses = candidates.to(self.device)
             intrinsics = torch.as_tensor(simulator.intrinsic).unsqueeze(0).repeat(count, 1, 1).to(self.device)
             renderer = GaussianRenderer(
@@ -143,21 +144,23 @@ class DefectPlanner(PlanBase):
                 confidences = confidence[0]
                 # A missing current-map surface exposes unknown voxels up to
                 # sensor range. No future mask is obtained from the simulator.
-                depth_voxel = torch.nan_to_num(depths.clone(), nan=0.0,
-                                               posinf=float(bounds[1]), neginf=0.0)
+                # nan_to_num is out-of-place; its fresh result can be changed
+                # without cloning the renderer's image first.
+                depth_voxel = torch.nan_to_num(depths, nan=0.0,
+                                               posinf=far, neginf=0.0)
                 depth_voxel[depth_voxel < 0.001] = 10000.0
-                depth_voxel = depth_voxel.clamp(min=bounds[0], max=bounds[1])
+                depth_voxel = depth_voxel.clamp(min=near, max=far)
                 visible = voxel_map.cal_visible_mask(poses[index], intrinsics[index], depth_voxel)
                 exploration.append((visible & voxel_map.unexplored_mask).float().sum()
                                    / len(voxel_map.voxel_centers))
 
-                confidence_for_base = torch.nan_to_num(confidences.clone(), nan=1.0,
+                confidence_for_base = torch.nan_to_num(confidences, nan=1.0,
                                                        posinf=1.0, neginf=1.0)
-                confidence_for_base[depths > bounds[1]] = 1.0
-                depth_surface = torch.nan_to_num(depths.clone(), nan=0.0,
-                                                 posinf=float(bounds[1]), neginf=0.0)
-                depth_surface[depth_surface < 0.001] = bounds[1] * 0.5
-                uncertainty.append(((1 - confidence_for_base) * depth_surface / bounds[1]).mean())
+                confidence_for_base[depths > far] = 1.0
+                depth_surface = torch.nan_to_num(depths, nan=0.0,
+                                                 posinf=far, neginf=0.0)
+                depth_surface[depth_surface < 0.001] = far * 0.5
+                uncertainty.append(((1 - confidence_for_base) * depth_surface / far).mean())
                 if geometry_measured:
                     result = geometry_defect(
                         depth, normal, d2n, opacity, confidence, bounds,
