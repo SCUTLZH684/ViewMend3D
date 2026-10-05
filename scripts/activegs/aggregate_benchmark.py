@@ -50,6 +50,14 @@ def read_run(experiment):
             number(value, key)
     if result["step"] != result["update_event"] or any(b <= a for a, b in zip(result["step"], result["step"][1:])):
         raise ValueError("Checkpoint events must be unique, ordered and correctly labelled")
+    check_file = experiment / "artifact-check.json"
+    if not check_file.is_file():
+        raise ValueError("Completed artifact validation is required before aggregation")
+    check = json.loads(check_file.read_text(encoding="utf-8"))
+    if (check.get("artifact_chain_passed") is not True or check.get("checkpoint_count") != n
+            or check.get("observation_count") != result["observation_count"]
+            or [item.get("checkpoint") for item in check.get("artifacts", [])] != result["step"]):
+        raise ValueError("Artifact validation does not match the completed checkpoints")
     for accuracy, completion, coverage, chamfer in zip(*(result[key] for key in METRICS)):
         if coverage > 100 or not math.isclose(chamfer, (accuracy + completion) / 200, rel_tol=1e-6, abs_tol=1e-9):
             raise ValueError("Invalid coverage or mismatched distance units")

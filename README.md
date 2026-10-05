@@ -7,7 +7,7 @@ Geometry-Aware Next-Best-View Selection for Active 3D Reconstruction
 
 本轮按 [优化框架](docs/optimization-framework.md) 执行，运行参数、公共前缀、对照消融和结果审计见 [受控实验说明](docs/controlled-experiments.md)。
 
-第一版扩展的 46 项 CPU 检查与真实旧结果展示验证已通过，范围和 GPU 待验收项见 [优化验证记录](docs/reproduction/optimization-v1.md)。
+第一版扩展的 49 项 CPU 检查、实际类前缀恢复检查与真实旧结果展示验证已通过，范围和 GPU 待验收项见 [优化验证记录](docs/reproduction/optimization-v1.md)。
 
 ## 可视化实验界面
 

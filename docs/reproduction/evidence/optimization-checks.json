@@ -6,12 +6,30 @@
     "scoring_and_planner_adapter": 17,
     "protocol": 7,
     "randomness": 2,
-    "aggregation_audit": 4,
+    "aggregation_audit": 6,
     "web_controller": 8,
-    "export_schema": 8,
-    "total_passed": 46,
+    "export_schema": 9,
+    "total_passed": 49,
     "cuda_visible_devices": "",
     "uses_test_doubles": true
+  },
+  "actual_class_prefix_cpu_check": {
+    "passed": true,
+    "script": "scripts/activegs/check_prefix_cpu.py",
+    "upstream_class_bodies_from_ast": true,
+    "gaussian_state_tensors": 9,
+    "raw_rgbd_camera_state_preserved": true,
+    "voxel_graph_and_recorder_preserved": true,
+    "branch_tensor_storage_independent": true,
+    "adam_parameter_groups_reconstructed": 5,
+    "cpu_gradient_update_passed": true,
+    "cuda_initialized": false,
+    "scope": "Actual class state/interface check; excludes full module imports, CUDA rendering, mapping and meshing."
+  },
+  "paired_identity_audit": {
+    "cross_seed_scene_asset_and_context_mixing_rejected": true,
+    "incomplete_artifact_validation_rejected": true,
+    "web_pairing_includes_scene_asset_and_context": true
   },
   "real_existing_baseline_export": {
     "checkpoints": 5,

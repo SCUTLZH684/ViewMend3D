@@ -34,7 +34,10 @@ class EvidenceAuditTests(unittest.TestCase):
                   "mesh_accuracy": [1, 1, 1], "mesh_completion": [2, 2, 2],
                   "mesh_completion_ratio": [70, 80, 90], "mesh_chamfer_distance": [0.015] * 3,
                   "evaluation": {"fixture_only": True}}
-        for name, value in (("protocol.json", protocol), ("final_result.json", result)):
+        check = {"artifact_chain_passed": True, "checkpoint_count": 3,
+                 "artifacts": [{"checkpoint": event} for event in (20, 40, 60)],
+                 "observation_count": [20, 40, 60]}
+        for name, value in (("protocol.json", protocol), ("final_result.json", result), ("artifact-check.json", check)):
             (path / name).write_text(json.dumps(value), encoding="utf-8")
         return path
 
@@ -72,6 +75,7 @@ class EvidenceAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must not acquire"):
             read_run(path)
         self.mutate(path, "final_result.json", lambda value: value.update(observation_count=[20, 20, 20]))
+        self.mutate(path, "artifact-check.json", lambda value: value.update(observation_count=[20, 20, 20]))
         self.mutate(path, "protocol.json", lambda value: value["cost"].update(observations=20))
         self.assertEqual(read_run(path)["result"]["update_event"][-1], 60)
 
@@ -87,6 +91,20 @@ class EvidenceAuditTests(unittest.TestCase):
                     aggregate(paths, ["confidence_nooracle", "defect"], [0, 1])
                 for path in (paths[1], paths[3]):
                     self.mutate(path, "protocol.json", lambda value: value.update({key: original}))
+
+    def test_requires_successful_complete_artifact_validation(self):
+        path = self.fixture("defect", 0)
+        for changes in ({"artifact_chain_passed": False}, {"checkpoint_count": 2},
+                        {"observation_count": [20, 40, 59]}, {"artifacts": [{"checkpoint": 20}]}):
+            original = (path / "artifact-check.json").read_text(encoding="utf-8")
+            with self.subTest(changes=changes):
+                self.mutate(path, "artifact-check.json", lambda value: value.update(changes))
+                with self.assertRaisesRegex(ValueError, "Artifact validation"):
+                    read_run(path)
+                (path / "artifact-check.json").write_text(original, encoding="utf-8")
+        (path / "artifact-check.json").unlink()
+        with self.assertRaisesRegex(ValueError, "Completed artifact validation"):
+            read_run(path)
 
 
 if __name__ == "__main__":
