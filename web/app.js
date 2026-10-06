@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { PLYLoader } from './vendor/PLYLoader.js';
+import { METHOD_EXPLANATIONS, runCategory, budgetExplanation } from './explanations.js';
 
 const $ = id => document.getElementById(id);
 const activeStates = new Set(['starting', 'running', 'exporting']);
 let manifest, assetBase, selected = 0, loadVersion = 0, playing = false;
 let state, polling = false, submitting = false, seenJobStatus;
+let runMenuKey;
 const runSummaries = new Map();
 const methodLabels = {
-  suite: '配对对照 · 三种主策略',
+  suite: 'v1 三方法 · Confidence / Random / Defect',
   confidence_nooracle: 'Confidence · 无未来掩码', random_matched: 'Random · 匹配采样',
   defect: 'Defect · 几何缺陷评分', defect_no_gate: 'Defect · 移除跳变门控',
   defect_guarded: 'Defect v2 · 有界几何奖励', defect_guarded_no_gate: 'Defect v2 · 有界奖励，移除深度门控',
@@ -152,8 +154,15 @@ function protocolLabel(data) {
 
 function renderMetadata(data) {
   $('result-method').textContent = data.method;
-  $('result-scope').textContent = data.scope || '原始 baseline 单次执行验证。';
-  $('experiment-meta').textContent = `${data.method} · ${seedLabel(data)} · ${protocolLabel(data)}`;
+  const exportId = $('run-select').value;
+  $('result-scope').textContent = `正在回放已完成结果 · ${runCategory(exportId, data.method_id)}；最近启动任务的状态在右侧单独显示。`;
+  $('experiment-meta').textContent = `${runCategory(exportId, data.method_id)} · ${data.method} · ${seedLabel(data)}`;
+  const explain = document.createElement('p');
+  explain.textContent = METHOD_EXPLANATIONS[data.method_id] || '此结果的方法细节请查看记录中的协议与来源。';
+  const budget = document.createElement('p');
+  const budgetTitle = document.createElement('strong'); budgetTitle.textContent = '本次预算：';
+  budget.append(budgetTitle, document.createTextNode(budgetExplanation(data)));
+  $('run-explanation').replaceChildren(explain, budget);
   const original = originalRun(data);
   const definition = data.protocol?.protocol || data.protocol || {};
   const lines = original ? ['作者原配置；候选真值有效深度掩码开启。', '原记录中的 run_id 是目录编号，随机种子未固定。']
@@ -167,7 +176,8 @@ function renderMetadata(data) {
   $('boundary-description').textContent = original
     ? '原作者 office0 流程使用候选真值有效深度掩码；本结果是执行证明，应与公平对照分开展示。'
     : '候选评分只使用当前地图，共享场景包围盒先验。前缀后各策略的轨迹会分叉，候选生成规则保持一致。';
-  $('chart-note').textContent = `点击记录点查看三维结果。${data.method_id === 'refine_only' ? '采集数保持不变，横轴的更新次数包含已有观测的继续优化。' : '曲线描述当前实验；跨方法结论请结合相同批次、协议和种子的结果。'}`;
+  $('chart-note').textContent = `点击圆点切换保存的网格。${data.method_id === 'refine_only' ? '此对照只采集20次，横轴更新次数包含对已有观测的继续优化。' : '这条曲线属于所选的单次实验；多种子方法对照在 v2 汇总中。'}`;
+  renderComparisonTable(state?.runs || []);
 }
 
 function renderDiagnostic(checkpoint) {
@@ -211,14 +221,20 @@ function configureLaunch() {
     const option = document.createElement('option'); option.value = key; option.textContent = methodLabels[key]; return option;
   }));
   if (keys.includes(current)) $('method').value = current;
+  else if (!original) $('method').value = 'defect_guarded';
   $('budget-row').hidden = !original;
   $('seed-row').hidden = original;
   $('frames-row').hidden = original;
+  $('method-launch-explanation').textContent = METHOD_EXPLANATIONS[$('method').value];
   $('launch-note').textContent = original
     ? '预算是原作者累计任务时间。此流程含候选真值掩码，保留为独立复现入口。网格与评估耗时另计。'
     : $('method').value.startsWith('defect_guarded')
-      ? 'v2 使用固定的有界几何奖励，质量和速度收益仍需实验。此处启动单个新实验，完整对照由优化计划执行。'
-      : '公平对照关闭未来观测掩码，前 20 次采集使用统一策略。仅优化分支随后只优化已有 20 次观测。';
+      ? '60次观测 / 60次更新，前20次为共同confidence采集前缀。这里启动一次新运行，不会自动加入已发布的24条正式质量数据。'
+      : $('method').value === 'refine_only'
+        ? '20次观测 / 60次更新：后40次只优化已有图像，不新增拍摄。'
+        : $('method').value === 'suite'
+          ? '将运行v1的Confidence、Random和旧Defect三种方法；每种60次观测，使用同一个20次观测前缀。该组合不含v2主方法。'
+          : '60次观测 / 60次更新，前20次为共同前缀。规划只使用已有地图，选定视角后才采集新图像。';
 }
 
 async function showCheckpoint(index) {
@@ -229,6 +245,7 @@ async function showCheckpoint(index) {
   $('checkpoint').value = String(selected);
   $('checkpoint-description').textContent = `${checkpoint.time.toFixed(1)} 秒任务时间 · ${observationCount(checkpoint)} 个采集视角 · 更新 ${updateEvent(checkpoint)}`;
   $('viewer-step').textContent = `采集 ${observationCount(checkpoint)} · 更新 ${updateEvent(checkpoint)} / ${updateEvent(manifest.checkpoints.at(-1))}`;
+  $('current-stage-reading').textContent = `${manifest.method} · ${seedLabel(manifest)} · 更新 ${updateEvent(checkpoint)}：已采集 ${observationCount(checkpoint)} 次 RGB-D，累计任务时间 ${checkpoint.time.toFixed(1)} s。下方四项只评估这个保存阶段的完整网格。`;
   $('mesh-caption').textContent = `原始 ${checkpoint.original.vertices.toLocaleString()} 顶点 / ${checkpoint.original.faces.toLocaleString()} 面`;
   metricValue('accuracy', checkpoint.accuracy_cm, 'cm', 3);
   metricValue('completion', checkpoint.completion_cm, 'cm', 3);
@@ -279,10 +296,10 @@ async function loadRun(id) {
     if (currentVersion !== loadVersion) return;
     manifest = data;
     runSummaries.set(id, { ...data, final: data.checkpoints.at(-1) });
+    $('run-select').value = id;
     renderMetadata(data);
     $('path-label').textContent = data.trajectory_kind === 'motion_path' ? '运动轨迹' : '视角连线';
     assetBase = `/assets/${encodeURIComponent(id)}`;
-    $('run-select').value = id;
     $('checkpoint').max = String(data.checkpoints.length - 1);
     $('checkpoint-labels').replaceChildren(...data.checkpoints.map((checkpoint, i) => {
       const button = document.createElement('button');
@@ -310,8 +327,8 @@ async function loadRun(id) {
 function drawChart() {
   if (!manifest) return;
   const choice = $('chart-metric').value;
-  const series = choice === 'distance' ? [{ key: 'accuracy_cm', label: 'Accuracy', color: '#7975e0' }, { key: 'completion_cm', label: 'Completion', color: '#54bba5' }]
-    : [{ key: choice, label: choice === 'coverage_percent' ? '覆盖率' : 'Chamfer', color: '#7975e0' }];
+  const series = choice === 'distance' ? [{ key: 'accuracy_cm', label: '表面偏差 Accuracy ↓', color: '#7975e0' }, { key: 'completion_cm', label: '漏建距离 Completion ↓', color: '#54bba5' }]
+    : [{ key: choice, label: choice === 'coverage_percent' ? '2cm覆盖率 ↑' : '双向平均距离 Chamfer ↓', color: '#7975e0' }];
   const unit = choice === 'distance' ? 'cm' : choice === 'coverage_percent' ? '%' : 'mm';
   const rows = manifest.checkpoints;
   const values = series.flatMap(item => rows.map(row => row[item.key]));
@@ -326,15 +343,15 @@ function drawChart() {
   const parts = [`<svg viewBox="0 0 ${width} 180" role="img" aria-label="各记录阶段的几何质量指标曲线">`];
   for (let i = 0; i < 4; i++) {
     const value = low + (high - low) * i / 3;
-    parts.push(`<line x1="${left}" x2="${right}" y1="${y(value)}" y2="${y(value)}" stroke="#edf0f6" stroke-dasharray="3 4"/><text x="43" y="${y(value) + 3}" text-anchor="end" fill="#a4adbd" font-size="9">${value.toFixed(choice === 'distance' ? 2 : 1)}</text>`);
+    parts.push(`<line x1="${left}" x2="${right}" y1="${y(value)}" y2="${y(value)}" stroke="#edf0f6" stroke-dasharray="3 4"/><text x="43" y="${y(value) + 3}" text-anchor="end" fill="#64728a" font-size="12">${value.toFixed(choice === 'distance' ? 2 : 1)}</text>`);
   }
-  parts.push(`<text x="${left}" y="10" fill="#a4adbd" font-size="9">${unit}</text><line x1="${x(rows[selected])}" x2="${x(rows[selected])}" y1="${top}" y2="${bottom}" stroke="#dcdaf6"/>`);
+  parts.push(`<text x="${left}" y="11" fill="#64728a" font-size="12">${unit} · ${choice === 'coverage_percent' ? '越大越好' : '越小越好'}</text><line x1="${x(rows[selected])}" x2="${x(rows[selected])}" y1="${top}" y2="${bottom}" stroke="#dcdaf6"/>`);
   for (const item of series) {
     parts.push(`<polyline points="${rows.map(row => `${x(row)},${y(row[item.key])}`).join(' ')}" fill="none" stroke="${item.color}" stroke-width="2" stroke-linejoin="round"/>`);
     rows.forEach((row, i) => parts.push(`<circle data-index="${i}" tabindex="0" role="button" aria-label="更新 ${updateEvent(row)}，采集 ${observationCount(row)}，${item.label} ${row[item.key].toFixed(3)} ${unit}" cx="${x(row)}" cy="${y(row[item.key])}" r="${i === selected ? 5 : 3.5}" fill="${item.color}" stroke="white" stroke-width="2"><title>更新 ${updateEvent(row)} · 采集 ${observationCount(row)} · ${item.label}: ${row[item.key].toFixed(3)} ${unit}</title></circle>`));
   }
-  rows.forEach(row => parts.push(`<text x="${x(row)}" y="161" text-anchor="middle" fill="#a4adbd" font-size="9">${Math.round(axis(row))}</text>`));
-  parts.push(`<text x="${right}" y="177" text-anchor="end" fill="#a4adbd" font-size="9">${updates ? '建图更新次数' : '任务时间 / s'}</text></svg>`);
+  rows.forEach(row => parts.push(`<text x="${x(row)}" y="161" text-anchor="middle" fill="#64728a" font-size="12">${Math.round(axis(row))}</text>`));
+  parts.push(`<text x="${right}" y="177" text-anchor="end" fill="#64728a" font-size="12">${updates ? '建图更新次数（不一定等于拍摄次数）' : '累计任务时间 / s（不是实际墙钟）'}</text></svg>`);
   $('chart').innerHTML = parts.join('');
   $('chart-legend').replaceChildren(...series.map(item => {
     const span = document.createElement('span'), dot = document.createElement('i');
@@ -357,11 +374,50 @@ async function refreshComparison(runs) {
       if (data.status === 'completed') runSummaries.set(run.id, { ...data, final: data.final || data.checkpoints.at(-1) });
     } catch { /* Leave unreadable results out of the comparison, without inventing values. */ }
   }));
+  renderRunOptions(runs);
+  renderComparisonTable(runs);
+}
+
+function renderRunOptions(runs) {
+  const key = runs.map(run => {
+    const data = runSummaries.get(run.id);
+    return `${run.id}:${data?.method_id}:${data?.seed}`;
+  }).join('|');
+  if (key === runMenuKey) return;
+  runMenuKey = key;
+  const selectedId = $('run-select').value;
+  const groups = new Map();
+  for (const run of runs) {
+    const data = runSummaries.get(run.id), category = runCategory(run.id, data?.method_id);
+    if (!groups.has(category)) {
+      const group = document.createElement('optgroup'); group.label = category;
+      groups.set(category, group);
+    }
+    const option = document.createElement('option'); option.value = run.id; option.title = run.id;
+    const label = data ? `${methodLabels[data.method_id] || data.method} · ${seedLabel(data)}` : run.id;
+    option.textContent = run.id.startsWith('web-') ? `${label} · ${run.id.slice(4)}` : label;
+    groups.get(category).append(option);
+  }
+  $('run-select').replaceChildren(...groups.values());
+  if (runs.some(run => run.id === selectedId)) $('run-select').value = selectedId;
+}
+
+function renderComparisonTable(runs) {
   const completed = runs.map(run => ({ id: run.id, data: runSummaries.get(run.id) })).filter(row => row.data?.final);
-  $('comparison-count').textContent = `${completed.length} 次`;
-  const rows = completed.map(({ id, data }) => {
-    const option = [...$('run-select').options].find(item => item.value === id);
-    if (option) option.textContent = `${methodLabels[data.method_id] || data.method} · ${seedLabel(data)}`;
+  const currentId = $('run-select').value, mode = $('comparison-filter').value;
+  const category = runCategory(currentId, manifest?.method_id);
+  const visible = completed.filter(row => mode === 'all' || (mode === 'stage'
+    ? runCategory(row.id, row.data.method_id) === category
+    : manifest?.comparison_id ? row.data.comparison_id === manifest.comparison_id : row.id === currentId));
+  $('comparison-count').textContent = `${visible.length} / ${completed.length} 条`;
+  $('comparison-context').textContent = mode === 'all'
+    ? '跨阶段清单仅用于查找运行；预算、种子、前缀或源码不同的条目不能直接作为方法优劣证据。'
+    : mode === 'stage'
+      ? `${category}：各 seed 保留单独一行，此表不计算混合均值。手动运行也只是历史清单；正式配对统计请看 v2 汇总。`
+      : manifest?.comparison_id
+        ? '仅显示记录中 comparison_id 一致的运行：同种子、同预算协议、同公共前缀与实验来源。这里是单种子结果，不能替代多种子结论。'
+        : '当前结果没有登记可配对的 comparison_id，只显示自身。它能说明本次重建完成，不能独立证明方法优于基线。';
+  const rows = visible.map(({ id, data }) => {
     const tr = document.createElement('tr');
     tr.className = originalRun(data) ? 'original-row' : '';
     tr.dataset.runId = id;
@@ -369,10 +425,8 @@ async function refreshComparison(runs) {
     button.className = 'comparison-link'; button.textContent = `${methodLabels[data.method_id] || data.method} / ${seedLabel(data)}`;
     button.addEventListener('click', () => loadRun(id));
     method.append(button);
-    const batch = document.createElement('small'); batch.textContent = data.run_id || id; method.append(batch);
-    if (!originalRun(data)) {
-      const pair = document.createElement('small'); pair.textContent = `协议 / 前缀组 ${data.comparison_id || '未记录'}`; method.append(pair);
-    }
+    const batch = document.createElement('small'); batch.textContent = runCategory(id, data.method_id); method.append(batch);
+    method.title = `${id}\n配对组：${data.comparison_id || '未登记'}`;
     tr.append(method);
     const final = data.final;
     const values = [protocolLabel(data), `${observationCount(final)} / ${updateEvent(final)}`,
@@ -383,7 +437,7 @@ async function refreshComparison(runs) {
     return tr;
   });
   if (!rows.length) {
-    const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 8; td.textContent = '暂无可读取的已完成实验。'; tr.append(td); rows.push(tr);
+    const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 8; td.className = 'comparison-empty'; td.textContent = '当前范围尚无可读取的已完成结果；可选择其他实验或切换显示范围。'; tr.append(td); rows.push(tr);
   }
   $('comparison-body').replaceChildren(...rows);
 }
@@ -621,16 +675,7 @@ async function pollStatus() {
     const busy = state.jobs.some(job => activeStates.has(job.status)) || plannedBusy;
     $('launch').disabled = submitting || busy || !available.length;
     $('launch').textContent = busy ? '实验或优化计划正在执行…' : '▷ 启动实验';
-    const selectedRun = $('run-select').value;
-    const oldRunIds = [...$('run-select').options].map(option => option.value).join(',');
-    if (oldRunIds !== state.runs.map(run => run.id).join(',')) {
-      $('run-select').replaceChildren(...state.runs.map(run => {
-        const option = document.createElement('option'); option.value = run.id;
-        option.textContent = run.id;
-        option.title = run.id; return option;
-      }));
-      if (state.runs.some(run => run.id === selectedRun)) $('run-select').value = selectedRun;
-    }
+    renderRunOptions(state.runs);
     if (!manifest && state.runs.length) await loadRun(state.runs[0].id);
     await refreshComparison(state.runs);
     if (!state.runs.length) showError($('page-error'), '尚无导出的三维结果。先完成实验，或按使用说明导出已有实验。');
@@ -670,6 +715,8 @@ $('campaign-select').addEventListener('change', () => renderCampaign(state?.camp
 $('summary-budget').addEventListener('change', renderHistoricalSummary);
 $('new-experiment').addEventListener('click', () => { $('launch-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('protocol').focus({ preventScroll: true }); });
 $('run-select').addEventListener('change', event => loadRun(event.target.value));
+$('comparison-filter').addEventListener('change', () => renderComparisonTable(state?.runs || []));
+document.querySelectorAll('a[href="#metric-formulas"]').forEach(link => link.addEventListener('click', () => { $('metric-formulas').open = true; }));
 $('checkpoint').addEventListener('input', event => showCheckpoint(Number(event.target.value)));
 $('reset-view').addEventListener('click', resetView);
 $('chart-metric').addEventListener('change', drawChart);

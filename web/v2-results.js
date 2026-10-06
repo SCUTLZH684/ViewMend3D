@@ -9,13 +9,23 @@ export const GROUPS = {
 };
 const LABELS = { confidence_nooracle: 'Confidence（无候选真值）', defect_guarded: 'Guarded v2（固定主方法）',
   defect: 'Defect v1（本轮开发对照）', defect_guarded_no_gate: 'Guarded v2 no gate（消融）' };
-const METRICS = [['accuracy_cm', 'Accuracy ↓ / cm', 3], ['completion_cm', 'Completion ↓ / cm', 3],
-  ['coverage_percent', '2cm覆盖率 ↑ / %', 3], ['chamfer_mm', 'Chamfer ↓ / mm', 3]];
-const COSTS = [['mission_seconds', '任务 / s'], ['wall_seconds', '重建墙钟 / s'], ['planning_seconds', '规划 / s'],
-  ['mapping_seconds', '建图 / s'], ['sensor_seconds', '传感器 / s'], ['diagnostic_seconds', '诊断IO / s'],
-  ['simulated_flight_seconds', '估算移动 / s'], ['path_length_m', '路径 / m'], ['observations', '观测数'],
-  ['events', '更新事件'], ['optimizer_steps', '优化步数'], ['additional_optimizer_steps', '前缀后优化步数'],
-  ['peak_torch_allocated_mb', 'Torch峰值 / MiB'], ['meshing_evaluation_wall_seconds', '网格评估 / s']];
+const METRICS = [['accuracy_cm', '表面偏差 Accuracy / cm ↓', 3], ['completion_cm', '漏建距离 Completion / cm ↓', 3],
+  ['coverage_percent', '2 cm 覆盖率 / % ↑', 3], ['chamfer_mm', '双向平均距离 Chamfer / mm ↓', 3]];
+const METRIC_INFO = {
+  accuracy_cm: { name: '表面偏差', term: 'Accuracy', unit: 'cm', direction: '越低越好',
+    meaning: '从重建表面找最近的参考表面，衡量建出来的位置偏了多远。' },
+  completion_cm: { name: '漏建距离', term: 'Completion', unit: 'cm', direction: '越低越好',
+    meaning: '从参考表面找最近的重建表面，衡量真实区域离已建表面有多远。' },
+  coverage_percent: { name: '2 cm 覆盖率', term: 'Coverage', unit: '%', direction: '越高越好',
+    meaning: '参考表面采样点中，距重建表面小于 2 cm 的比例。' },
+  chamfer_mm: { name: '双向平均距离', term: 'Chamfer', unit: 'mm', direction: '越低越好',
+    meaning: '表面偏差与漏建距离的平均值，以毫米表示，兼顾偏移和遗漏。' }
+};
+const COSTS = [['mission_seconds', '计入任务预算 / s'], ['wall_seconds', '重建墙钟实测 / s'], ['planning_seconds', '选择下一视角 / s'],
+  ['mapping_seconds', '更新三维地图 / s'], ['sensor_seconds', '取得观测 / s'], ['diagnostic_seconds', '记录诊断 / s'],
+  ['simulated_flight_seconds', '估算移动时间 / s'], ['path_length_m', '移动路径长度 / m'], ['observations', '采集观测 / 次'],
+  ['events', '建图更新 / 次'], ['optimizer_steps', '地图优化 / 步'], ['additional_optimizer_steps', '公共前缀后优化 / 步'],
+  ['peak_torch_allocated_mb', 'PyTorch 显存峰值 / MiB'], ['meshing_evaluation_wall_seconds', '生成网格与评估 / s']];
 const POST = ['planning_seconds', 'mapping_seconds', 'sensor_seconds', 'diagnostic_seconds', 'events', 'observations'];
 const FALLBACKS = { weight_zero: 'β=0', base_all_zero: '基础效用全零', single_reachable: '仅一个可达候选',
   weak_geometry: '几何信号不足', constant_geometry: '几何项恒定' };
@@ -225,21 +235,84 @@ function detail(title, content) {
 const note = content => el('p', 'v2-note', content);
 const heading = content => el('h3', 'v2-subheading', content);
 
+const improves = (key, difference) => key === 'coverage_percent' ? difference > 0 : difference < 0;
+const worsens = (key, difference) => key === 'coverage_percent' ? difference < 0 : difference > 0;
+const meanChange = (key, difference) => {
+  const info = METRIC_INFO[key], unit = key === 'coverage_percent' ? '个百分点' : info.unit;
+  return `${info.name}平均${difference === 0 ? '不变' : `${difference > 0 ? '增加' : '减少'} ${fmt(Math.abs(difference), 5)} ${unit}`}`;
+};
+
+// The conclusion is generated from the same audited, paired values shown in
+// the tables. It cannot silently substitute an ablation or a selected seed.
+export function describeV2Group(stage, group) {
+  const paired = stage.paired_difference_vs_confidence[PRIMARY].metrics;
+  const seeds = stage.seeds, n = seeds.length;
+  const betterCoverage = seeds.filter(seed => improves('coverage_percent', paired.coverage_percent.method_minus_baseline_by_seed[seed]));
+  const worseAccuracy = seeds.filter(seed => worsens('accuracy_cm', paired.accuracy_cm.method_minus_baseline_by_seed[seed]));
+  const allWorse = seeds.filter(seed => METRICS.every(([key]) => worsens(key, paired[key].method_minus_baseline_by_seed[seed])));
+  const betterCompletion = seeds.filter(seed => improves('completion_cm', paired.completion_cm.method_minus_baseline_by_seed[seed]));
+  const lines = [
+    `相对 Confidence 基线，${meanChange('completion_cm', paired.completion_cm.mean)}，${meanChange('coverage_percent', paired.coverage_percent.mean)}。`,
+    `${meanChange('accuracy_cm', paired.accuracy_cm.mean)}；${meanChange('chamfer_mm', paired.chamfer_mm.mean)}。`,
+    `漏建距离在 ${betterCompletion.length}/${n} 次运行中改善；覆盖率${betterCoverage.length < n ? '仅' : '在'} ${betterCoverage.length}/${n} 次运行中提高${betterCoverage.length ? `（seed ${betterCoverage.join('、')}）` : ''}。`
+  ];
+  if (worseAccuracy.length) lines.push(`表面偏差在 seed ${worseAccuracy.join('、')} 中退化，需要同时看“建得准”和“建得全”。`);
+  if (allWorse.length) lines.push(`seed ${allWorse.join('、')} 的四项质量指标全部退化，平均值没有展示出这一单次风险。`);
+  lines.push(group.startsWith('heldout')
+    ? '这是 office0 同场景的新种子测试，样本量为 3；局部平均改善尚不足以证明稳定优化或跨场景泛化。'
+    : '这是用于方案检查的开发种子，样本量为 2；开发结果不替换预先固定的主方法，也不证明稳定优化。');
+  return lines;
+}
+
+function resultReading(stage, group) {
+  const block = el('section', 'v2-result-reading');
+  block.append(el('h3', '', '这组实验说明什么？'));
+  const lines = describeV2Group(stage, group);
+  lines.forEach((line, index) => block.append(el('p', index > 2 ? 'v2-reading-limit' : '', line)));
+  return block;
+}
+
+function metricGuide(stage) {
+  const cards = el('div', 'v2-metric-guide');
+  METRICS.forEach(([key]) => {
+    const info = METRIC_INFO[key], paired = stage.paired_difference_vs_confidence[PRIMARY].metrics[key];
+    const base = stage.method_statistics[BASELINE].metrics[key], primary = stage.method_statistics[PRIMARY].metrics[key];
+    const card = el('section', 'v2-metric-explanation'), unit = key === 'coverage_percent' ? 'pp' : info.unit;
+    const favorable = improves(key, paired.mean), unfavorable = worsens(key, paired.mean);
+    card.append(el('h4', '', info.name), el('p', 'v2-metric-term', `${info.term} · ${info.unit} · ${info.direction}`),
+      el('p', 'v2-metric-meaning', info.meaning),
+      el('p', `v2-metric-difference ${favorable ? 'improved' : unfavorable ? 'regressed' : ''}`, `${fmt(paired.mean, 5, true)} ${unit}`),
+      el('p', 'v2-metric-direction', `平均配对差 · ${favorable ? '改善方向' : unfavorable ? '退化方向' : '没有变化'}`),
+      el('p', 'v2-metric-means', `基线 ${fmt(base.mean, 5)} → Guarded ${fmt(primary.mean, 5)} ${info.unit}`));
+    cards.append(card);
+  });
+  return cards;
+}
+
+function readingKey() {
+  const content = el('div', 'v2-reading-key');
+  content.append(el('p', '', '配对差 Δ = 同一个 seed 的 Guarded − Confidence。距离指标负值更好；覆盖率正值更好。'),
+    el('p', '', 'pp 是百分点：95% → 96% = +1 pp。它与“相对提高 1%”含义不同。'),
+    el('p', '', '均值 ± SD：SD 是不同随机种子结果的离散程度（样本标准差，n−1），不是误差界或置信区间。'),
+    el('p', '', 'seed 是随机运行编号。每个编号对应一组配对实验；不要只挑表现最好的那次运行。'));
+  return content;
+}
+
 function methodTables(stage, methods) {
   const block = el('div');
-  block.append(table('质量均值和样本SD', ['方法', ...METRICS.map(([, label]) => label)], methods.map(method =>
+  block.append(heading('质量原值：各方法的均值 ± 样本 SD'), table('质量均值和样本SD', ['方法', ...METRICS.map(([, label]) => label)], methods.map(method =>
     [LABELS[method], ...METRICS.map(([key, , digits]) => statText(stage.method_statistics[method].metrics[key], digits))])));
-  block.append(heading('同 seed 方法 − Confidence'), note('距离负值方向更好；覆盖率正值方向更好，覆盖率差为百分点 pp。'),
-    table('同种子配对质量差', ['方法', 'ΔAccuracy / cm', 'ΔCompletion / cm', 'Δ覆盖率 / pp', 'ΔChamfer / mm'],
+  block.append(heading('配对差：相同随机种子下，方法 − Confidence'), note('以下对每个 seed 先求差，再算差的均值和 SD。距离负值更好；覆盖率正值更好，单位为百分点 pp。'),
+    table('同种子配对质量差', ['方法', 'Δ表面偏差 / cm', 'Δ漏建距离 / cm', 'Δ覆盖率 / pp', 'Δ双向距离 / mm'],
       methods.filter(method => method !== BASELINE).map(method => [LABELS[method], ...METRICS.map(([key, , digits]) => statText(stage.paired_difference_vs_confidence[method].metrics[key], digits, true))])));
   const seedHeaders = ['方法', 'seed', '观测', ...METRICS.map(([, label]) => label)];
   const seedRows = methods.flatMap(method => stage.seeds.map(seed => {
     const row = stage.per_run.find(item => item.method === method && item.seed === seed);
     return [LABELS[method], String(seed), String(row.cost.observations), ...METRICS.map(([key, , digits]) => fmt(row.metrics[key], digits + 2))];
   }));
-  block.append(detail('展开逐 seed 质量和配对差', (() => {
+  block.append(detail('查看每个 seed 的质量原值与配对差', (() => {
     const group = el('div'); group.append(table('完整逐种子质量', seedHeaders, seedRows),
-      table('完整逐种子配对质量差', ['方法 − Confidence', 'seed', 'ΔAccuracy / cm', 'ΔCompletion / cm', 'Δ覆盖率 / pp', 'ΔChamfer / mm'],
+      table('完整逐种子配对质量差', ['方法 − Confidence', 'seed', 'Δ表面偏差 / cm', 'Δ漏建距离 / cm', 'Δ覆盖率 / pp', 'Δ双向距离 / mm'],
         methods.filter(method => method !== BASELINE).flatMap(method => stage.seeds.map(seed => [LABELS[method], String(seed),
           ...METRICS.map(([key, , digits]) => fmt(stage.paired_difference_vs_confidence[method].metrics[key].method_minus_baseline_by_seed[seed], digits + 2, true))])))); return group;
   })()));
@@ -248,20 +321,29 @@ function methodTables(stage, methods) {
 
 function costTables(stage, methods) {
   const content = el('div');
-  content.append(note('任务 = 同步规划＋建图＋估算移动，完整事件后才停止。重建墙钟单列，网格评估与导出另计。Torch峰值仅含PyTorch分配，不含Habitat/OpenGL，也不是最低设备显存。更少观测伴随更低时间/峰值不能证明等质量加速。'));
+  const guide = el('div', 'v2-cost-guide');
+  [
+    ['任务预算时间', '选择下一视角＋更新地图＋按路径估算的移动时间。180 秒组在完成整次观测/更新后判断停止，因此最终值会略超过 180 秒。'],
+    ['重建墙钟实测', '重建阶段实际耗时，包含公共前缀、采集、规划、建图及诊断/检查点写入；不含启动、前缀缓存保存/加载、网格生成与评估。它与任务预算不是同一个计时器。'],
+    ['观测数与更新数', '本轮每次取得一个新视角观测，随后更新地图；每次更新执行 10 步地图优化。时间预算相同也可能得到不同观测数量。'],
+    ['PyTorch 显存峰值', '只统计 PyTorch 分配，不含 Habitat/OpenGL 的占用；不是整张 GPU 的用量，也不是运行所需的最低显存。']
+  ].forEach(([title, explanation]) => {
+    const card = el('div'); card.append(el('strong', '', title), el('p', '', explanation)); guide.append(card);
+  });
+  content.append(guide, note('如果采集次数更少，时间和显存可能随之减少；这不能单独证明“同等质量、同等工作量”的加速。网格生成、质量评估与导出分别在建图之后执行。'));
   const fields = ['mission_seconds', 'wall_seconds', 'planning_seconds', 'mapping_seconds', 'observations', 'path_length_m', 'peak_torch_allocated_mb'];
   const costs = keys => table('实际成本均值和样本SD', ['方法', ...keys.map(key => COSTS.find(([field]) => field === key)[1])], methods.map(method =>
     [LABELS[method], ...keys.map(key => statText(stage.method_statistics[method].cost[key], key.includes('steps') ? 1 : 3))]));
   content.append(costs(fields), costs(COSTS.map(([key]) => key).filter(key => !fields.includes(key))));
-  content.append(heading('相同 seed 的成本配对差'), table('实际方法成本配对差', ['方法 − Confidence', '成本指标', ...stage.seeds.map(seed => `seed ${seed} Δ`), '均值 ± SD'],
+  content.append(heading('成本配对差：相同 seed 的方法 − Confidence'), note('成本差保留各自单位。耗时更少要结合观测数和质量一起判断；观测数更多也不直接代表重建更好。'), table('实际方法成本配对差', ['方法 − Confidence', '成本指标', ...stage.seeds.map(seed => `seed ${seed} Δ`), '均值 ± SD'],
     methods.filter(method => method !== BASELINE).flatMap(method => COSTS.map(([key, label]) => {
       const value = stage.paired_difference_vs_confidence[method].cost[key]; return [LABELS[method], label,
         ...stage.seeds.map(seed => fmt(value.method_minus_baseline_by_seed[seed], 3, true)), statText(value, 3, true)]; }))));
-  content.append(detail('展开逐 seed 采集、规划与Torch峰值', table('逐种子实际成本', ['方法', 'seed', '观测', '规划 / s', '任务 / s', '重建墙钟 / s', 'Torch峰值 / MiB'],
+  content.append(detail('查看每个 seed 的采集次数、耗时与显存', table('逐种子实际成本', ['方法', 'seed', '观测 / 次', '选择视角 / s', '任务预算计时 / s', '重建墙钟 / s', 'PyTorch 峰值 / MiB'],
     methods.flatMap(method => stage.seeds.map(seed => { const value = stage.per_run.find(row => row.method === method && row.seed === seed).cost;
       return [LABELS[method], String(seed), String(value.observations), fmt(value.planning_seconds), fmt(value.mission_seconds), fmt(value.wall_seconds), fmt(value.peak_torch_allocated_mb)]; })))));
   const suffix = el('div');
-  suffix.append(note('下表单列公共前20观测之后的成本；前缀优化与观测不计入此表。与上方完整任务成本分别阅读。'),
+  suffix.append(note('“公共前缀”是各方法共享的前 20 次真实采集。下表只计其后的新观测与更新成本；与上方包含前缀的完整成本分开阅读。'),
     table('前缀后实际成本均值和样本SD', ['方法', ...POST.map(key => COSTS.find(([field]) => field === key)[1])],
       methods.map(method => [LABELS[method], ...POST.map(key => statText(stage.method_statistics[method].post_prefix_cost[key]))])),
     table('前缀后实际成本逐种子配对差', ['方法 − Confidence', '成本指标', ...stage.seeds.map(seed => `seed ${seed} Δ`), '均值 ± SD'],
@@ -269,20 +351,21 @@ function costTables(stage, methods) {
         const value = stage.paired_difference_vs_confidence[method].post_prefix_cost[key];
         return [LABELS[method], COSTS.find(([field]) => field === key)[1],
           ...stage.seeds.map(seed => fmt(value.method_minus_baseline_by_seed[seed], 3, true)), statText(value, 3, true)]; }))));
-  content.append(detail('展开公共前缀之后的成本', suffix));
+  content.append(detail('查看公共前 20 次观测之后的成本', suffix));
   return content;
 }
 
 function signalTables(stage, methods) {
   const content = el('div');
-  content.append(note('“同次候选集S0→S2首选改选”比较该方法自身当前地图上的同一次候选组，不是与独立Confidence轨迹逐事件比较。事件加权regret不是seed质量均值；有界代理分数损失不保证真值质量。utility耗时包含渲染、可见性和评分。'));
+  content.append(note('这里回答“几何奖励是否参与了视角选择”。S0 是基础评分，S2 是加入有界奖励后的评分；比较对象始终是 Guarded 自己当前地图上的同一组候选视角。局部首选改选不等于与独立 Confidence 实验的轨迹差，也不等于质量改善。'));
   const guarded = methods.filter(method => method.startsWith('defect_guarded'));
   for (const method of guarded) {
     const value = stage.guarded_signal_statistics[method];
-    content.append(heading(LABELS[method]), note(`诊断 ${value.validated_events} 事件；信号有效 ${value.signal_active_events}；奖励应用 ${value.reward_applied_events}；同次候选集S0→S2首选改选 ${value.selection_changed_events}。`),
-      note(`事件加权平均regret ${fmt(value.event_weighted_mean_baseline_regret, 6)}；最大regret ${fmt(value.maximum_baseline_regret, 6)}；奖励上限 ${value.bonus_cap_range.length ? value.bonus_cap_range.map(number => fmt(number, 6)).join('–') : '无后缀事件，未定义'}；最大regret/cap ${fmt(value.maximum_regret_over_cap, 5)}。`),
+    content.append(heading(LABELS[method]), note(`公共前缀后共 ${value.validated_events} 次诊断：几何信号有效 ${value.signal_active_events} 次，奖励参与评分 ${value.reward_applied_events} 次，同次候选集S0→S2首选改选 ${value.selection_changed_events} 次。`),
+      note(`基础评分损失 regret（无单位）：事件加权平均 ${fmt(value.event_weighted_mean_baseline_regret, 6)}，最大 ${fmt(value.maximum_baseline_regret, 6)}；奖励上限 ${value.bonus_cap_range.length ? value.bonus_cap_range.map(number => fmt(number, 6)).join('–') : '无后缀事件，未定义'}；最大损失/上限 ${fmt(value.maximum_regret_over_cap, 5)}。`),
+      note('regret 衡量改选后牺牲了多少基础代理分数，与上方以 cm/mm 计量的网格误差不同。奖励上限只能约束代理分数损失，不能保证真实质量提高。评分耗时包含渲染、可见性判断与计算。'),
       table('实际回退原因分布', ['回退原因', '事件数'], Object.entries(FALLBACKS).map(([key, label]) => [label, String(value.fallback_counts[key])])),
-      table('逐种子Guarded信号', ['seed', '诊断事件', '奖励应用', '同次候选集S0→S2首选改选', '平均regret', '最大regret', 'utility / s'],
+      table('逐种子Guarded信号', ['seed', '诊断 / 次', '奖励评分 / 次', '局部首选改选 / 次', '平均基础损失', '最大基础损失', '评分耗时 / s'],
         stage.diagnostics_per_run.filter(row => row.method === method).map(row => [String(row.seed), String(row.validated_events), String(row.reward_applied_events),
           String(row.selection_changed_events), fmt(row.validated_events ? row.baseline_regret_sum / row.validated_events : null, 6), fmt(row.maximum_baseline_regret, 6), fmt(row.utility_seconds)])));
   }
@@ -291,7 +374,7 @@ function signalTables(stage, methods) {
 
 export function mountV2Results(root, { fetcher = fetch, url = '/data/optimization-v2-summary.json' } = {}) {
   if (!root) return;
-  const top = el('div', 'panel-heading'), title = el('div'); title.append(el('h2', '', 'v2 · 有界几何奖励结果')); top.append(title);
+  const top = el('div', 'panel-heading'), title = el('div'); title.append(el('h2', '', 'v2 优化验证：是否建得更准、更全？')); top.append(title);
   const badge = el('span', 'badge', '读取中'); top.append(badge);
   const status = note('正在读取整链完成后发布的v2结果…'); status.setAttribute('aria-live', 'polite');
   const content = el('div'); content.hidden = true; root.replaceChildren(top, status, content);
@@ -301,48 +384,64 @@ export function mountV2Results(root, { fetcher = fetch, url = '/data/optimizatio
     const stage = data.stages[group], n = stage.seeds.length;
     const select = el('select'); select.id = 'v2-results-group'; select.setAttribute('aria-label', '选择独立开发或留出预算组');
     Object.entries(GROUPS).forEach(([key, title]) => { const option = el('option', '', title); option.value = key; select.append(option); }); select.value = group;
-    const toolbar = el('div', 'v2-toolbar'), label = el('label', '', '独立对照组'); label.htmlFor = select.id; toolbar.append(label, select);
+    const toolbar = el('div', 'v2-toolbar'), label = el('label', '', '选择要比较的实验组'); label.htmlFor = select.id; toolbar.append(label, select);
     select.addEventListener('change', () => render(data, select.value));
-    const summary = stage.paired_difference_vs_confidence[PRIMARY].metrics;
     const source = el('div', 'v2-evidence');
     const audited = new Date(data.generated_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
     [ `5/5阶段、27/27分支完整验收；质量表仅用24正式分支。审计 ${audited}（北京时间）。`,
       `本组真实批次：${stage.run_id}；实验源 ${FROZEN.source_commit}。`,
       `最终分析SHA256：${data.evidence.analysis_sha256}；fresh输入清单 ${data.evidence.source_input_count} 项。` ]
       .forEach(line => source.append(el('p', '', line)));
-    const link = el('a', '', '查看完整v2报告 ↗'); link.href = 'https://github.com/SCUTLZH684/ViewMend3D/blob/main/docs/reproduction/optimization-v2-results.md'; link.target = '_blank'; link.rel = 'noopener'; source.append(link);
+    source.append(heading('冻结实验源码与配置指纹'));
+    Object.entries(FROZEN.source_identity).forEach(([key, value]) => source.append(el('p', '', `${key}：${value}`)));
+    source.append(el('p', '', `本轮协议 SHA256：${data.campaign_spec_sha256}；配方 SHA256：${stage.recipe_sha256}。`));
+    const link = el('a', 'v2-report-link', '查看完整 v2 报告与全部种子 ↗'); link.href = 'https://github.com/SCUTLZH684/ViewMend3D/blob/main/docs/reproduction/optimization-v2-results.md'; link.target = '_blank'; link.rel = 'noopener';
     const preview = el('div', 'v2-previews'), previewNote = note('真实网格入口尚未就绪；等实验列表加载后可选择对应导出。');
-    const buttons = stage.seeds.map(seed => {
-      const id = `campaign-optimization-v2-${stage.run_id}-${PRIMARY}-s${seed}`, button = el('button', 'v2-preview-button', `Guarded · seed ${seed} · 看三维结果`);
-      require(stage.verified_exports.includes(id), '当前组未验证此真实导出'); button.dataset.exportId = id; button.disabled = true;
-      button.addEventListener('click', () => {
-        const picker = document.getElementById('run-select');
-        if (!picker || ![...picker.options].some(option => option.value === id)) return;
-        picker.value = id; picker.dispatchEvent(new Event('change', { bubbles: true }));
-        document.getElementById('viewer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }); preview.append(button); return button;
+    const buttons = [];
+    stage.seeds.forEach(seed => {
+      const pair = el('div', 'v2-preview-pair'); pair.append(el('strong', '', `seed ${seed} · 同种子对照`));
+      [BASELINE, PRIMARY].forEach(method => {
+        const id = `campaign-optimization-v2-${stage.run_id}-${method}-s${seed}`;
+        const methodLabel = method === BASELINE ? 'Confidence 基线' : 'Guarded v2 主方法';
+        const button = el('button', `v2-preview-button ${method === PRIMARY ? 'primary-method' : ''}`, `${methodLabel} · 看网格`);
+        require(stage.verified_exports.includes(id), '当前组未验证此真实导出'); button.dataset.exportId = id; button.disabled = true;
+        button.setAttribute('aria-label', `${GROUPS[group]}，seed ${seed}，${methodLabel}，查看真实网格和采集轨迹`);
+        button.addEventListener('click', () => {
+          const picker = document.getElementById('run-select');
+          if (!picker || ![...picker.options].some(option => option.value === id)) return;
+          picker.value = id; picker.dispatchEvent(new Event('change', { bubbles: true }));
+          document.getElementById('viewer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }); pair.append(button); buttons.push(button);
+      });
+      preview.append(pair);
     });
     const refreshPreviews = () => {
       const picker = document.getElementById('run-select'), ids = new Set(picker ? [...picker.options].map(option => option.value) : []);
       buttons.forEach(button => { button.disabled = !ids.has(button.dataset.exportId); });
-      previewNote.textContent = buttons.every(button => !button.disabled) ? '按钮打开本组固定主方法的真实网格、采集轨迹与诊断。' : '部分真实导出尚未出现在实验列表；对应入口保持禁用。';
+      previewNote.textContent = buttons.every(button => !button.disabled)
+        ? `以上入口对应“${GROUPS[group]}”。点击后，页面上方切换为该方法/seed 的真实网格、采集轨迹与诊断。逐个切换可以对照建图范围和视角选择。`
+        : '部分真实导出尚未出现在实验列表；对应入口保持禁用。';
     };
     observer?.disconnect();
     const picker = document.getElementById('run-select');
     if (picker && typeof MutationObserver !== 'undefined') { observer = new MutationObserver(refreshPreviews); observer.observe(picker, { childList: true }); }
-    content.replaceChildren(toolbar, note(`${GROUPS[group]} · seeds ${stage.seeds.join('/')} · n=${n}；前20观测是真实公共前缀。开发n=2与留出n=3分别统计，预算组不混均值。均值±样本SD不是置信区间。`),
-      el('p', 'v2-result-reading', `固定主方法Guarded − Confidence：Completion ${statText(summary.completion_cm, 4, true)} cm；覆盖率 ${statText(summary.coverage_percent, 4, true)} pp；Chamfer ${statText(summary.chamfer_mm, 4, true)} mm。${group.startsWith('heldout') ? '留出仍是office0的新种子，不代表新场景。' : '开发结果不替换预先固定的主方法。'}`),
-      methodTables(stage, [BASELINE, PRIMARY]), preview, previewNote,
-      detail('查看成本、观测数与Torch峰值', costTables(stage, [BASELINE, PRIMARY])),
-      detail('查看当前地图信号、regret与回退', signalTables(stage, [PRIMARY])));
+    content.replaceChildren(toolbar,
+      note('我们在检查：给 Confidence 的基础视角评分加上有上限的当前地图几何奖励后，Guarded v2 能否减少遗漏，并保持表面位置准确。本轮受控规划不读取候选真值 RGB-D、掩码或网格误差；选定视角后才取得新的仿真观测。'),
+      note(`${GROUPS[group]} · seeds ${stage.seeds.join('/')} · n=${n}。同一 seed 的前 20 次真实观测与地图由两方法共享，之后各自规划与重建。开发 n=2 与留出 n=3 分开统计，两种预算也不合并。`),
+      resultReading(stage, group), metricGuide(stage), detail('怎么看配对差、百分点 pp 和样本 SD？', readingKey()),
+      methodTables(stage, [BASELINE, PRIMARY]), heading('打开本组的真实三维结果'), preview, previewNote,
+      detail('质量改善花了多少成本？查看计时、观测数与显存', costTables(stage, [BASELINE, PRIMARY])),
+      detail('几何奖励实际做了什么？查看局部改选与评分损失', signalTables(stage, [PRIMARY])));
     if (group === 'development_observations') {
       const extra = el('div'); extra.append(note('旧Defect和no gate只在开发观测阶段提供机制对照。完整保留两者，不按消融赢家改换固定主方法。'),
         methodTables(stage, ['defect', 'defect_guarded_no_gate']), costTables(stage, ['defect', 'defect_guarded_no_gate']), signalTables(stage, ['defect_guarded_no_gate']));
       content.append(detail('展开本轮开发对照与门控消融（两者均保留）', extra));
     }
-    source.append(note('种子留出仍限office0；小样本描述统计不证明显著或跨场景泛化。候选评分只用当前地图，共有已知包围盒先验；GT仅供评估。自定义CUDA内核可能有数值非确定性。'));
+    source.append(note('种子留出仍限 office0；小样本描述统计不证明显著或跨场景泛化。候选评分只用当前地图，共有已知包围盒先验；本轮受控规划不读取候选真值 RGB-D、掩码或网格误差。独立分支可能因地图/候选及原生渲染数值差异产生不同轨迹，具体成因尚未确定，不能把所有最终质量差异都归因于几何奖励。'));
     const limitations = el('ul', 'v2-limitations'); data.limitations.forEach(value => limitations.append(el('li', '', value)));
-    source.append(detail('查看最终审计记录的全部局限', limitations)); content.append(source);
+    source.append(detail('查看最终审计记录的全部局限', limitations));
+    const publication = el('div', 'v2-publication'); publication.append(note('已完成 5/5 阶段、27/27 分支；其中 24 条正式分支用于四组质量对照，短闭环不加入质量结论。'), link);
+    content.append(publication, detail('查看数据来源、冻结源码、完整审计与解释边界', source));
     refreshPreviews();
   }
 
