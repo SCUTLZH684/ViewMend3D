@@ -40,8 +40,17 @@ def export_reference(experiment, output, manifest, upstream=None, faces=80000):
     source, source_hash = reference_source(experiment, manifest['protocol'], upstream or ROOT / 'external/active-gs')
     import open3d as o3d
     import numpy as np
+    import trimesh
 
-    mesh = o3d.io.read_triangle_mesh(str(source))
+    # Replica contains polygons RPly may stop reading halfway through. Use the
+    # same loader as HabitatSimulator/evaluation, then transfer its full mesh.
+    reference = trimesh.load(str(source))
+    if not isinstance(reference, trimesh.Trimesh) or reference.visual.kind != 'vertex':
+        raise ValueError('Reference must be a single colored evaluation mesh')
+    mesh = o3d.geometry.TriangleMesh()
+    mesh.vertices = o3d.utility.Vector3dVector(np.asarray(reference.vertices))
+    mesh.triangles = o3d.utility.Vector3iVector(np.asarray(reference.faces))
+    mesh.vertex_colors = o3d.utility.Vector3dVector(np.asarray(reference.visual.vertex_colors[:, :3], dtype=float) / 255)
     original = {'vertices': len(mesh.vertices), 'faces': len(mesh.triangles)}
     if not original['faces'] or not mesh.has_vertex_colors():
         raise ValueError('Ground Truth needs nonempty geometry and actual vertex colors')
@@ -50,8 +59,9 @@ def export_reference(experiment, output, manifest, upstream=None, faces=80000):
         raise ValueError('Ground Truth has nonfinite coordinates')
     if original['faces'] > faces:
         mesh = mesh.simplify_quadric_decimation(faces)
+    mesh.remove_unreferenced_vertices()
     # No transform/recentering: reference and recorded OpenCV poses share world coordinates.
-    filename = f'ground_truth_{source_hash[:12]}_{faces}.ply'
+    filename = f'ground_truth_{source_hash[:12]}_{faces}_v2.ply'
     output.mkdir(parents=True, exist_ok=True)
     target = output / filename
     temporary = output / f'.{filename}'
@@ -66,6 +76,7 @@ def export_reference(experiment, output, manifest, upstream=None, faces=80000):
             'bounds': bounds, 'up_axis': 'z', 'transform': np.eye(4).tolist(),
             'camera_convention': manifest['camera_convention'], 'original': original,
             'preview': {'vertices': len(mesh.vertices), 'faces': len(mesh.triangles)},
+            'source_loader': 'trimesh.load_same_as_evaluation',
             'usage': 'display_and_evaluation_only_not_planner_input'}
 
 
