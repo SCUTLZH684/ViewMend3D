@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { PLYLoader } from './vendor/PLYLoader.js';
 import { METHOD_EXPLANATIONS, runCategory, budgetExplanation } from './explanations.js';
+import { CaptureReplay } from './capture-replay.js';
 
 const $ = id => document.getElementById(id);
 const activeStates = new Set(['starting', 'running', 'exporting']);
@@ -28,6 +29,14 @@ let renderer, scene, camera, controls, mesh, grid, pathLine, cameraLines;
 const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
 const viewer = $('viewer');
 const loader = new PLYLoader();
+const captureReplay = new CaptureReplay($('capture-replay'));
+const replayOption = document.createElement('option');
+replayOption.value = 'replay'; replayOption.textContent = '逐帧演示 · 8次采集';
+$('protocol').prepend(replayOption);
+$('protocol').setAttribute('aria-label', '实验协议');
+const replayAnchor = document.createElement('a'); replayAnchor.href = '#capture-replay';
+replayAnchor.textContent = '采集 → 选点 → 补拍';
+document.querySelector('.read-nav').append(replayAnchor);
 
 function showError(element, message) {
   element.textContent = message || '';
@@ -145,6 +154,7 @@ const updateEvent = checkpoint => checkpoint.update_event ?? checkpoint.step;
 const seedLabel = data => Number.isInteger(data.seed) ? `种子 ${data.seed}` : '种子未固定';
 const originalRun = data => !data.method_id || data.method_id === 'confidence';
 function protocolLabel(data) {
+  if (data.protocol?.replay_recording) return '独立演示 · 8帧过程回放';
   if (originalRun(data)) return '原作者流程 · 时间预算';
   const final = data.checkpoints?.at(-1) || data.final;
   const definition = data.protocol?.protocol || data.protocol || {};
@@ -176,6 +186,9 @@ function renderMetadata(data) {
   $('boundary-description').textContent = original
     ? '原作者 office0 流程使用候选真值有效深度掩码；本结果是执行证明，应与公平对照分开展示。'
     : '候选评分只使用当前地图，共享场景包围盒先验。前缀后各策略的轨迹会分叉，候选生成规则保持一致。';
+  $('initial-rgb').closest('section').querySelector('p').textContent = data.replay
+    ? '来自 Habitat 的首帧。上方过程回放展示本次独立演示的全部8帧 RGB-D。'
+    : '来自 Habitat 仿真器的首帧。此历史实验未保存完整 RGB-D 序列。';
   $('chart-note').textContent = `点击圆点切换保存的网格。${data.method_id === 'refine_only' ? '此对照只采集20次，横轴更新次数包含对已有观测的继续优化。' : '这条曲线属于所选的单次实验；多种子方法对照在 v2 汇总中。'}`;
   renderComparisonTable(state?.runs || []);
 }
@@ -215,8 +228,9 @@ function renderDiagnostic(checkpoint) {
 
 function configureLaunch() {
   const original = $('protocol').value === 'original';
+  const replay = $('protocol').value === 'replay';
   const current = $('method').value;
-  const keys = original ? ['confidence'] : ['suite', 'defect_guarded', 'defect_guarded_no_gate', 'defect', 'confidence_nooracle', 'random_matched', 'defect_no_gate', 'refine_only'];
+  const keys = original ? ['confidence'] : replay ? ['defect_guarded'] : ['suite', 'defect_guarded', 'defect_guarded_no_gate', 'defect', 'confidence_nooracle', 'random_matched', 'defect_no_gate', 'refine_only'];
   $('method').replaceChildren(...keys.map(key => {
     const option = document.createElement('option'); option.value = key; option.textContent = methodLabels[key]; return option;
   }));
@@ -225,9 +239,11 @@ function configureLaunch() {
   $('budget-row').hidden = !original;
   $('seed-row').hidden = original;
   $('frames-row').hidden = original;
+  $('frames-row').querySelector('option').textContent = replay ? '8 次采集 · 初始1帧 · 每帧保存网格' : '60 次 · 前 20 次为共享前缀';
   $('method-launch-explanation').textContent = METHOD_EXPLANATIONS[$('method').value];
   $('launch-note').textContent = original
     ? '预算是原作者累计任务时间。此流程含候选真值掩码，保留为独立复现入口。网格与评估耗时另计。'
+    : replay ? '独立教学演示：实际保存8次RGB-D与逐帧网格，初始化1帧后使用Guarded v2选点。额外记录和评估增加耗时，不纳入正式质量统计。完成后在上方回放过程。'
     : $('method').value.startsWith('defect_guarded')
       ? '60次观测 / 60次更新，前20次为共同confidence采集前缀。这里启动一次新运行，不会自动加入已发布的24条正式质量数据。'
       : $('method').value === 'refine_only'
@@ -286,6 +302,7 @@ async function showCheckpoint(index) {
 }
 
 async function loadRun(id) {
+  captureReplay.clear();
   playing = false;
   $('play').textContent = '▶ 播放';
   ++loadVersion;
@@ -300,6 +317,7 @@ async function loadRun(id) {
     renderMetadata(data);
     $('path-label').textContent = data.trajectory_kind === 'motion_path' ? '运动轨迹' : '视角连线';
     assetBase = `/assets/${encodeURIComponent(id)}`;
+    void captureReplay.load(data, assetBase);
     $('checkpoint').max = String(data.checkpoints.length - 1);
     $('checkpoint-labels').replaceChildren(...data.checkpoints.map((checkpoint, i) => {
       const button = document.createElement('button');
@@ -591,8 +609,8 @@ function renderJob(job) {
   heading.textContent = job.status === 'completed' ? '三维结果已就绪' : job.status === 'failed' || job.status === 'interrupted' ? job.message : job.stage;
   const info = document.createElement('div');
   const elapsed = `${activeStates.has(job.status) ? '完整流水线已用时' : '完整流水线总耗时'} ${job.wall_seconds} s`;
-  info.textContent = job.protocol === 'observations'
-    ? `GPU ${job.gpu} · ${methodLabels[job.method] || job.method} · 种子 ${job.seed} · ${job.frames} 次更新 · ${elapsed}`
+  info.textContent = ['observations', 'replay'].includes(job.protocol)
+    ? `GPU ${job.gpu} · ${job.protocol === 'replay' ? '独立逐帧演示 · ' : ''}${methodLabels[job.method] || job.method} · 种子 ${job.seed} · ${job.frames} 次更新 · ${elapsed}`
     : `GPU ${job.gpu} · 预算 ${job.budget} s · ${elapsed}`;
   const id = document.createElement('div'); id.className = 'small'; id.textContent = job.id;
   const timeNote = document.createElement('p'); timeNote.className = 'job-stage-note';
@@ -710,7 +728,7 @@ $('launch-form').addEventListener('submit', async event => {
   try {
     const payload = $('protocol').value === 'original'
       ? { gpu: Number($('gpu').value), budget: Number($('budget').value) }
-      : { gpu: Number($('gpu').value), protocol: 'observations', method: $('method').value, seed: Number($('seed').value), frames: 60 };
+      : { gpu: Number($('gpu').value), protocol: $('protocol').value, method: $('method').value, seed: Number($('seed').value), frames: $('protocol').value === 'replay' ? 8 : 60 };
     const job = await fetchJSON('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-ViewMend3D': '1' },
       body: JSON.stringify(payload) });
     renderJob(job); $('logs-details').open = true;

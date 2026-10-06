@@ -29,6 +29,7 @@ def main():
     parser.add_argument("--recipe", choices=("optimization-v1", "optimization-v2"), default="optimization-v1")
     parser.add_argument("--campaign-spec-sha256")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--record-replay", action="store_true", help="Independent 8-frame visual demo with recorded sensor inputs")
     args = parser.parse_args()
     try:
         methods = tuple(args.methods)
@@ -49,6 +50,10 @@ def main():
                             campaign_spec_sha256=args.campaign_spec_sha256).validate()
         if args.gpu < 0:
             raise ValueError("GPU must be nonnegative")
+        if args.record_replay and (args.recipe != "optimization-v2" or args.protocol != "observations"
+                                  or args.frames != 8 or args.prefix_frames != 1 or args.checkpoint_every != 1
+                                  or methods != ("defect_guarded",) or args.prefix_cache_dir is not None):
+            raise ValueError("Replay demo requires v2 Guarded, 8 frames, prefix=1, checkpoint-every=1, no reused cache")
         if not args.upstream.is_dir() or not (args.upstream / "config/main.yaml").is_file():
             raise ValueError("upstream must be the pinned ActiveGS source directory")
         if not args.run_dir.is_absolute():
@@ -58,11 +63,11 @@ def main():
     if args.dry_run:
         print(json.dumps({"protocol": protocol.as_dict(), "methods": methods, "seeds": seeds,
                           "scene": args.scene, "run_dir": str(args.run_dir),
-                          "status": "plan_only_no_gpu_allocation"}, ensure_ascii=False, indent=2))
+                          "record_replay": args.record_replay, "status": "plan_only_no_gpu_allocation"}, ensure_ascii=False, indent=2))
         return
     from viewmend3d.benchmark import run_benchmark
     run_benchmark(args.upstream, args.run_dir, args.gpu, protocol, methods, seeds,
-                  scene=args.scene, prefix_cache_dir=args.prefix_cache_dir)
+                  scene=args.scene, prefix_cache_dir=args.prefix_cache_dir, record_replay=args.record_replay)
 
 
 if __name__ == "__main__":

@@ -265,6 +265,11 @@ def export(run, output, faces=80000, experiment=None):
                 "evaluation": metrics.get("evaluation"),
                 "plot_axis": "update_event" if "update_event" in metrics and metadata["protocol"].get("protocol", {}).get("mode") != "time" else "time",
                 "preview_note": "浏览器网格已简化；指标由原始完整网格计算。"}
+    from export_replay import export_replay
+    replay = export_replay(run, experiment, output, manifest)
+    if replay:
+        manifest["replay"] = replay
+        manifest["scope"] = "独立8帧过程演示，保存真实RGB-D与逐帧网格；额外记录与评估耗时，不纳入正式质量汇总。"
     encoded = json.dumps(manifest, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
     temp = output / "manifest.json.tmp"
     temp.write_text(encoded, encoding="utf-8")

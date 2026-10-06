@@ -243,16 +243,18 @@ def validate_job(payload, gpus):
 
 
 def parse_job(payload, gpus):
-    """Accept only the original demo or the frozen 60-event benchmark protocol."""
+    """Accept original, frozen benchmark, or a separate eight-frame replay demo."""
     if isinstance(payload, dict) and set(payload) == {"gpu", "budget"}:
         gpu, budget = validate_job(payload, gpus)
         return {"gpu": gpu, "budget": budget, "mode": "original"}
     if not isinstance(payload, dict) or set(payload) != {"gpu", "protocol", "method", "seed", "frames"}:
         raise ValueError("需要原始预算参数或完整的固定观测协议参数")
-    if (payload["protocol"] != "observations" or payload["method"] not in BENCHMARK_METHODS + ("suite",)
+    replay = payload["protocol"] == "replay"
+    allowed = ("defect_guarded",) if replay else BENCHMARK_METHODS + ("suite",)
+    if (payload["protocol"] not in ("observations", "replay") or payload["method"] not in allowed
             or type(payload["seed"]) is not int or payload["seed"] not in (0, 1, 2)
-            or type(payload["frames"]) is not int or payload["frames"] != 60):
-        raise ValueError("公平协议只支持 60 次更新、种子 0/1/2 和列出的算法")
+            or type(payload["frames"]) is not int or payload["frames"] != (8 if replay else 60)):
+        raise ValueError("正式入口固定60次更新；逐帧演示固定8次采集与Guarded v2；种子仅支持0/1/2")
     gpu, _ = validate_job({"gpu": payload["gpu"], "budget": 180}, gpus)
     spec = dict(payload, gpu=gpu, mode="benchmark", budget=180)
     if payload["method"] in V2_BENCHMARK_METHODS:
@@ -362,10 +364,13 @@ def environment(root, gpu, budget, run):
 def benchmark_command(root, job, env):
     """Launch the stable Python child directly, matching the shell entry point."""
     methods = ['confidence_nooracle', 'random_matched', 'defect'] if job['method'] == 'suite' else [job['method']]
+    replay = job.get('protocol') == 'replay'
     command = [env['ACTIVEGS_PYTHON'], str(root / 'scripts/activegs/run_benchmark.py'),
                '--upstream', env['ACTIVEGS_ROOT'], '--run-dir', env['RUN_DIR'], '--gpu', str(job['gpu']),
-               '--methods', *methods, '--seeds', str(job['seed']), '--frames', '60', '--prefix-frames', '20',
+               '--methods', *methods, '--seeds', str(job['seed']), '--frames', '8' if replay else '60', '--prefix-frames', '1' if replay else '20',
                '--protocol', 'observations', '--budget', '180', '--recipe', env.get('BENCHMARK_RECIPE', DEFAULT_CAMPAIGN)]
+    if replay:
+        command.extend(['--checkpoint-every', '1', '--record-replay'])
     if env.get('BENCHMARK_CAMPAIGN_SPEC_SHA256'):
         command.extend(['--campaign-spec-sha256', env['BENCHMARK_CAMPAIGN_SPEC_SHA256']])
     return command
@@ -398,7 +403,7 @@ def worker(root, job_path):
             runner = "run_benchmark.sh"
             methods = ",".join(BENCHMARK_METHODS[:3]) if job["method"] == "suite" else job["method"]
             env.update(BENCHMARK_METHODS=methods, BENCHMARK_SEEDS=str(job["seed"]),
-                       BENCHMARK_FRAMES="60", BENCHMARK_PREFIX="20", BENCHMARK_PROTOCOL="observations",
+                       BENCHMARK_FRAMES=str(job["frames"]), BENCHMARK_PREFIX="1" if job["protocol"] == "replay" else "20", BENCHMARK_PROTOCOL="observations",
                        BENCHMARK_BUDGET="180", TORCH_HOME=str(run.parent / "torch-cache"))
             if job.get("recipe") == "optimization-v2":
                 env.update(BENCHMARK_RECIPE=job["recipe"],
@@ -537,11 +542,13 @@ class Handler(BaseHTTPRequestHandler):
                 gpu, budget = spec["gpu"], spec["budget"]
                 if not (ROOT / ".envs/activegs/bin/python").is_file():
                     raise RuntimeError("服务器尚未配置 ActiveGS 环境")
-                identifier = datetime.now(timezone.utc).strftime("web-%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:6]
+                prefix = "web-replay-" if spec.get("protocol") == "replay" else "web-"
+                identifier = datetime.now(timezone.utc).strftime(prefix + "%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:6]
                 job = {**spec, "id": identifier, "record_interval": budget // 5,
                        "status": "starting", "started_unix": time.time(), "message": "准备执行原始 baseline"}
                 if spec["mode"] == "benchmark":
-                    job["message"] = "准备执行固定观测协议；前 20 次为共享 confidence 前缀"
+                    job["message"] = ("独立8帧演示：实际RGB-D与逐帧网格；不纳入正式质量统计"
+                                      if spec.get("protocol") == "replay" else "准备执行固定观测协议；前 20 次为共享 confidence 前缀")
                 job_path = ROOT / "runs/web-jobs" / f"{identifier}.json"
                 command = [sys.executable, str(Path(__file__).resolve()), "--worker", str(job_path)]
                 job["worker_argv"] = command

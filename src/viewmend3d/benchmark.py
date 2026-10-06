@@ -180,6 +180,9 @@ def acquire_event(gaussian_map, voxel_map, planner, simulator, recorder, seed, e
         raise RuntimeError("Actual observation pose differs from the selected view")
     sensor_seconds = time.perf_counter() - sensor_start
     frame = {name: value.to(gaussian_map.device) for name, value in frame.items()}
+    if getattr(recorder, "record_replay", False):
+        from .replay import record_observation
+        record_observation(frame, recorder.save_dir, event)
 
     def mapping():
         gaussian_map.update(frame)
@@ -240,6 +243,7 @@ def generate_prefix(cfg, protocol, seed, simulator, device, directory, context, 
     gaussian_map = GaussianMap(cfg.mapper.gaussian_map, device)
     voxel_map = VoxelMap(cfg.mapper.voxel_map, simulator.bbox, device)
     recorder = MissionRecorder(str(directory), cfg.experiment)
+    recorder.record_replay = bool(getattr(cfg.experiment, "record_replay", False))
     planner = DefectPlanner(cfg.planner, device, method="confidence_nooracle",
                             diagnostics_dir=directory / "diagnostics")
     steps, checkpoints = [], []
@@ -302,6 +306,8 @@ def run_branch(cfg, protocol, seed, method, simulator, device, prefix_path, pref
     for source in (prefix_path.parent / "map").iterdir():
         shutil.copyfile(source, destination / "map" / source.name)
     shutil.copyfile(prefix_path.parent / "initial_rgb.png", destination / "initial_rgb.png")
+    if getattr(recorder, "record_replay", False):
+        shutil.copytree(prefix_path.parent / "observations", destination / "observations")
     cfg_dump = OmegaConf.to_container(cfg, resolve=True)
     cfg_dump["planner"]["planner_name"] = method
     cfg_dump["experiment"].update(output_dir=str(destination.parents[4]), exp_id="benchmark", run_id=seed)
@@ -317,6 +323,9 @@ def run_branch(cfg, protocol, seed, method, simulator, device, prefix_path, pref
                            "prefix_camera_sha256": prefix_meta["camera_sha256"],
                            "refinement_post_processing": False if method == "refine_only" else True}
     experiment_protocol.update(recipe_metadata(protocol, method))
+    if getattr(recorder, "record_replay", False):
+        experiment_protocol["replay_recording"] = {"scope": "independent_visual_demo_not_formal_quality_sample",
+                                                  "actual_selected_view_frames": True, "extra_recording_io": True}
     atomic_json(destination / "protocol.json", experiment_protocol)
     atomic_json(destination / "checkpoints.json", checkpoints)
     if protocol.mode == "time" and recorder.t_mission >= protocol.seconds:
@@ -461,10 +470,14 @@ def validate_artifacts(destination):
 
 
 def run_benchmark(upstream, run_dir, gpu, protocol, methods, seeds, scene="replica/office0",
-                  prefix_cache_dir=None):
+                  prefix_cache_dir=None, record_replay=False):
     import sys
     upstream, run_dir = Path(upstream).resolve(), Path(run_dir).resolve()
     protocol.validate()
+    if record_replay and (protocol.recipe != "optimization-v2" or protocol.mode != "observations" or protocol.prefix != 1
+                          or protocol.checkpoint_every != 1 or protocol.observations != 8
+                          or methods != ("defect_guarded",) or prefix_cache_dir is not None):
+        raise ValueError("Replay demo fixes 8 observations, prefix=1, every-event checkpoints and Guarded")
     if protocol.recipe == "optimization-v2" and not set(methods) <= set(optimization_recipe(protocol.recipe)["methods"]):
         raise ValueError("A method is outside the fixed v2 recipe")
     if protocol.recipe == "optimization-v2" and scene != "replica/office0":
@@ -496,6 +509,8 @@ def run_benchmark(upstream, run_dir, gpu, protocol, methods, seeds, scene="repli
         cfg.mapper.gaussian_map.optimization_steps = protocol.as_dict()["mapping_optimizer_steps_per_event"]
         cfg.scene.has_missing_surface = False
         cfg.experiment.record_rgbd = False
+        if record_replay:
+            OmegaConf.update(cfg, "experiment.record_replay", True, force_add=True)
         cfg.experiment.record_global_path = True
         cfg.experiment.budget = protocol.seconds
         if protocol.recipe == "optimization-v2":

@@ -12,6 +12,7 @@ export const METHOD_EXPLANATIONS = {
 };
 
 export function runCategory(id, method) {
+  if (id.startsWith('web-replay-')) return '独立演示 · 8帧过程回放';
   const v2 = [
     ['heldout_observations', 'v2 · 留出 · 60次观测'], ['heldout_time', 'v2 · 留出 · 180秒任务预算'],
     ['development_observations', 'v2 · 开发 · 60次观测'], ['development_time', 'v2 · 开发 · 180秒任务预算'],
@@ -26,6 +27,7 @@ export function runCategory(id, method) {
 }
 
 export function budgetExplanation(data) {
+  if (data.protocol?.replay_recording) return '独立8帧演示，初始1帧后使用Guarded v2选点；每帧保存RGB-D与网格，不计入正式质量统计。';
   const definition = data.protocol?.protocol || data.protocol || {};
   if (!data.method_id || data.method_id === 'confidence') return '原作者任务时间预算；候选真值掩码开启，随机种子未固定。';
   const time = ['time', 'mission_time'].includes(definition.mode) || definition.budget_type === 'mission_time';

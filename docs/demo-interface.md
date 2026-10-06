@@ -1,5 +1,7 @@
 # ViewMend3D 重建实验台
 
+新增[采集 → 选点 → 补拍过程回放](capture-replay.md)：独立8帧演示显示实际RGB-D、下一视角位置/朝向与候选评分，以及本帧采集前后的保存网格。历史实验无逐帧记录时明确提示缺失。启动面板可选择“逐帧演示 · 8次采集”；该演示不加入正式质量汇总。
+
 浏览器界面展示已完成的 **ActiveGS confidence + Replica office0**、24份v1正式公平实验及v2四组24份正式结果，支持启动原作者流程、v1公平方法或v2有界几何奖励方法的新实验。v1未取得稳定质量提升；v2五阶段27分支已完成导出与fresh审计，留出均值局部改善，但种子/Accuracy等权衡仍未稳定。全部结果见[v1报告](reproduction/optimization-v1-results.md)和[v2报告](reproduction/optimization-v2-results.md)，协议见[受控实验说明](controlled-experiments.md)。
 
 ## 第一次打开，按这个顺序读
