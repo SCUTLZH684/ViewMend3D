@@ -17,6 +17,8 @@ v2的164项Linux CPU检查、真实状态读写与共享启动锁验证、固定
 
 已有中文浏览器界面：保留24份v1正式结果，新增v2四组独立汇总及真实网格入口，展示分阶段回放、采集轨迹、热图、指标与历史结果。支持原始、公平和v2固定评分方法的新实验入口，以及v1/v2计划状态。直接Python子进程启动器已通过独立真实HTTP请求→GPU重建→60次观测→导出→浏览器显示验收，详见[发布与验收记录](docs/reproduction/evidence/optimization-v2-publication-verification.json)。使用服务器和SSH转发访问，见[界面说明](docs/demo-interface.md)。场景、地图和三维产物留在服务器；公开指标与审计元数据随仓库提供。
 
+首次使用可按“项目四步闭环 → 真实网格回放 → 四项指标示意与单位 → v2四组对照 → 启动新实验”阅读。界面明确区分单次保存阶段、同种子配对清单与正式多种子统计，每个v2种子可切换基线/主方法网格；指标写明距离误差与覆盖率的含义和改善方向。解释型界面已通过真实桌面、390 px手机与回放联动核查，数据与质量结论保持不变，截图和验证范围见[界面说明](docs/demo-interface.md)。
+
 ## clone 后在 CPU 复现报告与图表
 
 可信的[v2完整最终分析](docs/reproduction/evidence/optimization-v2-final-analysis.json)只含指标、成本、诊断信号和来源元数据，原字节SHA256为 `541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd`。无需下载场景或占用GPU即可复现统计与图表；图表需要Matplotlib，去掉 `--plots` 时发布工具仅依赖Python标准库。输出目录必须从未存在。
