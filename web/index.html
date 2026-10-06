@@ -16,7 +16,7 @@
     <a class="nav active" href="#workspace"><span>◈</span> 重建实验台</a>
     <a class="nav" href="https://github.com/SCUTLZH684/ViewMend3D/blob/main/docs/reproduction/activegs-office0.md" target="_blank" rel="noopener"><span>▤</span> 复现记录 <small>↗</small></a>
     <a class="nav" href="https://github.com/SCUTLZH684/ViewMend3D" target="_blank" rel="noopener"><span>⌘</span> 项目仓库 <small>↗</small></a>
-    <div class="project-note"><span class="tiny-label">当前阶段 · 03</span><strong>v2 完整实验已复核</strong><p>27 分支完成。留出平均完整度有小幅改善，个别种子仍退化。</p><div class="mini-progress"><i></i></div><small>下一步：重复性与奖励作用验证</small></div>
+    <div class="project-note"><span class="tiny-label">当前实验结论</span><strong>v2 完整实验已复核</strong><p>27 分支完成。留出漏建距离均值小幅下降，个别种子仍退化。</p><div class="mini-progress"><i></i></div><small>下一步：重复性与奖励作用验证</small></div>
     <div class="sidebar-bottom"><span class="online-dot" id="connection-dot"></span><span id="connection-label">连接实验服务…</span></div>
   </aside>
   <main id="workspace">
@@ -26,7 +26,7 @@
       <nav class="read-nav" aria-label="界面阅读顺序"><a href="#project-intro">① 我们在做什么</a><a href="#reconstruction">② 看重建回放</a><a href="#metric-guide">③ 读懂指标</a><a href="#v2-results">④ 比较方法</a><a href="#launch-panel">⑤ 运行新实验</a></nav>
       <section class="panel project-intro" id="project-intro" aria-label="项目目标与闭环流程">
         <div class="intro-heading"><div><h2>优化的核心：下一张 RGB-D 应该在哪里拍？</h2><p>输入是彩色图、深度图和相机位姿；程序逐次更新三维地图，再决定下一步的相机位置与朝向。我们改进的是第 3 步的视角评分。</p></div><span class="intro-status">已验证 Replica · office0</span></div>
-        <ol class="workflow"><li><span class="workflow-step">01 · 观测</span><strong>采集一帧 RGB-D</strong><p>RGB 是彩色图，D 是深度图。Habitat 在选定位置模拟相机拍摄。</p></li><li><span class="workflow-step">02 · 建图</span><strong>更新三维地图</strong><p>用已采集图像和位姿，更新高斯表面与体素地图。</p></li><li class="focus-step"><span class="workflow-step">03 · 我们的改进</span><strong>给下一视角打分</strong><p>从当前地图生成候选，比较潜在补充信息和移动代价。</p><span class="step-tag">Confidence → 有界几何奖励</span></li><li><span class="workflow-step">04 · 闭环</span><strong>移动、再采集</strong><p>选中视角后才生成新的 RGB-D，回到第 2 步，直到用完预算。</p></li></ol>
+        <ol class="workflow"><li><span class="workflow-step">01 · 观测</span><strong>采集一帧 RGB-D</strong><p>RGB 是彩色图，D 是深度图。Habitat 在 Replica 房间场景内模拟拍摄。</p></li><li><span class="workflow-step">02 · 建图</span><strong>更新三维地图</strong><p>用已采集图像和位姿，更新高斯表面与体素地图。</p></li><li class="focus-step"><span class="workflow-step">03 · 我们的改进</span><strong>给下一视角打分</strong><p>从当前地图生成候选，比较潜在补充信息和移动代价。</p><span class="step-tag">Confidence → 有界几何奖励</span></li><li><span class="workflow-step">04 · 闭环</span><strong>移动、再采集</strong><p>选中视角后才生成新的 RGB-D，回到第 2 步，直到用完预算。</p></li></ol>
         <div class="workflow-note"><strong>保存后如何验证？</strong><span>地图 → 三角网格 → 与 Replica 参考网格比较 → 得到下方四项几何指标。网页回放保存的检查点，运行进度在右侧单独显示。</span></div>
         <details class="method-intro"><summary>Confidence 基线和我们的 v2 有什么区别？</summary><div class="method-intro-grid"><p><strong>Confidence · 公平基线</strong>优先考虑未探索区域、地图置信度和移动代价。它是我们比较改进是否有效的参考方法。</p><p><strong>Guarded v2 · 固定主方法</strong>保留基线分数，再加少量有上限的几何不一致奖励，希望补足当前地图。已完成四组对照，平均指标有局部改善，但存在退化，仍需验证奖励的实际作用。</p></div><p class="intro-boundary">公平规划不读取候选真值 RGB-D、掩码或网格误差；各方法共享场景包围盒先验。原作者流程保留候选真值掩码，独立标识。多种子留出仍是同一 office0，尚未验证新场景。</p></details>
       </section>
