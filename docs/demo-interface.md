@@ -70,6 +70,18 @@ ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:8765:127.0.0.1:8765 JM-New-Outsi
 
 ![v1历史汇总：固定观测与配对差](images/v1-results-interface.png)
 
+### v2 发布与直接启动器验收
+
+2026-10-06，在提交 `fa19eeb984af2a6a5fd8cdbe7d6b3430325468b1` 上完成新入口验收。原 Shell 会在相同 PID 下切换成 Python，令登记的 argv 与实际进程不同；基准入口改为直接启动参数等价的 Python 子进程。四组合的真实 Shell/直接调用参数与环境等价检查、真实 Linux 进程身份检查及26项后端检查通过。
+
+独立任务 `web-20261006T091803Z-c6444d` 在 admission 时的 GPU 1 仅占19 MiB、利用率0%。实际 worker 与 benchmark 子进程的 PID/starttime/argv 登记均匹配；完成60观测、600步优化、20/40/60三个检查点、完整40条后缀诊断及三维导出。122项输入指纹重新核对不变，未来候选观测调用为0，worker/benchmark/export均退出。该任务与此前成功的入口验收和正式27分支分别保留；不增加正式质量样本。详见[独立真实产物验收](reproduction/evidence/optimization-v2-web-launch-verification.json)。
+
+浏览器实际核对四个独立组、逐seed退化、14项成本与信号、v1/v2完成状态以及真实结果按钮。新的手动任务网格、轨迹和completed可见；页面错误为0。390px布局无整页横向溢出，表格在卡片内横向滚动，验证后恢复桌面尺寸。Windows真实新clone开启autocrlf后，完整分析SHA不变，CPU生成的summary与服务器及仓库字节一致；这些检查证明发布和入口行为，不证明质量提升。
+
+![v2留出时间组的独立汇总](images/v2-results-interface.png)
+
+![直接启动器的真实网格、采集轨迹与完成状态](images/v2-direct-launch-interface.png)
+
 公开统计随clone提供，可在没有大型地图时读取；[v2完整最终分析](reproduction/evidence/optimization-v2-final-analysis.json)仅含指标、成本、诊断与来源元数据，原SHA256为 `541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd`。可用发布工具在CPU上复现报告与图，命令见[受控实验说明](controlled-experiments.md)。真实三维预览仍需服务器上的 `runs/web-assets/`。成本展开表包含任务、重建墙钟、规划、建图、观测、路径与Torch峰值，不能把更少观测伴随的低耗时写成等质量加速。留出质量局部均值改善与seed/Accuracy退化同时保留，不因果归为奖励收益。
 
 后端测试不依赖 GPU：

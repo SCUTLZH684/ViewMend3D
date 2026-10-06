@@ -6,6 +6,7 @@
 web/vendor/*.js -whitespace
 # Preserve the audited v2 JSON bytes across Windows and Linux clones.
 docs/reproduction/evidence/optimization-v2-*.json text eol=lf
+docs/reproduction/evidence/optimization-v2-*.svg text eol=lf -whitespace
 web/data/optimization-v2-summary.json text eol=lf
 web/v2-results*.js text eol=lf
 web/v2-results.css text eol=lf

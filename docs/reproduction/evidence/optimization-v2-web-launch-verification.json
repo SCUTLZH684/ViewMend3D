@@ -1,0 +1,665 @@
+{
+  "version": "viewmend-private-direct-web-independent-review-v1",
+  "status": "passed",
+  "generated_at": "2026-10-06T09:25:26.299253+00:00",
+  "job_id": "web-20261006T091803Z-c6444d",
+  "formal_campaign_member": false,
+  "formal_quality_runs_unchanged": true,
+  "quality_values_extracted_or_reported": false,
+  "source_identity": {
+    "project_commit": "fa19eeb984af2a6a5fd8cdbe7d6b3430325468b1",
+    "project_source_sha256": "7e6dba993c6bad26d7129de8777283e529b286462c4a45f6156d4c626461f99d",
+    "upstream_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+    "upstream_source_sha256": "2e2c5cfd6c8cab123da58ddc420fd588d3f08c6b2f6ed07cfce2363079a5fc0f",
+    "upstream_diff_sha256": "dae6df308d4b27016270ae5ed40019e0b61d75b930223925cf262361b75ffeba"
+  },
+  "source_versions": {
+    "activegs_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+    "upstream_python_sha256": "7a756b3a7a798c6e22ac170e84c24aa60e24ecf170327bc7e753d9787aa62766",
+    "viewmend_python_sha256": "f4e3c8f560e10758a7caa276b4a748d6740f779ea4d887381e6e0abf3c3546c0",
+    "torch": "2.1.2+cu121",
+    "numpy": "1.26.4",
+    "trimesh": "4.4.1",
+    "open3d": "0.17.0"
+  },
+  "source_commit_expected": "fa19eeb984af2a6a5fd8cdbe7d6b3430325468b1",
+  "source_commit_verified": true,
+  "method": "defect_guarded",
+  "seed": 0,
+  "gpu": 1,
+  "recipe": "optimization-v2",
+  "recipe_sha256": "13dc1b2b721d3129b74e3046bd02731cd8c60950c2ee45f8d6842b0e692cd745",
+  "campaign_spec_sha256": "d3802aa30065a1a38c25dcd0a742440cc0440b8791519c0cf2a489bbfd53f541",
+  "status_checks": {
+    "job": "completed",
+    "benchmark": "completed",
+    "ledger_child_exit_code": 0,
+    "child_launching": false
+  },
+  "registered_handles": {
+    "worker": {
+      "registered": true,
+      "saved_start": {
+        "pid": 29643,
+        "starttime": "17118786"
+      },
+      "live": false,
+      "state": "exited"
+    },
+    "child": {
+      "registered": false,
+      "live": false
+    },
+    "http_registration": {
+      "registered": true,
+      "saved_start": {
+        "pid": 29643,
+        "starttime": "17118786"
+      },
+      "live": false,
+      "state": "exited"
+    }
+  },
+  "historical_child_handles_current_exit_check": {
+    "benchmark": {
+      "saved_start": {
+        "pid": 29646,
+        "starttime": "17118805"
+      },
+      "live": false,
+      "state": "exited"
+    },
+    "export": {
+      "saved_start": {
+        "pid": 30123,
+        "starttime": "17129521"
+      },
+      "live": false,
+      "state": "exited"
+    }
+  },
+  "registered_direct_benchmark_live_capture": {
+    "provider": "root contemporaneous inspection; current exit independently checked",
+    "input_path": "work/v2-web-runtime-prep/direct-live-inspection-20261006.json",
+    "sha256": "d6a99cf98760b09f31121c2df1a7c6d2714665a378f5d54ffcec86cf7c90d14e"
+  },
+  "actual_counts": {
+    "observations": 60,
+    "events": 60,
+    "post_prefix_diagnostics": 40,
+    "checkpoint_ids": [
+      20,
+      40,
+      60
+    ],
+    "camera_counts": [
+      20,
+      40,
+      60
+    ],
+    "optimizer_steps": 600,
+    "branch_observation_calls": 40,
+    "blocked_future_observation_calls": 0,
+    "exports": 1,
+    "trajectory_positions": 1133
+  },
+  "fresh_artifact_audit_passed": true,
+  "read_run_audit_passed": true,
+  "complete_guarded_diagnostic_audit_passed": true,
+  "actual_export_pose_rotation_intrinsics_and_preview_passed": true,
+  "served_manifest_matches_disk": true,
+  "guarded_signals": {
+    "validated_events": 40,
+    "signal_active_events": 40,
+    "discriminative_events": 40,
+    "reward_applied_events": 40,
+    "selection_changed_events": 4,
+    "fallback_counts": {
+      "weight_zero": 0,
+      "base_all_zero": 0,
+      "single_reachable": 0,
+      "weak_geometry": 0,
+      "constant_geometry": 0
+    },
+    "maximum_baseline_regret": 0.0004117358475923538,
+    "baseline_regret_sum": 0.0008077993988990784,
+    "utility_seconds": 12.6337253760139
+  },
+  "mesh_counts": [
+    {
+      "checkpoint": 20,
+      "original": {
+        "vertices": 306420,
+        "faces": 575471
+      },
+      "preview": {
+        "vertices": 54406,
+        "faces": 80000
+      }
+    },
+    {
+      "checkpoint": 40,
+      "original": {
+        "vertices": 306165,
+        "faces": 591078
+      },
+      "preview": {
+        "vertices": 48511,
+        "faces": 79999
+      }
+    },
+    {
+      "checkpoint": 60,
+      "original": {
+        "vertices": 302117,
+        "faces": 591891
+      },
+      "preview": {
+        "vertices": 44998,
+        "faces": 80000
+      }
+    }
+  ],
+  "actual_file_inputs": {
+    "/workspace/ViewMend3D/setup/v2-web-runtime-prep/once_web_acceptance_direct.py": {
+      "bytes": 22194,
+      "sha256": "e11a1dcd50fe3b6c5b3c367a3760e9c0c78e932f427a343ccd6d09a81e3506dc"
+    },
+    "/workspace/ViewMend3D/runs/web-jobs/web-20261006T091803Z-c6444d.json": {
+      "bytes": 1542,
+      "sha256": "f51c73650a5e424ac78960de492c8fefb8e011f3cbf9cfcbd9d5795062043387"
+    },
+    "/workspace/ViewMend3D/runs/web-jobs/web-20261006T091803Z-c6444d.process.json": {
+      "bytes": 409,
+      "sha256": "4e097efbf1b5ba68473e11bdec1376157b060281b1c9f788fcf7772d13713bf9"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/benchmark-summary.json": {
+      "bytes": 8725,
+      "sha256": "d588a6bbab1f8625f22e382c45baa5ff902e709e7274e6cd733e0f512c4f8c98"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/protocol.json": {
+      "bytes": 5337,
+      "sha256": "f8d60bf42ea9c85ee890f5ac042af4c41ff1806c0827b28e4dacc8fd5c5cf037"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/final_result.json": {
+      "bytes": 2339,
+      "sha256": "f31fd8a675c774f26c25a93fd5203353047c3dedc81294bd2d3ed81dc68b50c5"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/record_info.txt": {
+      "bytes": 121,
+      "sha256": "ae51d6d337fe8ae21f25a37535b3e6dd5fa827bdad7cf7a3452795172db72b61"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/map_020.th": {
+      "bytes": 43634236,
+      "sha256": "6bc2c1b2487efaae08b57fa2ab43b8ba47f4d598e25c89a9ca5725d21fe234a4"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/cameras_020.pkl": {
+      "bytes": 4596,
+      "sha256": "e110541d45c9d7c1deb7893d6b901ee3f0303194172f1f3014c699e9b508f6cc"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/mesh_020.ply": {
+      "bytes": 15754732,
+      "sha256": "a2243ae8fa8dfe2e741eccbde3ac6d3fd4be017f4ec7f68b5f1cf5daf9a74b8b"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/map_040.th": {
+      "bytes": 42037308,
+      "sha256": "6e40a0568365f1775942d8777134ede18418a076e6f8c9760eb4a1e17b9bea44"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/cameras_040.pkl": {
+      "bytes": 9176,
+      "sha256": "55f5b78036091cff163e1b523588c70b0f37af3253a530d296135c92d643daee"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/mesh_040.ply": {
+      "bytes": 15950738,
+      "sha256": "797033892e62dc9a8ce0e3f2e4f3b421b15559fd360f30536b55e4fb3d1fe7db"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/map_060.th": {
+      "bytes": 39300924,
+      "sha256": "b2f7c916b954fc396a63c2fbf270b3f9cea042626e3f423bbe0451ee790eef21"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/cameras_060.pkl": {
+      "bytes": 13756,
+      "sha256": "d50d6987da91b5e1df6c4a2e192f10ac313a23417401dcf530164b8cd27d4a5f"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/map/mesh_060.ply": {
+      "bytes": 15852011,
+      "sha256": "2114269b79e035610093c665d121c0c3d988f906482b1f9e79084f228a5a491b"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/global_path.pkl": {
+      "bytes": 1865952,
+      "sha256": "4cec89ec780999b22abe3e292d38fc00517a52a987e8a756c94190f101fc1697"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/run-summary.json": {
+      "bytes": 1164,
+      "sha256": "fe05f57ac8c03982644d57c74788a860a6aaf71c0bac9b18353b8b9b02894422"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/steps.json": {
+      "bytes": 18635,
+      "sha256": "9f9da085551f9cc8456763975b445efa709197b30cd8bcdbb09747b4d3faed7c"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/checkpoints.json": {
+      "bytes": 396,
+      "sha256": "4c656ba9abd866c7a4ec722af00bc42d40b6607db23e880788d07535036c7bfa"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/exp_config.json": {
+      "bytes": 3193,
+      "sha256": "31b65c1e46bb5902f2ac25d1ceab13b6f9869662dc288f554bcad58a7bbfe643"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/artifact-check.json": {
+      "bytes": 2790,
+      "sha256": "a079b1083f40fa2c9538250170b73840407e181b43c70c282cfd759aa772e8ca"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0021.json": {
+      "bytes": 86725,
+      "sha256": "593ba13393f4af9899f2f502e9fb041aa5364af774cd9361b11ccb5f44da935a"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0022.json": {
+      "bytes": 86357,
+      "sha256": "c34b403104c4543838173cfde2059fea992156300c2ff077b598fde692d74c42"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0023.json": {
+      "bytes": 86807,
+      "sha256": "939cea61e39a249fd7163a484c378b5b33b4428c0b381e382a9676edea70d7d6"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0024.json": {
+      "bytes": 86535,
+      "sha256": "5bff1b864b2d4124fcff7eb0cc2dd3f6380925db74dffaa72b4b036a22e8f328"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0025.json": {
+      "bytes": 86778,
+      "sha256": "53704050e8f998ac7faeb1c3417212682cb5b85d2c201b80257890bbc3f83055"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0026.json": {
+      "bytes": 86660,
+      "sha256": "7a385c25e5e8713f4b3c11804fc149cce44f8c626eed12697589ec4a1161a0f8"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0027.json": {
+      "bytes": 86723,
+      "sha256": "0a8a67f500ca2f87eeb225b5cfd0f3f56833f67fab588cb151f6d87be9db653f"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0028.json": {
+      "bytes": 87222,
+      "sha256": "169f3421b4abb42a05083c6a0d304b2e13e4302641ab59efe669bb612f1b9d3a"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0029.json": {
+      "bytes": 87300,
+      "sha256": "71465014c4464f8d34dd2887de5f960c1b15d57e599829988fe9e216860a57f4"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0030.json": {
+      "bytes": 87432,
+      "sha256": "59860b2b77d09b268c2aa4750815871e30bb25855413fc287098f5aa7d7bf03d"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0031.json": {
+      "bytes": 86669,
+      "sha256": "cf687055435be54e5cd446a3de1bd28f0867ef1fb1426f20e051ba89045bda59"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0032.json": {
+      "bytes": 86932,
+      "sha256": "4d89575b41537e25e2f11dbbcfb05d6ba8c0bfbc316775fcac7952f7e558e76a"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0033.json": {
+      "bytes": 86865,
+      "sha256": "acc2f13684505b1c9655ccc393ca75d2aa5e675e33a3ab5fb37f7f9fa7150354"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0034.json": {
+      "bytes": 86965,
+      "sha256": "70e67a55d87856dbaa56223ffecce9e33e48eee303d271b6bf80fa81f6c21971"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0035.json": {
+      "bytes": 86808,
+      "sha256": "c9cb5c22c13ef2cf9843c0a33fc83bd98cbfa78f01fc9192f23e6a875ad29f45"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0036.json": {
+      "bytes": 86886,
+      "sha256": "a65978b81ddd0f6b96a2f26a03ec799ed2e46ddb31bf26e7405e524c911ccb50"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0037.json": {
+      "bytes": 86574,
+      "sha256": "3cbc04e20fe711b29ce8e967391df26bf15cfdf1146f810fa80298528d03aee4"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0038.json": {
+      "bytes": 86410,
+      "sha256": "1a640ce858e7ac5eb9117cb15ef968a16bb52dd56f534cc0a0f88030f7089bed"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0039.json": {
+      "bytes": 86290,
+      "sha256": "80b06fd55f4019fb6a2e989df0f14dc3c0a5f0e841d2c88c76e4646f66f5ad3c"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0040.json": {
+      "bytes": 86443,
+      "sha256": "3234d8754922fe4bb1ad0a7ee0bd59f30ddf1573d530918dfae558b94f6d12c4"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0041.json": {
+      "bytes": 86684,
+      "sha256": "8d7b0913a8cff39a3da28e49dcd1d7ef09383b9a0a1d2579e27934d27afaf02c"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0042.json": {
+      "bytes": 87189,
+      "sha256": "8dc305bdad28adf25716be03dd7ef5c2b74fa75a7c7b55a6a9751d8cbec41887"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0043.json": {
+      "bytes": 86854,
+      "sha256": "4523a8000c2e825decc48251b53098b958b4011699782d210c860221d0b2cb98"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0044.json": {
+      "bytes": 87100,
+      "sha256": "5cd5bd150d340e5d0cab350ff99a66ca6f2f8e32807a95cc59ccf0bdeff85142"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0045.json": {
+      "bytes": 86987,
+      "sha256": "f631b591a0da0a357683ea142989d758c3eefc5c9d801482601449363d89194f"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0046.json": {
+      "bytes": 86948,
+      "sha256": "224d21503d73ac5795fc98f328dc09a61557cea364c68290fb3ddb23694bd49e"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0047.json": {
+      "bytes": 86887,
+      "sha256": "4399b8b44d9ff505e4626b7b1388287a2b5c932840a62d961d4057b9ac228534"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0048.json": {
+      "bytes": 86459,
+      "sha256": "d4d0639d98361f008b72be1bd3ab5a5d924d1d88b7ee524120f40034e6a2d13b"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0049.json": {
+      "bytes": 86600,
+      "sha256": "ede4bf78f4873b3646fa4fa2b5a00d94032c774304684c0050545ba8dda0c0a7"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0050.json": {
+      "bytes": 86794,
+      "sha256": "fa309f60742b3440a1a2242d8da9e731234130cf20bac668a20a584c093d6fc9"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0051.json": {
+      "bytes": 86871,
+      "sha256": "514a33aab73500f16773ee76101e142ba3eacff618d2b937c7938a3033600c2f"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0052.json": {
+      "bytes": 86751,
+      "sha256": "49fa2fbf8efe83498d3fa1b2259e26fe050a718bd9151061bcb61c4103539261"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0053.json": {
+      "bytes": 86210,
+      "sha256": "77fedb54a819c737b86cf4c870be8b92286709fe7dfe01d451287aac6bbe8b47"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0054.json": {
+      "bytes": 86200,
+      "sha256": "98ab59788ce647b62d82bb39e9250d735a814362ba048e9a3412a547555de105"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0055.json": {
+      "bytes": 87228,
+      "sha256": "5efdd5163bdfb110a78a190605ca5f0aebb29d928ee0f719ebb66cfda7850037"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0056.json": {
+      "bytes": 86811,
+      "sha256": "8e0458c1dbdc82f211889fd74f81eff97fb24f3b66d24276f4f3733d58bdf325"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0057.json": {
+      "bytes": 86955,
+      "sha256": "9cf4c83d5d1e23f674ea9a3f43f47736671e60be3a9c0d74be20dbbde88ba9d6"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0058.json": {
+      "bytes": 86858,
+      "sha256": "9f15ab1ce3d18af8d16a297a3e31d8268b36be9a3597f23ec568e98327e06a35"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0059.json": {
+      "bytes": 86610,
+      "sha256": "cd9369ba5575e48253b53549c18e90bcd96b5e462cbdec4db1e3ca4cd3c38cf5"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/experiments/benchmark/replica/office0/defect_guarded/0/diagnostics/step_0060.json": {
+      "bytes": 87304,
+      "sha256": "0061b1e4f5f09b8dc5a6a46a1488225c04fe64b8a63df87d5ba59a52cec08e24"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/common-prefix/seed_0/prefix.json": {
+      "bytes": 12509,
+      "sha256": "1d08302dcfe98d7219059bd55f95b0b341e6640bdb017f4b322cfd57bdfd61de"
+    },
+    "/workspace/ViewMend3D/runs/web-20261006T091803Z-c6444d/common-prefix/seed_0/prefix.th": {
+      "bytes": 144002956,
+      "sha256": "e81c3163241a55186ba6c5ec5f94d61b158192766e1e6660b12b690bdd5c39a9"
+    },
+    "/workspace/ViewMend3D/external/active-gs/data_generation.py": {
+      "bytes": 5233,
+      "sha256": "b9255f189b9f67b82f51261036577976f1e35fea557fc504e04ade806c123eba"
+    },
+    "/workspace/ViewMend3D/external/active-gs/eval.py": {
+      "bytes": 2488,
+      "sha256": "dacd39d4c51368f77294dff469d3f5dce133c8517f66ca7b1ff878694ab95a51"
+    },
+    "/workspace/ViewMend3D/external/active-gs/main.py": {
+      "bytes": 2635,
+      "sha256": "c3eed2ec7a198365a70dcc61601bc58e390428378a4d3d47d2d55d4f5c592fb7"
+    },
+    "/workspace/ViewMend3D/external/active-gs/mapping/__init__.py": {
+      "bytes": 123,
+      "sha256": "4a4247a50feeb99afcb6c205b08ee6e56215c4fd14fcb777ae55c6a609ded52e"
+    },
+    "/workspace/ViewMend3D/external/active-gs/mapping/gaussian_map.py": {
+      "bytes": 20856,
+      "sha256": "fdbf144c86bc4b5fd7a6edf8337704eda26cccabf1a80f3a86f8350f594c85d3"
+    },
+    "/workspace/ViewMend3D/external/active-gs/mapping/mapper.py": {
+      "bytes": 4394,
+      "sha256": "ce0ada7c953e0333e0b7699c331f4b72406906662cda041e650c69f16d9fe0f3"
+    },
+    "/workspace/ViewMend3D/external/active-gs/mapping/utils.py": {
+      "bytes": 10076,
+      "sha256": "f8aad6adbf3b1b03987cbc2e0362ccca04072a6a7a300c98958a8cb89ed8c2db"
+    },
+    "/workspace/ViewMend3D/external/active-gs/mapping/voxel_map.py": {
+      "bytes": 22335,
+      "sha256": "f2901d9e5b7fbe6669e2f6af1e24d41b89e0771e740fa555c3fbad79e92d7e15"
+    },
+    "/workspace/ViewMend3D/external/active-gs/mesh_generation.py": {
+      "bytes": 3864,
+      "sha256": "e4e68f9ba50fb02b91276a4c2ed432248978c3646531a8fd996cad53dbdd5548"
+    },
+    "/workspace/ViewMend3D/external/active-gs/planning/__init__.py": {
+      "bytes": 482,
+      "sha256": "cdc2fb0bfc57008e21026054aef796370430d48fe46a9d8c01ccaac1fb563673"
+    },
+    "/workspace/ViewMend3D/external/active-gs/planning/confidence.py": {
+      "bytes": 4145,
+      "sha256": "61e05e453f6db344c85d4051d74488efd35a95f0937f9e3b54708ff7b83e3619"
+    },
+    "/workspace/ViewMend3D/external/active-gs/planning/exploration.py": {
+      "bytes": 3363,
+      "sha256": "93a470e59f43c96c14fb1c3896922ac85e2957a7ab3ae4cce7f0dded7a256621"
+    },
+    "/workspace/ViewMend3D/external/active-gs/planning/plan_base.py": {
+      "bytes": 8795,
+      "sha256": "291252ced3205111f70706476258a5061689ad3727ccb6cc9c4d1e7af56e1b25"
+    },
+    "/workspace/ViewMend3D/external/active-gs/planning/random.py": {
+      "bytes": 433,
+      "sha256": "31da6aa6c91eb10d3303fffcb186358b3aa2219c235661c67b47c105d2bff05d"
+    },
+    "/workspace/ViewMend3D/external/active-gs/planning/utils.py": {
+      "bytes": 13138,
+      "sha256": "db0ac5c4c9f06780ca0979ed20028ac1e397a29ff9ce7e3e4daf0f2334d1bfca"
+    },
+    "/workspace/ViewMend3D/external/active-gs/simulator/__init__.py": {
+      "bytes": 133,
+      "sha256": "9eb679c615487b3352e5df47f0bfc9e59a7eb80e2da241fe827ccd2df221091a"
+    },
+    "/workspace/ViewMend3D/external/active-gs/simulator/habitat_simulator.py": {
+      "bytes": 5142,
+      "sha256": "11f6b8e3218c932db1a3b3e3559299a98cee11349aa4fe1c93be0d0015596a75"
+    },
+    "/workspace/ViewMend3D/external/active-gs/simulator/utils.py": {
+      "bytes": 1294,
+      "sha256": "1e34381b92010c52aaf47f83f4b09e199ece42a6a99603f80c1c65012973ebfd"
+    },
+    "/workspace/ViewMend3D/external/active-gs/utils/common.py": {
+      "bytes": 11041,
+      "sha256": "43163782a733ef2acaf95b06d5943716e31d2978e22a757de6dddf8718e63a79"
+    },
+    "/workspace/ViewMend3D/external/active-gs/utils/evaluation_tool.py": {
+      "bytes": 6427,
+      "sha256": "f0b508bac669fcef35de3dd8c82968b52da3148dc3dfbad0b8a1c49d0d0735bd"
+    },
+    "/workspace/ViewMend3D/external/active-gs/utils/operations.py": {
+      "bytes": 31294,
+      "sha256": "4b10f7785c56c838b8626783999debc660209a5e9cab5e275c266f087da4f88a"
+    },
+    "/workspace/ViewMend3D/external/active-gs/utils/plot.py": {
+      "bytes": 4785,
+      "sha256": "5bcb62040fbc76fb94647a0c58d6eafcc41b0fc83f84c08febdc5d1f6b6ff411"
+    },
+    "/workspace/ViewMend3D/external/active-gs/visualization/gl_render/__init__.py": {
+      "bytes": 42,
+      "sha256": "505a414a4c9fec06168d99efde430e9ff3abfa8def8455552db5cc0add630e58"
+    },
+    "/workspace/ViewMend3D/external/active-gs/visualization/gl_render/render_ogl.py": {
+      "bytes": 4398,
+      "sha256": "baca30895f7d2e0daca83a7621fb03ff05b290c485617f8b2b3f1f56f353be4e"
+    },
+    "/workspace/ViewMend3D/external/active-gs/visualization/gl_render/util.py": {
+      "bytes": 8947,
+      "sha256": "0f2fb91603e9dd145515850617c8eba78076b1476b9640010837dda0e007408b"
+    },
+    "/workspace/ViewMend3D/external/active-gs/visualization/gl_render/util_gau.py": {
+      "bytes": 533,
+      "sha256": "0ed1524f382bfb46f0246dc5bc02de90d9572a238f6247d837c955bcc32f42f1"
+    },
+    "/workspace/ViewMend3D/external/active-gs/visualization/gui.py": {
+      "bytes": 40445,
+      "sha256": "249244c8a40682d52a40af2aae1aa433fbc6bccb771e4a4a76ef039384d6d80a"
+    },
+    "/workspace/ViewMend3D/external/active-gs/visualization/gui_utils.py": {
+      "bytes": 8562,
+      "sha256": "533d07eb50ffaed17f74d591d0223c83b9ce22269f298f8a8e62b9fcee5cb333"
+    },
+    "/workspace/ViewMend3D/external/active-gs/visualize.py": {
+      "bytes": 2625,
+      "sha256": "067de47b320785506b9e8e267e4e8c471708b47ee7fc8f07cd13b83bbf061411"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/__init__.py": {
+      "bytes": 80,
+      "sha256": "7cef8650fb5b5704ab3ebd8f5b89c9cdf4bbf768617df6efeb987b720c1d963d"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/benchmark.py": {
+      "bytes": 32054,
+      "sha256": "be8a66044a6b99fa73931317fd85f708c108dbeb839e6bceb02604e1a64aae94"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/campaign_profiles.py": {
+      "bytes": 6306,
+      "sha256": "d69d41451f43763c0df8c06e6e1badbca84bbb4acd281c302270e7f1ae8c00fd"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/diagnostic_audit.py": {
+      "bytes": 9312,
+      "sha256": "57d3ee502f2208b16d612b0b0d961f3c5c40b521647bff1d2c4445b5b924d349"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/input_assets.py": {
+      "bytes": 1806,
+      "sha256": "e6e267fc73f7f135b01af22d880544dab99ff0c4af29308566bad77443db5b98"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/launch_coordination.py": {
+      "bytes": 10478,
+      "sha256": "fdc4c589735785919ac8e8754e2d9bde02fb6de4440fc878bef2807fe0867d1e"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/planner.py": {
+      "bytes": 24729,
+      "sha256": "9a9b6bbad60e7c1f2fc7e9ca27d1f5f8e99cd520d9ef0f41ce1aa3a20b07f484"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/protocol.py": {
+      "bytes": 7551,
+      "sha256": "7e7ce473d2e6b182c0ac004f61ea2f354854d058a7755066c55e0ebf13f3f73a"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/randomness.py": {
+      "bytes": 934,
+      "sha256": "0187b28e7bb65197d217b6ad975a5d6880fc22798099302afa3db1d0d1be25cf"
+    },
+    "/workspace/ViewMend3D/src/viewmend3d/scoring.py": {
+      "bytes": 13992,
+      "sha256": "c4c66685d56274d4ddc7f8bd56793cc0b326c9221b54cac558c5f1f1b6aa3c0c"
+    },
+    "/workspace/ViewMend3D/scripts/activegs/aggregate_benchmark.py": {
+      "bytes": 21246,
+      "sha256": "77174a7310721c85f53e17d6b7d0541b6c5840d930e5de4daf4bfe1ae065868e"
+    },
+    "/workspace/ViewMend3D/scripts/activegs/check_artifacts.py": {
+      "bytes": 13881,
+      "sha256": "19d0b7cfae86c856795ea95f9db635739d2467e934a43ef58196dc3ce911dd47"
+    },
+    "/workspace/ViewMend3D/scripts/activegs/run_campaign.py": {
+      "bytes": 26504,
+      "sha256": "53e7bbb80464cc076018453d8e21a1a0ec2c8c5b50c3db550ca6a0f7a75d18d6"
+    },
+    "/workspace/ViewMend3D/scripts/activegs/run_benchmark.py": {
+      "bytes": 4004,
+      "sha256": "8c8ec274ad555f821c59ba58cf557f7e59cb52484e6e1c80f0919c9e3af58be2"
+    },
+    "/workspace/ViewMend3D/scripts/web/server.py": {
+      "bytes": 32843,
+      "sha256": "4e048d6a7d7a1051dc4ad5a6b6a72553da6ad8714ca78290a6ff6828d7bc8474"
+    },
+    "/workspace/ViewMend3D/scripts/web/export_run.py": {
+      "bytes": 16244,
+      "sha256": "0c4a2888d6933a72fc63a8427d26e4457901c215134f166e96e69097a6924c2a"
+    },
+    "/workspace/ViewMend3D/runs/web-assets/web-20261006T091803Z-c6444d-defect_guarded-s0/manifest.json": {
+      "bytes": 98669,
+      "sha256": "c65784d29fa9809e981f83ef4722123bfc11a4010d313d534830dc49693dd7b1"
+    },
+    "/workspace/ViewMend3D/runs/web-assets/web-20261006T091803Z-c6444d-defect_guarded-s0/summary.json": {
+      "bytes": 6813,
+      "sha256": "6842925a707d08437fb228e6134130b3df116a97e50c464f9f3bef4c629bf98b"
+    },
+    "/workspace/ViewMend3D/runs/web-assets/web-20261006T091803Z-c6444d-defect_guarded-s0/mesh_020.ply": {
+      "bytes": 2509229,
+      "sha256": "aea09cfe6bea2b11351589a56177903424bd820df70bef5ca29fc31a7039f2cd"
+    },
+    "/workspace/ViewMend3D/runs/web-assets/web-20261006T091803Z-c6444d-defect_guarded-s0/mesh_040.ply": {
+      "bytes": 2350051,
+      "sha256": "4227aa7f8a3abe6d52ee316e5fdba00a27dbab6e26ecbe692e320340051a39f9"
+    },
+    "/workspace/ViewMend3D/runs/web-assets/web-20261006T091803Z-c6444d-defect_guarded-s0/mesh_060.ply": {
+      "bytes": 2255213,
+      "sha256": "38cb534072971f57a66be9e57d8f24b41791129065d6cba278124c91981ea554"
+    },
+    "/workspace/ViewMend3D/runs/web-assets/web-20261006T091803Z-c6444d-defect_guarded-s0/diagnostic_040.png": {
+      "bytes": 1658,
+      "sha256": "2ce13de9229720622235df4b6dd5193725463d9882a0d68cf0210289e99565f6"
+    },
+    "/workspace/ViewMend3D/runs/web-assets/web-20261006T091803Z-c6444d-defect_guarded-s0/diagnostic_060.png": {
+      "bytes": 1763,
+      "sha256": "c58ee54e4b78498ec880e301e2513e4b5bfc0169b32abf8174f3e3d7accddeb0"
+    },
+    "/workspace/ViewMend3D/setup/v2-web-runtime-prep/receipts-direct/check-20261006T091802Z-3f720f6c/admission-check.json": {
+      "bytes": 4262,
+      "sha256": "24aa744d82c7b40df62f13b83afa4788a04eed2742805a5ee431376b6dd673ad"
+    },
+    "/workspace/ViewMend3D/setup/v2-web-runtime-prep/receipts-direct/check-20261006T091802Z-3f720f6c/http-response.json": {
+      "bytes": 537,
+      "sha256": "b353093d07667e1055fe2e3b49630d161eda281c3416b57a21026a927bc8ccbf"
+    },
+    "/workspace/ViewMend3D/setup/v2-web-runtime-prep/receipts-direct/check-20261006T091802Z-3f720f6c/post-intent.json": {
+      "bytes": 437,
+      "sha256": "ebbe7d39bf82e70248fbd01dd3fa4d10cf195e02bfc523a355b4dd8610e9a1fb"
+    },
+    "/workspace/ViewMend3D/setup/v2-web-runtime-prep/receipts-direct/check-20261006T091802Z-3f720f6c/preflight-snapshot.json": {
+      "bytes": 4765,
+      "sha256": "ddaf892c831b1e0dde4c8ed65cb42a192c045d90c47d5b98a138bfbe1228487f"
+    },
+    "/workspace/ViewMend3D/setup/v2-web-runtime-prep/receipts-direct/check-20261006T091802Z-3f720f6c/request-context.json": {
+      "bytes": 184,
+      "sha256": "e1763474ef35eef03ea147ab92041fafbf3a2976122f6441dfc21206e7227c1f"
+    },
+    "/workspace/ViewMend3D/setup/v2-web-runtime-prep/receipts-direct/launch-intent.json": {
+      "bytes": 437,
+      "sha256": "ebbe7d39bf82e70248fbd01dd3fa4d10cf195e02bfc523a355b4dd8610e9a1fb"
+    }
+  },
+  "audit_limits": [
+    "Manual HTTP/runtime acceptance only; excluded from formal 24 quality branches and improvement claims.",
+    "Map Torch ZIP integrity and storage checked without decoding tensor semantics or allocating CUDA.",
+    "Actual numeric acquisition cameras and full original/preview PLY payload checked; calibration and trajectory endpoints compared.",
+    "Export values matched existing full-mesh evaluation JSON; evaluator was not recomputed.",
+    "Global-path tensor pickle fingerprinted but not decoded; full intermediate path poses were not independently replayed.",
+    "Zero forbidden future-observation counters and complete observed-only recipe/diagnostics audited; no candidate GT read.",
+    "Original direct child live identity uses root SHA-bound contemporaneous capture; current job/sidecar and exits checked independently.",
+    "Only this private report written; no POST/retry/state/source edit/process stop/GPU/repository commit."
+  ],
+  "cuda_hidden": true,
+  "torch_imported": false
+}

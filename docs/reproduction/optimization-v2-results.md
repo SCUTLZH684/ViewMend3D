@@ -637,3 +637,5 @@ python scripts/activegs/publish_v2_results.py docs/reproduction/evidence/optimiz
 ```
 
 生成图需要 Matplotlib；省略 `--plots` 时只使用 Python 标准库。输出目录必须不存在，以免覆盖已有结果。该命令复算已公开标量，不执行三维重建或重新评估网格。
+
+另见 [独立统计复核](evidence/optimization-v2-independent-review.json)、[发布与浏览器验收](evidence/optimization-v2-publication-verification.json) 和 [独立网页启动的真实产物验收](evidence/optimization-v2-web-launch-verification.json)。后者源为 `fa19eeb984af2a6a5fd8cdbe7d6b3430325468b1`，在原冻结整链完成后验证直接 Python 启动器；不改变本报告冻结源 `fafb552` 的 27 分支或 24 条质量数据。网页使用方式与实际截图见 [界面说明](../demo-interface.md)。

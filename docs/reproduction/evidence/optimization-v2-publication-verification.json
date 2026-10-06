@@ -1,0 +1,146 @@
+{
+  "version": "viewmend-v2-publication-verification-v1",
+  "status": "passed",
+  "generated_at": "2026-10-06T09:27:30.222843+00:00",
+  "formal_campaign": {
+    "frozen_source_identity": {
+      "project_commit": "fafb552400903cd083a34f3966bf5068a95344d2",
+      "project_source_sha256": "566fbaba1093a878d63005c907eadba869b7d43770261ea439cc15964eec2388",
+      "upstream_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+      "upstream_source_sha256": "2e2c5cfd6c8cab123da58ddc420fd588d3f08c6b2f6ed07cfce2363079a5fc0f",
+      "upstream_diff_sha256": "dae6df308d4b27016270ae5ed40019e0b61d75b930223925cf262361b75ffeba"
+    },
+    "stages": 5,
+    "validated_branches": 27,
+    "quality_branches": 24,
+    "verified_exports": 27,
+    "groups_separately_reported": [
+      "development_observations",
+      "development_time",
+      "heldout_observations",
+      "heldout_time"
+    ],
+    "source_input_count": 2117,
+    "analysis_sha256": "541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd",
+    "input_manifest_sha256": "aa06b9ba14bbe502e66a8dea9d76659f52397a709790bb38eb1ebd2d932c7a47",
+    "fresh_artifacts_analyzed_before_source_publication": true
+  },
+  "independent_review": {
+    "file": "optimization-v2-independent-review.json",
+    "sha256": "cc755c03d67ecdaf8188b456a94ae52319111d4a23e513ed1a8ae0cb18e706fb",
+    "statistics": "independent fsum/n and sample SD n-1; all quality, 14 cost, 6 post-prefix cost, paired differences and sign counts checked"
+  },
+  "payload_scan": {
+    "private_review_sha256": "bf86108a7692d31f16511a2767397313ab454f477c8b01ba4c1913c513536597",
+    "anomalies": 0,
+    "raw_dataset_map_rgb_binary_credentials_found": false,
+    "numeric_array_count": 19,
+    "maximum_numeric_array_length": 3,
+    "scope": "Known content/structure markers in the final scalar JSON; not a universal security or license proof."
+  },
+  "windows_clone_cpu_reproduction": {
+    "commit": "fa19eeb984af2a6a5fd8cdbe7d6b3430325468b1",
+    "core_autocrlf": true,
+    "raw_analysis_bytes_sha256": "541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd",
+    "cli_completed": true,
+    "summary_sha256": "a65aeb76a89adc56d458442d3a8e71f3710a05b92e0b18a8fa4abf6d7ed4b33a",
+    "byte_equal_to_server_and_repository_summary": true,
+    "gpu_used": false,
+    "plots_generated_in_this_windows_check": false
+  },
+  "real_cpu_plots": {
+    "runtime": "Python 3.9 / Matplotlib 3.9.4 on experiment server, CUDA_VISIBLE_DEVICES empty",
+    "full_analysis_sha256": "541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd",
+    "actual_png_and_svg_rendered": true,
+    "quality_and_cost_png_visually_reviewed": true,
+    "quality_png_sha256": "621c7acfa55a9351df6533af7c4c050c5edf4b780a0420877e13a22446e119be",
+    "cost_png_sha256": "8975b987238b960b2d139fba67ce58422ba01fb6bd717f092eef3d1db8cd6934"
+  },
+  "software_checks": {
+    "portable_publication_preparation": "portable_cpu_checks_passed",
+    "synthetic_cli_cases": 15,
+    "source_and_step_mutations_rejected": 8,
+    "synthetic_ui_contract_mutations_rejected": 36,
+    "unavailable_ui_states_checked": 3,
+    "web_backend_cpu_tests_passed": 26,
+    "direct_child_real_linux_cpu_equivalence": {
+      "status": "passed",
+      "shell_vs_direct_argv_and_environment_cases": 4,
+      "actual_live_pid_start_argv_checks": 3,
+      "terminal_child_receipt_verified": true,
+      "torch_cuda_habitat_imported": false,
+      "gpu_started": false,
+      "frozen_repository_modified": false,
+      "draft_sha256": "4e048d6a7d7a1051dc4ad5a6b6a72553da6ad8714ca78290a6ff6828d7bc8474"
+    },
+    "scope": "CPU checks establish interface/protocol behavior, not reconstruction quality."
+  },
+  "separate_real_http_gpu_acceptance": {
+    "source_commit": "fa19eeb984af2a6a5fd8cdbe7d6b3430325468b1",
+    "job_id": "web-20261006T091803Z-c6444d",
+    "formal_campaign_member": false,
+    "quality_values_extracted_or_reported": false,
+    "gpu_admission": {
+      "index": 1,
+      "name": "NVIDIA A100-SXM4-80GB",
+      "used_mb": 19,
+      "total_mb": 81920,
+      "utilization": 0
+    },
+    "actual_live_worker_and_direct_child_identity_match": true,
+    "completed_and_observed_handles_exited": true,
+    "actual_counts": {
+      "observations": 60,
+      "events": 60,
+      "post_prefix_diagnostics": 40,
+      "checkpoint_ids": [
+        20,
+        40,
+        60
+      ],
+      "camera_counts": [
+        20,
+        40,
+        60
+      ],
+      "optimizer_steps": 600,
+      "branch_observation_calls": 40,
+      "blocked_future_observation_calls": 0,
+      "exports": 1,
+      "trajectory_positions": 1133
+    },
+    "full_diagnostic_chain_passed": true,
+    "manifest_served_bytes_match_disk": true,
+    "input_count": 122,
+    "independent_receipt_file": "optimization-v2-web-launch-verification.json",
+    "independent_receipt_sha256": "9fff4ed23c8bf20f1a00bdd74d5ceb5d23a7e4692c12fac61e9328e0501d7000",
+    "first_successful_pre_fix_job_preserved": "web-20261006T085034Z-4cbcb9",
+    "scope": "Separate fixed-method 60-observation launch acceptance on the deployed publication source, not another formal quality sample or failed-job retry."
+  },
+  "real_browser": {
+    "four_groups_separate_and_correct_counts": true,
+    "seed_quality_declines_visible": true,
+    "full_cost_and_signal_details_checked": true,
+    "v1_and_v2_actual_completed_plan_counts_checked": true,
+    "formal_result_buttons_select_real_export": true,
+    "new_job_actual_3d_mesh_and_trajectory_loaded": true,
+    "new_job_completed_visible": true,
+    "console_error_count": 0,
+    "desktop_document_horizontal_overflow": false,
+    "mobile_viewport_width_px": 390,
+    "mobile_document_horizontal_overflow": false,
+    "mobile_tables_scroll_inside_card": true,
+    "viewport_reset_after_checks": true,
+    "screenshots": {
+      "v2-results-interface.png": "da5a9e5dd6fc5ce9bf8784e43ef5fbadd39eff24608deed7e8afec0b1d06a7d8",
+      "v2-direct-launch-interface.png": "4b32daa5c0651710f4ef52533a2e6d592d723ba84837ced0951877dd0950cf84"
+    }
+  },
+  "limitations": [
+    "Single Replica office0, development n2 and heldout n3; no significance or cross-scene claim.",
+    "Average improvements coexist with seed and Accuracy regressions.",
+    "Local S0/S2 changes do not establish reward causality or independent trajectory equality.",
+    "Torch peak does not include Habitat/OpenGL; unequal observations do not establish equal-workload speedup.",
+    "Detailed original-artifact and manual checks retain their stated tensor/path/evaluator audit limits."
+  ]
+}
