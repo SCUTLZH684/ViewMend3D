@@ -11,7 +11,7 @@ export class CaptureReplay {
       <div id="replay-content" hidden>
         <p id="replay-source" class="replay-small"></p><p class="replay-scope">独立 8 帧教学演示 · 使用实际采集的 RGB-D、位姿、评分日志和逐帧网格。额外保存与评估增加耗时，未纳入正式方法质量汇总。</p>
         <ol class="replay-stages"><li id="replay-stage-reference">① Ground Truth 参考场景</li><li id="replay-stage-observed">② Habitat 实际拍摄</li><li id="replay-stage-plan">③ 算法选择下一视角</li><li id="replay-stage-repeat">④ 补拍 → 建图 → 再选点</li></ol>
-        <div class="replay-reference-grid"><div><div class="replay-viewport replay-reference-view" id="replay-reference-view"><span class="replay-overlay">Ground Truth · Replica office0 参考网格</span><span id="replay-reference-loading" class="replay-loading">读取完整场景的简化预览…</span><button id="replay-reference-reset" type="button">重置参考场景视角</button></div><label class="replay-reference-cut"><input id="replay-reference-cut" type="checkbox" checked>剖切屋顶，查看室内结构</label></div><div class="replay-reference-intro"><h3>这个房间就是我们要重建的目标</h3><p>桌椅、显示器、墙面等来自 Replica office0 的真实参考网格。可以拖动旋转、滚轮缩放，先看清场景，再看相机在其中拍到了什么。</p><p id="replay-reference-proof" class="replay-small"></p><p class="replay-boundary">Ground Truth 用于展示与评估。补拍算法根据已经采集的 RGB-D 所建立的当前地图选点；此演示不把参考网格误差或未拍摄候选的真实图像交给算法。</p><p id="replay-reference-current" class="replay-small"></p></div></div>
+        <details id="replay-reference-section" open><summary>查看 Ground Truth 参考场景与相机位置</summary><div class="replay-reference-grid"><div><div class="replay-viewport replay-reference-view" id="replay-reference-view"><span class="replay-overlay">Ground Truth · Replica office0 参考网格</span><span id="replay-reference-loading" class="replay-loading">读取完整场景的简化预览…</span><button id="replay-reference-reset" type="button">重置参考场景视角</button></div><label class="replay-reference-cut"><input id="replay-reference-cut" type="checkbox" checked>剖切屋顶，查看室内结构</label></div><div class="replay-reference-intro"><h3>这个房间就是我们要重建的目标</h3><p>桌椅、显示器、墙面等来自 Replica office0 的真实参考网格。可以拖动旋转、滚轮缩放，先看清场景，再看相机在其中拍到了什么。</p><p id="replay-reference-proof" class="replay-small"></p><p class="replay-boundary">Ground Truth 用于展示与评估。补拍算法根据已经采集的 RGB-D 所建立的当前地图选点；此演示不把参考网格误差或未拍摄候选的真实图像交给算法。</p><p id="replay-reference-current" class="replay-small"></p></div></div></details>
         <div class="replay-actions"><button id="replay-start" type="button">从 Ground Truth 重看</button><button id="replay-prev" type="button">上一步</button><button id="replay-next" type="button" class="primary">下一步：Habitat 拍摄首帧</button><button id="replay-auto" type="button">自动播放全过程</button><span id="replay-sequence-count" class="replay-small"></span></div>
         <p id="replay-phase" aria-live="polite" class="replay-phase"></p>
         <nav id="replay-filmstrip" class="replay-filmstrip" aria-label="跳转已记录的采集帧"></nav>
@@ -126,7 +126,10 @@ export class CaptureReplay {
   }
   async renderSequence(step, before=false) {
     if(!this.frames || step<0 || step>=this.frames.length*2) return;
-    const {phase,index}=sequenceStep(this.frames.length,step); this.step=step;
+    const {phase,index}=sequenceStep(this.frames.length,step);
+    if(phase==='reference') $('replay-reference-section').open=true;
+    else if(this.step===0) $('replay-reference-section').open=false;
+    this.step=step;
     $('replay-capture-content').hidden=phase==='reference';
     $('replay-prev').disabled=step===0; $('replay-next').disabled=step===this.frames.length*2-1;
     $('replay-next').textContent=phase==='reference'?'下一步：Habitat 拍摄首帧':phase==='plan'?`下一步：实际补拍第 ${index+2} 帧`:index===this.frames.length-1?'全过程已回放':`下一步：算法选择第 ${index+2} 帧`;
@@ -175,7 +178,7 @@ export class CaptureReplay {
     $('replay-acquisition-title').textContent=index===0?'Habitat 拍到的第 1 帧 · 初始观测':`Habitat 实际补拍的第 ${frame.event} 帧 · 算法选中候选 #${frame.decision.selected_index+1}`;
     $('replay-acquisition-origin').textContent=index===0?'首帧使用预设相机位姿。这里显示真实 RGB 与深度，右侧是用这次观测建立的初始重建网格。':`上一轮根据 ${index} 次观测建立的地图选点 → Habitat 在选中位置采集这张 RGB-D → 更新重建。此图是实际采集结果，不是算法预测的照片。`;
     $('replay-phase').textContent=preparing && next
-      ? `算法已选择第 ${next.event} 帧的位置与朝向（橙色）。此时只有前 ${frame.event} 帧观测；下面保留当前真实照片和地图。点击“下一步：实际补拍”才显示选中位置随后拍到的画面。`
+      ? `算法为第 ${next.event} 帧选中候选 #${decision.selected_index+1}：x / y / z = ${[0,1,2].map(i=>num(next.pose[i][3],2)).join(' / ')} m，位置与朝向见橙色相机。此时只有前 ${frame.event} 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。`
       : next ? `第 ${frame.event} 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 ${next.event} 帧的补拍位置。`
         : '8 次真实采集已全部回放：首帧 → 选点 → 补拍 → 更新地图，共循环补拍 7 次。可从 Ground Truth 重看；此短演示不证明方法质量提升。';
     $('replay-stage-plan').classList.toggle('active',preparing);
