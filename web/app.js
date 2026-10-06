@@ -13,6 +13,14 @@ const methodLabels = {
   defect: 'Defect · 几何缺陷评分', defect_no_gate: 'Defect · 移除跳变门控',
   refine_only: 'Refine only · 仅优化已有观测', confidence: 'ActiveGS · 原作者流程'
 };
+let historicalSummary;
+const summaryMethods = {
+  observations: ['confidence_nooracle', 'random_matched', 'defect', 'defect_no_gate', 'refine_only'],
+  time: ['confidence_nooracle', 'random_matched', 'defect']
+};
+const summaryMetrics = [['accuracy_cm', 3], ['completion_cm', 3], ['coverage_percent', 2], ['chamfer_mm', 2]];
+const summaryCosts = [['mission_seconds', 1], ['wall_seconds', 1], ['planning_seconds', 1], ['mapping_seconds', 1],
+  ['observations', 1], ['path_length_m', 1], ['peak_torch_allocated_mb', 0]];
 let renderer, scene, camera, controls, mesh, grid, pathLine, cameraLines;
 const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
 const viewer = $('viewer');
@@ -368,6 +376,140 @@ async function refreshComparison(runs) {
   $('comparison-body').replaceChildren(...rows);
 }
 
+function validateHistoricalSummary(data) {
+  const record = value => value && typeof value === 'object' && !Array.isArray(value);
+  const text = (value, limit = 4096) => typeof value === 'string' && value.length > 0 && value.length <= limit;
+  const statistic = value => record(value) && value.n === 3 && Number.isFinite(value.mean)
+    && Number.isFinite(value.sample_std) && value.sample_std >= 0;
+  const count = value => Number.isInteger(value) && value >= 0;
+  if (!record(data) || data.version !== 'viewmend-v1-summary-v1' || data.scene !== 'replica/office0'
+      || !Array.isArray(data.seeds) || data.seeds.join(',') !== '0,1,2' || data.seeds.some(seed => !Number.isInteger(seed))
+      || !text(data.generated_at, 128) || !Number.isFinite(Date.parse(data.generated_at))
+      || !text(data.conclusion) || !record(data.units) || !record(data.evidence) || !record(data.stages)
+      || data.evidence.validated_experiments !== 27 || data.evidence.quality_runs !== 24
+      || !text(data.evidence.source_commit, 128) || !/^[0-9a-f]{64}$/.test(data.evidence.analysis_sha256 || '')
+      || !text(data.evidence.report_url, 2048) || !Array.isArray(data.limitations)
+      || !data.limitations.length || data.limitations.length > 20 || data.limitations.some(value => !text(value))) {
+    throw new Error('历史汇总的版本、证据或适用范围不完整');
+  }
+  const report = new URL(data.evidence.report_url, location.origin);
+  if (report.username || report.password || !(report.protocol === 'https:'
+      || (report.protocol === 'http:' && report.origin === location.origin))) {
+    throw new Error('历史报告链接格式不受支持');
+  }
+  for (const [budget, methods] of Object.entries(summaryMethods)) {
+    const stage = data.stages[budget];
+    if (!record(stage) || !text(stage.title, 128) || !text(stage.budget_text, 512)
+        || !new RegExp(`^${budget}-[0-9a-f]{32}$`).test(stage.run_id || '')
+        || !record(stage.protocol) || stage.protocol.mode !== budget || stage.protocol.prefix !== 20
+        || stage.protocol.observations !== 60 || stage.protocol.seconds !== 180
+        || !record(stage.method_statistics) || !record(stage.paired_difference_vs_confidence)
+        || !record(stage.diagnostic_statistics)) throw new Error('历史预算协议不完整');
+    if (Object.keys(stage.method_statistics).sort().join(',') !== [...methods].sort().join(',')) {
+      throw new Error('历史汇总不是完整的方法与种子对照');
+    }
+    for (const method of methods) {
+      const values = stage.method_statistics[method];
+      if (!record(values) || !record(values.metrics) || !record(values.cost)) throw new Error('历史方法统计缺失');
+      for (const [family, keys] of [['metrics', summaryMetrics], ['cost', summaryCosts]]) {
+        for (const [key] of keys) {
+          if (!statistic(values[family][key]) || values[family][key].mean < 0) throw new Error('历史三种子统计无效');
+        }
+      }
+      if (method === 'confidence_nooracle') continue;
+      const paired = stage.paired_difference_vs_confidence[method];
+      if (!record(paired) || !record(paired.metrics)) throw new Error('历史配对差缺失');
+      for (const [key] of summaryMetrics) {
+        const value = paired.metrics[key];
+        if (!statistic(value) || !record(value.method_minus_baseline_by_seed)
+            || Object.keys(value.method_minus_baseline_by_seed).sort().join(',') !== '0,1,2'
+            || Object.values(value.method_minus_baseline_by_seed).some(item => !Number.isFinite(item))) {
+          throw new Error('历史配对差不是完整的三种子记录');
+        }
+      }
+    }
+    const diagnostic = stage.diagnostic_statistics.defect;
+    if (!record(diagnostic) || ['geometry_measured_events', 'geometry_active_events', 'lambda_zero_robust_events',
+      'lambda_zero_robust_changed_events'].some(key => !count(diagnostic[key]))
+        || diagnostic.geometry_active_events > diagnostic.geometry_measured_events
+        || diagnostic.lambda_zero_robust_changed_events > diagnostic.lambda_zero_robust_events) {
+      throw new Error('历史评分行为记录无效');
+    }
+  }
+  return data;
+}
+
+function summaryStatistic(value, digits, signed = false) {
+  const mean = Math.abs(value.mean) < 0.5 * 10 ** -digits ? 0 : value.mean;
+  const prefix = signed && mean > 0 ? '+' : '';
+  return `${prefix}${mean.toFixed(digits)} ± ${value.sample_std.toFixed(digits)}`;
+}
+
+function renderHistoricalSummary() {
+  if (!historicalSummary) return;
+  const budget = $('summary-budget').value;
+  const stage = historicalSummary.stages[budget];
+  const methods = summaryMethods[budget];
+  $('summary-budget-note').textContent = `${stage.title} · ${stage.budget_text}`;
+  const rows = (family, keys, paired = false) => methods.filter(method => !paired || method !== 'confidence_nooracle').map(method => {
+    const values = paired ? stage.paired_difference_vs_confidence[method][family] : stage.method_statistics[method][family];
+    const tr = document.createElement('tr'); tr.dataset.method = method;
+    const heading = document.createElement('th'); heading.scope = 'row';
+    heading.textContent = methodLabels[method]; tr.append(heading);
+    for (const [key, digits] of keys) {
+      const td = document.createElement('td'); td.textContent = summaryStatistic(values[key], digits, paired);
+      td.dataset.metric = key;
+      if (paired) {
+        td.title = [0, 1, 2].map(seed => `种子 ${seed}：${values[key].method_minus_baseline_by_seed[seed].toFixed(digits)}`).join('；');
+      }
+      tr.append(td);
+    }
+    return tr;
+  });
+  $('summary-quality').replaceChildren(...rows('metrics', summaryMetrics));
+  $('summary-paired').replaceChildren(...rows('metrics', summaryMetrics, true));
+  $('summary-cost').replaceChildren(...rows('cost', summaryCosts));
+  const diagnostic = stage.diagnostic_statistics.defect;
+  $('summary-diagnostics').textContent = `Defect 的前缀后评分：几何项激活 ${diagnostic.geometry_active_events} / ${diagnostic.geometry_measured_events} 次；`
+    + `同一批候选移除几何项后，选中视角变化 ${diagnostic.lambda_zero_robust_changed_events} / ${diagnostic.lambda_zero_robust_events} 次（排除近似并列）。`
+    + '这些记录说明评分行为，不能证明真值缺陷被修复。';
+  const auditedAt = new Date(historicalSummary.generated_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+  $('summary-source').replaceChildren(...[
+    `历史 v1 · Replica office0 · 种子 0 / 1 / 2 · 审计 ${auditedAt}（北京时间）`,
+    `整链验收 ${historicalSummary.evidence.validated_experiments} 条目，正式质量汇总 ${historicalSummary.evidence.quality_runs} 个分支；短实验与原作者真值掩码流程未纳入质量汇总。`,
+    `当前预算批次：${stage.run_id}`,
+    `实验源码：${historicalSummary.evidence.source_commit}`,
+    `分析报告 SHA-256：${historicalSummary.evidence.analysis_sha256}`
+  ].map(value => { const line = document.createElement('span'); line.textContent = value; return line; }));
+}
+
+async function loadHistoricalSummary() {
+  try {
+    const response = await fetch('/data/optimization-v1-summary.json', { signal: AbortSignal.timeout(20000) });
+    if (response.status === 404) {
+      $('summary-badge').textContent = '尚未发布';
+      $('summary-state').textContent = '尚未发布已审计的 v1 历史汇总。单次实验预览仍可查看。';
+      return;
+    }
+    if (!response.ok) throw new Error(`服务返回 ${response.status}`);
+    historicalSummary = validateHistoricalSummary(await response.json());
+    $('summary-conclusion').textContent = historicalSummary.conclusion;
+    $('summary-report').href = new URL(historicalSummary.evidence.report_url, location.origin).href;
+    $('summary-limitations').replaceChildren(...historicalSummary.limitations.map(value => {
+      const item = document.createElement('li'); item.textContent = value; return item;
+    }));
+    renderHistoricalSummary();
+    $('summary-badge').textContent = '3 种子 · 已审计';
+    $('summary-state').hidden = true;
+    $('summary-content').hidden = false;
+  } catch (error) {
+    historicalSummary = undefined;
+    $('summary-badge').textContent = '汇总不可读取';
+    $('summary-state').textContent = `无法确认 v1 历史汇总：${error.message}。本次不显示汇总数值。`;
+    $('summary-content').hidden = true;
+  }
+}
+
 function renderJob(job) {
   if (!job) return;
   const labels = { starting: '准备启动', running: '执行中', exporting: '导出中', completed: '已完成', failed: '失败', interrupted: '已中断' };
@@ -501,6 +643,7 @@ $('launch-form').addEventListener('submit', async event => {
   finally { submitting = false; await pollStatus(); }
 });
 $('protocol').addEventListener('change', configureLaunch);
+$('summary-budget').addEventListener('change', renderHistoricalSummary);
 $('new-experiment').addEventListener('click', () => { $('launch-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('protocol').focus({ preventScroll: true }); });
 $('run-select').addEventListener('change', event => loadRun(event.target.value));
 $('checkpoint').addEventListener('input', event => showCheckpoint(Number(event.target.value)));
@@ -526,5 +669,6 @@ $('play').addEventListener('click', async () => {
 try { setupViewer(); }
 catch (error) { $('viewer-loading').textContent = `此浏览器无法初始化 WebGL：${error.message}。指标与实验启动仍可使用。`; }
 configureLaunch();
+void loadHistoricalSummary();
 await pollStatus();
 setInterval(pollStatus, 5000);

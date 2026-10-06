@@ -1,0 +1,910 @@
+{
+  "version": "viewmend-v1-verification-v1",
+  "status": "passed",
+  "scope": "Actual completed GPU chain, fresh trusted binary/JSON audit, independent numerical review and GET-only browser checks.",
+  "campaign": {
+    "status": "completed",
+    "stage_index": 3,
+    "source_identity": {
+      "project_commit": "54b091c5f79478467da4acb3be48227f18c9b27e",
+      "project_source_sha256": "9d986cabc799a1ee42c41456ee0223a392422e29550abdd5a0eb01ec06bf53bc",
+      "upstream_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+      "upstream_source_sha256": "2e2c5cfd6c8cab123da58ddc420fd588d3f08c6b2f6ed07cfce2363079a5fc0f",
+      "upstream_diff_sha256": "dae6df308d4b27016270ae5ed40019e0b61d75b930223925cf262361b75ffeba"
+    },
+    "stages": [
+      {
+        "stage": "smoke",
+        "token": "02bcee2440b54637aec1bf539b6b0d43",
+        "gpu": 2,
+        "status": "completed",
+        "created_at": "2026-10-05T23:28:55.077177+00:00",
+        "started_at": "2026-10-05T23:28:55.272310+00:00",
+        "finished_at": "2026-10-05T23:32:22.817532+00:00",
+        "validated_experiments": 3,
+        "child_exit_code": 0
+      },
+      {
+        "stage": "observations",
+        "token": "ae8337e0aca54980b2806f3c2b82aec8",
+        "gpu": 2,
+        "status": "completed",
+        "created_at": "2026-10-05T23:33:35.274332+00:00",
+        "started_at": "2026-10-05T23:33:35.472284+00:00",
+        "finished_at": "2026-10-06T00:03:42.261605+00:00",
+        "validated_experiments": 15,
+        "child_exit_code": 0
+      },
+      {
+        "stage": "time",
+        "token": "1280678ec08c48afbdbdf1e2c5d9e05a",
+        "gpu": 2,
+        "status": "completed",
+        "created_at": "2026-10-06T00:06:16.842987+00:00",
+        "started_at": "2026-10-06T00:06:17.036191+00:00",
+        "finished_at": "2026-10-06T00:38:12.642124+00:00",
+        "validated_experiments": 9,
+        "child_exit_code": 0
+      }
+    ],
+    "terminal_state_sha256": "c24770c55f48ea27bff604cd34b09c4e88e277421756b0a03a288867d650eb8b"
+  },
+  "final_fresh_audit": {
+    "audited_formal_runs": 24,
+    "completed_stages": 3,
+    "validated_total": 27,
+    "analysis_sha256": "6c4fbce35906340cabbee12226bf773df105230d16bc05fe3c133e51c02f0639",
+    "current_binary_artifacts_reopened": true,
+    "saved_paired_reports_exactly_matched": true,
+    "complete_scene_asset_identity_checked": true,
+    "json_inputs_stable_after_read": true,
+    "scope_limits": [
+      "Does not load/execute Torch objects.",
+      "Does not verify every tensor semantic or global Torch path pose."
+    ]
+  },
+  "independent_numerical_review": {
+    "passed": true,
+    "input_json_count": 1551,
+    "quality_cost_pairs_and_sample_sd_matched": true,
+    "scenes_sources_assets_and_prefixes_matched": true
+  },
+  "browser_checks": {
+    "observations": {
+      "stage": "campaign-observations-ae8337e0aca54980b2806f3c2b82aec8",
+      "generated_at": "2026-10-06T00:05:11.220Z",
+      "renderer": "Edge headless / ANGLE SwiftShader",
+      "status": "passed",
+      "quality_conclusions": false,
+      "tested": [
+        {
+          "id": "campaign-observations-ae8337e0aca54980b2806f3c2b82aec8-defect-s0",
+          "method": "defect",
+          "seed": 0,
+          "metadata": "ViewMend3D · 几何缺陷评分 · 种子 0 · 公平对照 · 60 次更新",
+          "final": {
+            "event": 60,
+            "observations": 60,
+            "camera_count": 60,
+            "metrics": {
+              "accuracy": "0.864cm",
+              "completion": "1.135cm",
+              "coverage": "94.46%",
+              "chamfer": "10.00mm"
+            },
+            "description": "101.5 秒任务时间 · 60 个采集视角 · 更新 60",
+            "heatmap": "diagnostic_060.png",
+            "diagnostic_text": "候选 65 / 100几何项已激活未探索比例 E：0.000不确定性 U：0.03093几何缺陷 D：0.01882最终得分：0.04463路径长度 / m：0.5282稳定有效比例：0.8663热图范围 0–1 · 当前最大值 0.7754"
+          },
+          "cameras": 60,
+          "trajectory_vertices": 1137,
+          "path_stops": 60,
+          "comparison_row": "Defect · 几何缺陷评分 / 种子 0observations-ae8337e0aca54980b2806f3c2b82aec8协议 / 前缀组 1c642d5ca534公平对照 · 60 次更新60 / 600.864 cm1.135 cm94.46 %10.00 mm101.5 s / 69.5 s",
+          "prefix": {
+            "event": 20,
+            "observations": 20,
+            "camera_count": 20,
+            "metrics": {
+              "accuracy": "0.926cm",
+              "completion": "1.498cm",
+              "coverage": "89.06%",
+              "chamfer": "12.12mm"
+            },
+            "description": "34.2 秒任务时间 · 20 个采集视角 · 更新 20",
+            "heatmap": null,
+            "diagnostic_text": "候选 15 / 100此策略未计算几何项未探索比例 E：0.0003344不确定性 U：0.2235几何缺陷 D：0.000最终得分：0.02059路径长度 / m：1.699"
+          },
+          "mesh_only_hash": "541a4869df7047091b4d3e7931469d671d30ba34ebad6a5447a2620fee4c913a",
+          "path_camera_hash": "dcce14e83a58f0790302b8f8011668e2d1567a46a7aa5f49ae8c332c8617ffb8"
+        },
+        {
+          "id": "campaign-observations-ae8337e0aca54980b2806f3c2b82aec8-defect-s1",
+          "method": "defect",
+          "seed": 1,
+          "metadata": "ViewMend3D · 几何缺陷评分 · 种子 1 · 公平对照 · 60 次更新",
+          "final": {
+            "event": 60,
+            "observations": 60,
+            "camera_count": 60,
+            "metrics": {
+              "accuracy": "0.857cm",
+              "completion": "1.017cm",
+              "coverage": "95.35%",
+              "chamfer": "9.37mm"
+            },
+            "description": "105.7 秒任务时间 · 60 个采集视角 · 更新 60",
+            "heatmap": "diagnostic_060.png",
+            "diagnostic_text": "候选 59 / 100几何项已激活未探索比例 E：0.0001115不确定性 U：0.03931几何缺陷 D：0.0002580最终得分：0.02473路径长度 / m：0.1927稳定有效比例：0.8544热图范围 0–1 · 当前最大值 0.3234"
+          },
+          "cameras": 60,
+          "trajectory_vertices": 1249,
+          "path_stops": 60,
+          "comparison_row": "Defect · 几何缺陷评分 / 种子 1observations-ae8337e0aca54980b2806f3c2b82aec8协议 / 前缀组 90dc0a9aa92f公平对照 · 60 次更新60 / 600.857 cm1.017 cm95.35 %9.37 mm105.7 s / 69.1 s"
+        },
+        {
+          "id": "campaign-observations-ae8337e0aca54980b2806f3c2b82aec8-defect-s2",
+          "method": "defect",
+          "seed": 2,
+          "metadata": "ViewMend3D · 几何缺陷评分 · 种子 2 · 公平对照 · 60 次更新",
+          "final": {
+            "event": 60,
+            "observations": 60,
+            "camera_count": 60,
+            "metrics": {
+              "accuracy": "0.878cm",
+              "completion": "1.171cm",
+              "coverage": "93.69%",
+              "chamfer": "10.25mm"
+            },
+            "description": "96.0 秒任务时间 · 60 个采集视角 · 更新 60",
+            "heatmap": "diagnostic_060.png",
+            "diagnostic_text": "候选 7 / 100几何项已激活未探索比例 E：0.000不确定性 U：0.03006几何缺陷 D：0.006476最终得分：0.01888路径长度 / m：0.9634稳定有效比例：0.8164热图范围 0–1 · 当前最大值 0.6577"
+          },
+          "cameras": 60,
+          "trajectory_vertices": 1097,
+          "path_stops": 60,
+          "comparison_row": "Defect · 几何缺陷评分 / 种子 2observations-ae8337e0aca54980b2806f3c2b82aec8协议 / 前缀组 7fc6fd360cc8公平对照 · 60 次更新60 / 600.878 cm1.171 cm93.69 %10.25 mm96.0 s / 69.2 s"
+        },
+        {
+          "id": "campaign-observations-ae8337e0aca54980b2806f3c2b82aec8-refine_only-s0",
+          "method": "refine_only",
+          "seed": 0,
+          "metadata": "Refine only · 仅优化已有观测 · 种子 0 · 公平对照 · 60 次更新",
+          "final": {
+            "event": 60,
+            "observations": 20,
+            "camera_count": 20,
+            "metrics": {
+              "accuracy": "0.867cm",
+              "completion": "1.421cm",
+              "coverage": "90.31%",
+              "chamfer": "11.44mm"
+            },
+            "description": "58.9 秒任务时间 · 20 个采集视角 · 更新 60",
+            "heatmap": null,
+            "diagnostic_text": "此阶段未导出选中候选的几何诊断。"
+          },
+          "cameras": 20,
+          "trajectory_vertices": 380,
+          "path_stops": 20,
+          "comparison_row": "Refine only · 仅优化已有观测 / 种子 0observations-ae8337e0aca54980b2806f3c2b82aec8协议 / 前缀组 1c642d5ca534公平对照 · 60 次更新20 / 600.867 cm1.421 cm90.31 %11.44 mm58.9 s / 45.1 s"
+        }
+      ],
+      "page_errors": [],
+      "http_errors": [],
+      "non_get_requests": [],
+      "campaign": {
+        "schema": "viewmend-campaign-status-v1",
+        "configured": true,
+        "status": "waiting",
+        "stage": "time",
+        "completed_stages": 2,
+        "total_stages": 3,
+        "completed_experiments": 18,
+        "total_experiments": 27,
+        "gpu": null,
+        "process_state": null,
+        "checked_at": "2026-10-05T23:33:35.249516+00:00",
+        "updated_at": "2026-10-06T00:03:42.261674+00:00",
+        "waiting_reason": null,
+        "error": null
+      },
+      "campaign_text": "优化实验计划等待下一次检查等待下一次计划检查。当前阶段：固定时间对照已验收 2 / 3 阶段 · 18 / 27 个实验条目最近设备检查：2026/10/6 07:33:35（北京时间）记录更新：2026/10/6 08:03:42（北京时间）按短实验、固定观测和固定时间依次验收。此处只显示计划状态；完成数量包含短实验条目。",
+      "mobile_overflow": false,
+      "raw_check_sha256": "75ff4232e5d9520cb5f6857818277e4f230921c43eed44c296cb84baccffd78f"
+    },
+    "time": {
+      "stage": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a",
+      "generated_at": "2026-10-06T00:44:16.549Z",
+      "renderer": "Edge headless / ANGLE SwiftShader",
+      "status": "passed",
+      "quality_conclusions": false,
+      "tested": [
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-confidence_nooracle-s0",
+          "method": "confidence_nooracle",
+          "seed": 0,
+          "metadata": "Confidence · 关闭候选真值掩码 · 种子 0 · 公平对照 · 时间预算",
+          "final": {
+            "event": 107,
+            "observations": 107,
+            "time": 181.03540677492856,
+            "camera_count": 107,
+            "metrics": {
+              "accuracy": "0.829cm",
+              "completion": "0.903cm",
+              "coverage": "96.43%",
+              "chamfer": "8.66mm"
+            },
+            "description": "181.0 秒任务时间 · 107 个采集视角 · 更新 107",
+            "heatmap": null,
+            "diagnostic_text": "候选 93 / 100此策略未计算几何项未探索比例 E：0.0001115不确定性 U：0.007820几何缺陷 D：0.000最终得分：0.1394路径长度 / m：0.1927"
+          },
+          "cameras": 107,
+          "trajectory_vertices": 2064,
+          "path_stops": 107,
+          "comparison_id": "e59c3a87cde1",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 30.6800320862676
+            },
+            {
+              "event": 38,
+              "observations": 38,
+              "time": 60.271950875379844
+            },
+            {
+              "event": 74,
+              "observations": 74,
+              "time": 120.34858590760268
+            },
+            {
+              "event": 107,
+              "observations": 107,
+              "time": 181.03540677492856
+            }
+          ],
+          "comparison_row": "Confidence · 无未来掩码 / 种子 0time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 e59c3a87cde1公平对照 · 时间预算107 / 1070.829 cm0.903 cm96.43 %8.66 mm181.0 s / 117.6 s"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-confidence_nooracle-s1",
+          "method": "confidence_nooracle",
+          "seed": 1,
+          "metadata": "Confidence · 关闭候选真值掩码 · 种子 1 · 公平对照 · 时间预算",
+          "final": {
+            "event": 106,
+            "observations": 106,
+            "time": 181.22830040863482,
+            "camera_count": 106,
+            "metrics": {
+              "accuracy": "0.829cm",
+              "completion": "0.903cm",
+              "coverage": "96.64%",
+              "chamfer": "8.66mm"
+            },
+            "description": "181.2 秒任务时间 · 106 个采集视角 · 更新 106",
+            "heatmap": null,
+            "diagnostic_text": "候选 54 / 100此策略未计算几何项未探索比例 E：0.000不确定性 U：0.02928几何缺陷 D：0.000最终得分：0.03498路径长度 / m：0.4628"
+          },
+          "cameras": 106,
+          "trajectory_vertices": 2015,
+          "path_stops": 106,
+          "comparison_id": "a264bb67e7bc",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 32.86677243682789
+            },
+            {
+              "event": 37,
+              "observations": 37,
+              "time": 61.0903048926848
+            },
+            {
+              "event": 71,
+              "observations": 71,
+              "time": 121.3118562446034
+            },
+            {
+              "event": 106,
+              "observations": 106,
+              "time": 181.22830040863482
+            }
+          ],
+          "comparison_row": "Confidence · 无未来掩码 / 种子 1time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 a264bb67e7bc公平对照 · 时间预算106 / 1060.829 cm0.903 cm96.64 %8.66 mm181.2 s / 113.8 s"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-confidence_nooracle-s2",
+          "method": "confidence_nooracle",
+          "seed": 2,
+          "metadata": "Confidence · 关闭候选真值掩码 · 种子 2 · 公平对照 · 时间预算",
+          "final": {
+            "event": 122,
+            "observations": 122,
+            "time": 180.00153956434224,
+            "camera_count": 122,
+            "metrics": {
+              "accuracy": "0.841cm",
+              "completion": "0.982cm",
+              "coverage": "95.30%",
+              "chamfer": "9.12mm"
+            },
+            "description": "180.0 秒任务时间 · 122 个采集视角 · 更新 122",
+            "heatmap": null,
+            "diagnostic_text": "候选 85 / 100此策略未计算几何项未探索比例 E：0.000不确定性 U：0.03751几何缺陷 D：0.000最终得分：0.03225路径长度 / m：0.1913"
+          },
+          "cameras": 122,
+          "trajectory_vertices": 1766,
+          "path_stops": 122,
+          "comparison_id": "d9d83629a69f",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 30.14113865038962
+            },
+            {
+              "event": 39,
+              "observations": 39,
+              "time": 60.054334941261914
+            },
+            {
+              "event": 77,
+              "observations": 77,
+              "time": 120.90941490174737
+            },
+            {
+              "event": 122,
+              "observations": 122,
+              "time": 180.00153956434224
+            }
+          ],
+          "comparison_row": "Confidence · 无未来掩码 / 种子 2time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 d9d83629a69f公平对照 · 时间预算122 / 1220.841 cm0.982 cm95.30 %9.12 mm180.0 s / 132.1 s"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-random_matched-s0",
+          "method": "random_matched",
+          "seed": 0,
+          "metadata": "Random · 匹配候选与路径成本 · 种子 0 · 公平对照 · 时间预算",
+          "final": {
+            "event": 166,
+            "observations": 166,
+            "time": 180.24883833693457,
+            "camera_count": 166,
+            "metrics": {
+              "accuracy": "0.888cm",
+              "completion": "1.060cm",
+              "coverage": "92.97%",
+              "chamfer": "9.74mm"
+            },
+            "description": "180.2 秒任务时间 · 166 个采集视角 · 更新 166",
+            "heatmap": null,
+            "diagnostic_text": "候选 36 / 100此策略未计算几何项最终得分：0.01661路径长度 / m：0.4677"
+          },
+          "cameras": 166,
+          "trajectory_vertices": 2734,
+          "path_stops": 166,
+          "comparison_id": "e59c3a87cde1",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 30.6800320862676
+            },
+            {
+              "event": 51,
+              "observations": 51,
+              "time": 60.97746620202088
+            },
+            {
+              "event": 109,
+              "observations": 109,
+              "time": 120.36702836267068
+            },
+            {
+              "event": 166,
+              "observations": 166,
+              "time": 180.24883833693457
+            }
+          ],
+          "comparison_row": "Random · 匹配采样 / 种子 0time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 e59c3a87cde1公平对照 · 时间预算166 / 1660.888 cm1.060 cm92.97 %9.74 mm180.2 s / 135.7 s"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-random_matched-s1",
+          "method": "random_matched",
+          "seed": 1,
+          "metadata": "Random · 匹配候选与路径成本 · 种子 1 · 公平对照 · 时间预算",
+          "final": {
+            "event": 174,
+            "observations": 174,
+            "time": 180.00840359029826,
+            "camera_count": 174,
+            "metrics": {
+              "accuracy": "0.850cm",
+              "completion": "1.139cm",
+              "coverage": "93.89%",
+              "chamfer": "9.95mm"
+            },
+            "description": "180.0 秒任务时间 · 174 个采集视角 · 更新 174",
+            "heatmap": null,
+            "diagnostic_text": "候选 70 / 100此策略未计算几何项最终得分：0.01821路径长度 / m：0.1927"
+          },
+          "cameras": 174,
+          "trajectory_vertices": 2763,
+          "path_stops": 174,
+          "comparison_id": "a264bb67e7bc",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 32.86677243682789
+            },
+            {
+              "event": 49,
+              "observations": 49,
+              "time": 60.42626587624545
+            },
+            {
+              "event": 111,
+              "observations": 111,
+              "time": 120.12842019461095
+            },
+            {
+              "event": 174,
+              "observations": 174,
+              "time": 180.00840359029826
+            }
+          ],
+          "comparison_row": "Random · 匹配采样 / 种子 1time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 a264bb67e7bc公平对照 · 时间预算174 / 1740.850 cm1.139 cm93.89 %9.95 mm180.0 s / 138.3 s"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-random_matched-s2",
+          "method": "random_matched",
+          "seed": 2,
+          "metadata": "Random · 匹配候选与路径成本 · 种子 2 · 公平对照 · 时间预算",
+          "final": {
+            "event": 174,
+            "observations": 174,
+            "time": 180.17677298677154,
+            "camera_count": 174,
+            "metrics": {
+              "accuracy": "0.866cm",
+              "completion": "1.124cm",
+              "coverage": "93.03%",
+              "chamfer": "9.95mm"
+            },
+            "description": "180.2 秒任务时间 · 174 个采集视角 · 更新 174",
+            "heatmap": null,
+            "diagnostic_text": "候选 16 / 100此策略未计算几何项最终得分：0.01779路径长度 / m：0.4642"
+          },
+          "cameras": 174,
+          "trajectory_vertices": 2731,
+          "path_stops": 174,
+          "comparison_id": "d9d83629a69f",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 30.14113865038962
+            },
+            {
+              "event": 53,
+              "observations": 53,
+              "time": 60.462178816495
+            },
+            {
+              "event": 115,
+              "observations": 115,
+              "time": 121.02363111908198
+            },
+            {
+              "event": 174,
+              "observations": 174,
+              "time": 180.17677298677154
+            }
+          ],
+          "comparison_row": "Random · 匹配采样 / 种子 2time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 d9d83629a69f公平对照 · 时间预算174 / 1740.866 cm1.124 cm93.03 %9.95 mm180.2 s / 136.3 s"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-defect-s0",
+          "method": "defect",
+          "seed": 0,
+          "metadata": "ViewMend3D · 几何缺陷评分 · 种子 0 · 公平对照 · 时间预算",
+          "final": {
+            "event": 98,
+            "observations": 98,
+            "time": 180.29427437743288,
+            "camera_count": 98,
+            "metrics": {
+              "accuracy": "0.833cm",
+              "completion": "0.923cm",
+              "coverage": "96.30%",
+              "chamfer": "8.78mm"
+            },
+            "description": "180.3 秒任务时间 · 98 个采集视角 · 更新 98",
+            "heatmap": "diagnostic_098.png",
+            "diagnostic_text": "候选 93 / 100几何项已激活未探索比例 E：0.000不确定性 U：0.02695几何缺陷 D：0.0004394最终得分：0.03241路径长度 / m：0.4768稳定有效比例：0.8985热图范围 0–1 · 当前最大值 0.4412"
+          },
+          "cameras": 98,
+          "trajectory_vertices": 1989,
+          "path_stops": 98,
+          "comparison_id": "e59c3a87cde1",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 30.6800320862676
+            },
+            {
+              "event": 37,
+              "observations": 37,
+              "time": 61.02535703059402
+            },
+            {
+              "event": 68,
+              "observations": 68,
+              "time": 122.04690484199091
+            },
+            {
+              "event": 98,
+              "observations": 98,
+              "time": 180.29427437743288
+            }
+          ],
+          "comparison_row": "Defect · 几何缺陷评分 / 种子 0time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 e59c3a87cde1公平对照 · 时间预算98 / 980.833 cm0.923 cm96.30 %8.78 mm180.3 s / 115.6 s",
+          "prefix": {
+            "event": 20,
+            "observations": 20,
+            "time": 30.6800320862676,
+            "camera_count": 20,
+            "metrics": {
+              "accuracy": "0.904cm",
+              "completion": "1.556cm",
+              "coverage": "88.53%",
+              "chamfer": "12.30mm"
+            },
+            "description": "30.7 秒任务时间 · 20 个采集视角 · 更新 20",
+            "heatmap": null,
+            "diagnostic_text": "候选 8 / 100此策略未计算几何项未探索比例 E：0.0001115不确定性 U：0.1965几何缺陷 D：0.000最终得分：0.01875路径长度 / m：0.8800"
+          },
+          "mesh_only_hash": "fc0d65fdb6d71cc6521f71ed56ddbdf447a034f82c21f1af17f766ffda8619e3",
+          "path_camera_hash": "e5e11fb89c74c40965c8834ceaeb236521bbfc59965bc90a3118b7707737f0ae"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-defect-s1",
+          "method": "defect",
+          "seed": 1,
+          "metadata": "ViewMend3D · 几何缺陷评分 · 种子 1 · 公平对照 · 时间预算",
+          "final": {
+            "event": 102,
+            "observations": 102,
+            "time": 180.72959887899924,
+            "camera_count": 102,
+            "metrics": {
+              "accuracy": "0.850cm",
+              "completion": "0.973cm",
+              "coverage": "96.18%",
+              "chamfer": "9.11mm"
+            },
+            "description": "180.7 秒任务时间 · 102 个采集视角 · 更新 102",
+            "heatmap": "diagnostic_102.png",
+            "diagnostic_text": "候选 83 / 100几何项已激活未探索比例 E：0.000不确定性 U：0.02116几何缺陷 D：0.0006413最终得分：0.02180路径长度 / m：0.3826稳定有效比例：0.8383热图范围 0–1 · 当前最大值 0.2956"
+          },
+          "cameras": 102,
+          "trajectory_vertices": 1849,
+          "path_stops": 102,
+          "comparison_id": "a264bb67e7bc",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 32.86677243682789
+            },
+            {
+              "event": 36,
+              "observations": 36,
+              "time": 60.95000967863598
+            },
+            {
+              "event": 73,
+              "observations": 73,
+              "time": 121.58479252384859
+            },
+            {
+              "event": 102,
+              "observations": 102,
+              "time": 180.72959887899924
+            }
+          ],
+          "comparison_row": "Defect · 几何缺陷评分 / 种子 1time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 a264bb67e7bc公平对照 · 时间预算102 / 1020.850 cm0.973 cm96.18 %9.11 mm180.7 s / 119.6 s"
+        },
+        {
+          "id": "campaign-time-1280678ec08c48afbdbdf1e2c5d9e05a-defect-s2",
+          "method": "defect",
+          "seed": 2,
+          "metadata": "ViewMend3D · 几何缺陷评分 · 种子 2 · 公平对照 · 时间预算",
+          "final": {
+            "event": 101,
+            "observations": 101,
+            "time": 181.04054395243293,
+            "camera_count": 101,
+            "metrics": {
+              "accuracy": "0.838cm",
+              "completion": "0.956cm",
+              "coverage": "95.68%",
+              "chamfer": "8.97mm"
+            },
+            "description": "181.0 秒任务时间 · 101 个采集视角 · 更新 101",
+            "heatmap": "diagnostic_101.png",
+            "diagnostic_text": "候选 29 / 100几何项已激活未探索比例 E：0.000不确定性 U：0.008588几何缺陷 D：0.001179最终得分：0.02134路径长度 / m：0.4758稳定有效比例：0.8815热图范围 0–1 · 当前最大值 0.3738"
+          },
+          "cameras": 101,
+          "trajectory_vertices": 1906,
+          "path_stops": 101,
+          "comparison_id": "d9d83629a69f",
+          "checkpoints": [
+            {
+              "event": 20,
+              "observations": 20,
+              "time": 30.14113865038962
+            },
+            {
+              "event": 37,
+              "observations": 37,
+              "time": 60.4659185243363
+            },
+            {
+              "event": 70,
+              "observations": 70,
+              "time": 120.34511770738754
+            },
+            {
+              "event": 101,
+              "observations": 101,
+              "time": 181.04054395243293
+            }
+          ],
+          "comparison_row": "Defect · 几何缺陷评分 / 种子 2time-1280678ec08c48afbdbdf1e2c5d9e05a协议 / 前缀组 d9d83629a69f公平对照 · 时间预算101 / 1010.838 cm0.956 cm95.68 %8.97 mm181.0 s / 116.9 s"
+        }
+      ],
+      "page_errors": [],
+      "http_errors": [],
+      "non_get_requests": [],
+      "initial_campaign": {
+        "schema": "viewmend-campaign-status-v1",
+        "configured": true,
+        "status": "completed",
+        "stage": null,
+        "completed_stages": 3,
+        "total_stages": 3,
+        "completed_experiments": 27,
+        "total_experiments": 27,
+        "gpu": null,
+        "process_state": null,
+        "checked_at": "2026-10-06T00:06:16.815675+00:00",
+        "updated_at": "2026-10-06T00:38:12.642196+00:00",
+        "waiting_reason": null,
+        "error": null
+      },
+      "campaign": {
+        "schema": "viewmend-campaign-status-v1",
+        "configured": true,
+        "status": "completed",
+        "stage": null,
+        "completed_stages": 3,
+        "total_stages": 3,
+        "completed_experiments": 27,
+        "total_experiments": 27,
+        "gpu": null,
+        "process_state": null,
+        "checked_at": "2026-10-06T00:06:16.815675+00:00",
+        "updated_at": "2026-10-06T00:38:12.642196+00:00",
+        "waiting_reason": null,
+        "error": null
+      },
+      "campaign_text": "优化实验计划已完成已验收 3 / 3 阶段 · 27 / 27 个实验条目最近设备检查：2026/10/6 08:06:16（北京时间）记录更新：2026/10/6 08:38:12（北京时间）按短实验、固定观测和固定时间依次验收。此处只显示计划状态；完成数量包含短实验条目。",
+      "mobile_overflow": false,
+      "raw_check_sha256": "3b0b2d15f3c49a6c80172c85c4d5a63ef19afa702887e194f7e82d3384eddd72"
+    },
+    "historical_summary": {
+      "generated_at": "2026-10-06T00:55:13.982Z",
+      "status": "passed",
+      "non_get_requests": [],
+      "page_errors": [],
+      "http_errors": [],
+      "budgets": {
+        "observations": {
+          "title": "固定 60 次更新",
+          "run_id": "observations-ae8337e0aca54980b2806f3c2b82aec8",
+          "quality": {
+            "confidence_nooracle": {
+              "accuracy_cm": "0.859 ± 0.016",
+              "completion_cm": "1.002 ± 0.007",
+              "coverage_percent": "94.82 ± 0.38",
+              "chamfer_mm": "9.30 ± 0.10"
+            },
+            "random_matched": {
+              "accuracy_cm": "0.867 ± 0.031",
+              "completion_cm": "1.329 ± 0.056",
+              "coverage_percent": "91.12 ± 0.70",
+              "chamfer_mm": "10.98 ± 0.43"
+            },
+            "defect": {
+              "accuracy_cm": "0.866 ± 0.010",
+              "completion_cm": "1.108 ± 0.081",
+              "coverage_percent": "94.50 ± 0.83",
+              "chamfer_mm": "9.87 ± 0.45"
+            },
+            "defect_no_gate": {
+              "accuracy_cm": "0.861 ± 0.005",
+              "completion_cm": "1.065 ± 0.067",
+              "coverage_percent": "94.86 ± 0.77",
+              "chamfer_mm": "9.63 ± 0.36"
+            },
+            "refine_only": {
+              "accuracy_cm": "0.863 ± 0.011",
+              "completion_cm": "1.428 ± 0.009",
+              "coverage_percent": "90.10 ± 0.37",
+              "chamfer_mm": "11.46 ± 0.02"
+            }
+          },
+          "paired": {
+            "random_matched": {
+              "accuracy_cm": "+0.008 ± 0.017",
+              "completion_cm": "+0.327 ± 0.050",
+              "coverage_percent": "-3.70 ± 0.79",
+              "chamfer_mm": "+1.68 ± 0.33"
+            },
+            "defect": {
+              "accuracy_cm": "+0.008 ± 0.005",
+              "completion_cm": "+0.106 ± 0.081",
+              "coverage_percent": "-0.32 ± 0.59",
+              "chamfer_mm": "+0.57 ± 0.39"
+            },
+            "defect_no_gate": {
+              "accuracy_cm": "+0.002 ± 0.011",
+              "completion_cm": "+0.063 ± 0.064",
+              "coverage_percent": "+0.04 ± 0.78",
+              "chamfer_mm": "+0.33 ± 0.26"
+            },
+            "refine_only": {
+              "accuracy_cm": "+0.004 ± 0.009",
+              "completion_cm": "+0.426 ± 0.009",
+              "coverage_percent": "-4.72 ± 0.74",
+              "chamfer_mm": "+2.15 ± 0.08"
+            }
+          },
+          "cost": {
+            "confidence_nooracle": {
+              "mission_seconds": "96.1 ± 1.7",
+              "wall_seconds": "64.6 ± 0.6",
+              "planning_seconds": "23.0 ± 0.4",
+              "mapping_seconds": "39.5 ± 0.4",
+              "observations": "60.0 ± 0.0",
+              "path_length_m": "33.7 ± 1.2",
+              "peak_torch_allocated_mb": "2293 ± 104"
+            },
+            "random_matched": {
+              "mission_seconds": "71.1 ± 3.7",
+              "wall_seconds": "52.0 ± 0.5",
+              "planning_seconds": "10.1 ± 0.5",
+              "mapping_seconds": "39.9 ± 0.6",
+              "observations": "60.0 ± 0.0",
+              "path_length_m": "21.1 ± 3.3",
+              "peak_torch_allocated_mb": "2268 ± 113"
+            },
+            "defect": {
+              "mission_seconds": "101.1 ± 4.9",
+              "wall_seconds": "69.3 ± 0.2",
+              "planning_seconds": "26.8 ± 0.3",
+              "mapping_seconds": "40.3 ± 0.2",
+              "observations": "60.0 ± 0.0",
+              "path_length_m": "34.0 ± 4.9",
+              "peak_torch_allocated_mb": "2317 ± 109"
+            },
+            "defect_no_gate": {
+              "mission_seconds": "102.0 ± 4.6",
+              "wall_seconds": "68.6 ± 0.3",
+              "planning_seconds": "26.2 ± 0.2",
+              "mapping_seconds": "40.1 ± 0.5",
+              "observations": "60.0 ± 0.0",
+              "path_length_m": "35.7 ± 4.8",
+              "peak_torch_allocated_mb": "2265 ± 30"
+            },
+            "refine_only": {
+              "mission_seconds": "56.4 ± 2.2",
+              "wall_seconds": "44.6 ± 0.6",
+              "planning_seconds": "7.3 ± 0.2",
+              "mapping_seconds": "36.4 ± 0.7",
+              "observations": "20.0 ± 0.0",
+              "path_length_m": "12.7 ± 1.9",
+              "peak_torch_allocated_mb": "2150 ± 131"
+            }
+          },
+          "signal_text": "Defect 的前缀后评分：几何项激活 120 / 120 次；同一批候选移除几何项后，选中视角变化 78 / 120 次（排除近似并列）。这些记录说明评分行为，不能证明真值缺陷被修复。",
+          "mobile_overflow": false
+        },
+        "time": {
+          "title": "180 秒任务预算",
+          "run_id": "time-1280678ec08c48afbdbdf1e2c5d9e05a",
+          "quality": {
+            "confidence_nooracle": {
+              "accuracy_cm": "0.833 ± 0.007",
+              "completion_cm": "0.929 ± 0.046",
+              "coverage_percent": "96.12 ± 0.72",
+              "chamfer_mm": "8.81 ± 0.26"
+            },
+            "random_matched": {
+              "accuracy_cm": "0.868 ± 0.019",
+              "completion_cm": "1.108 ± 0.042",
+              "coverage_percent": "93.30 ± 0.52",
+              "chamfer_mm": "9.88 ± 0.12"
+            },
+            "defect": {
+              "accuracy_cm": "0.840 ± 0.008",
+              "completion_cm": "0.951 ± 0.026",
+              "coverage_percent": "96.05 ± 0.33",
+              "chamfer_mm": "8.95 ± 0.17"
+            }
+          },
+          "paired": {
+            "random_matched": {
+              "accuracy_cm": "+0.035 ± 0.021",
+              "completion_cm": "+0.178 ± 0.051",
+              "coverage_percent": "-2.82 ± 0.60",
+              "chamfer_mm": "+1.07 ± 0.22"
+            },
+            "defect": {
+              "accuracy_cm": "+0.007 ± 0.012",
+              "completion_cm": "+0.021 ± 0.048",
+              "coverage_percent": "-0.07 ± 0.42",
+              "chamfer_mm": "+0.14 ± 0.30"
+            }
+          },
+          "cost": {
+            "confidence_nooracle": {
+              "mission_seconds": "180.8 ± 0.7",
+              "wall_seconds": "121.2 ± 9.7",
+              "planning_seconds": "43.4 ± 3.9",
+              "mapping_seconds": "74.4 ± 5.6",
+              "observations": "111.7 ± 9.0",
+              "path_length_m": "62.9 ± 10.2",
+              "peak_torch_allocated_mb": "3529 ± 221"
+            },
+            "random_matched": {
+              "mission_seconds": "180.1 ± 0.1",
+              "wall_seconds": "136.8 ± 1.3",
+              "planning_seconds": "18.6 ± 1.5",
+              "mapping_seconds": "113.3 ± 2.6",
+              "observations": "171.3 ± 4.6",
+              "path_length_m": "48.3 ± 1.3",
+              "peak_torch_allocated_mb": "5022 ± 54"
+            },
+            "defect": {
+              "mission_seconds": "180.7 ± 0.4",
+              "wall_seconds": "117.4 ± 2.1",
+              "planning_seconds": "47.3 ± 1.0",
+              "mapping_seconds": "66.8 ± 1.1",
+              "observations": "100.3 ± 2.1",
+              "path_length_m": "66.6 ± 2.0",
+              "peak_torch_allocated_mb": "3238 ± 67"
+            }
+          },
+          "signal_text": "Defect 的前缀后评分：几何项激活 241 / 241 次；同一批候选移除几何项后，选中视角变化 164 / 240 次（排除近似并列）。这些记录说明评分行为，不能证明真值缺陷被修复。",
+          "mobile_overflow": false
+        }
+      },
+      "analysis_sha256": "6c4fbce35906340cabbee12226bf773df105230d16bc05fe3c133e51c02f0639",
+      "campaign_text": "优化实验计划已完成已验收 3 / 3 阶段 · 27 / 27 个实验条目最近设备检查：2026/10/6 08:06:16（北京时间）记录更新：2026/10/6 08:38:12（北京时间）按短实验、固定观测和固定时间依次验收。此处只显示计划状态；完成数量包含短实验条目。",
+      "raw_check_sha256": "a9b6257ba8f15637c716df5124b6bc2f8a71f44f107820241add8f2f50f8ddf3"
+    }
+  },
+  "cpu_analysis_guard_check": {
+    "entry": "tests/test_campaign_analysis.py",
+    "exit_code": 0,
+    "scope": "Synthetic pending/reject/scene-asset-identity/paired-arithmetic fixtures, not quality evidence."
+  }
+}

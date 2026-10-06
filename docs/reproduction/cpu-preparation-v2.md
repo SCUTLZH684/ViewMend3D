@@ -63,3 +63,8 @@ CUDA_VISIBLE_DEVICES='' .envs/activegs/bin/python scripts/activegs/check_environ
 网页控制新增检查覆盖 campaign 与网页启动互斥、worker 退出而 child 仍活、启动身份暂不可见、等待时释放启动锁、只读状态和内部字段过滤。新状态文件不存在时显示“尚未建立计划”；未知运行句柄显示待核查，不推断任务完成，也不重复启动。
 
 独立 Linux 夹具另用真实 HTTP、`flock`、`Popen` 和 `/proc` 验证网页先启动、计划先启动和同时竞争三种顺序，每次都只有一个 CPU 替代 worker 启动。真实子进程等待期间能够取得启动锁，但已登记的活句柄继续阻挡新任务；退出码 7 被保留为失败。GPU 查询为替身，未导入重建库，见 [跨入口检查证据](evidence/cross-entry-cpu-v2.json)。
+
+
+## 后续实际执行
+
+本文件保留当时CPU阶段的验证范围。随后在空闲GPU上完成了27条整链验收，24个正式分支的质量、成本、信号与负结果见[完整GPU结果](optimization-v1-results.md)；CPU检查未被用作质量提升证据。

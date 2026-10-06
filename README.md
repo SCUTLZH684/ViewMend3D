@@ -1,19 +1,19 @@
 # ViewMend3D
 Geometry-Aware Next-Best-View Selection for Active 3D Reconstruction
 
-当前处于探索阶段：ActiveGS + Replica office0 的原始 confidence 方法已完成单场景 GPU 验证（含两行启动兼容修复）。ViewMend3D 第一版几何缺陷评分及公平对照入口已实现，CPU 检查通过，完整 GPU 闭环与质量提升仍待验证。
+当前处于探索阶段：ActiveGS + Replica office0 的原始 confidence 方法已完成单场景 GPU 验证（含两行启动兼容修复）。ViewMend3D v1 已完成 3 个短实验、15 个固定观测分支和9个时间预算分支的完整GPU验收。三种子公平对照表明几何缺陷评分未取得稳定质量提升，全部退化与消融结果见[完整实验报告](docs/reproduction/optimization-v1-results.md)。
 
 队员可先阅读 [当前项目说明](docs/project-overview.md)，了解目标、数据形式、baseline 实测结果、运行方式与下一阶段任务。
 
 本轮按 [优化框架](docs/optimization-framework.md) 执行，运行参数、公共前缀、对照消融和结果审计见 [受控实验说明](docs/controlled-experiments.md)。
 
-第一阶段的 49 项 CPU 检查、实际类前缀恢复检查与真实旧结果展示验证已通过，范围和 GPU 待验收项见 [优化验证记录](docs/reproduction/optimization-v1.md)。
+第一阶段的49项CPU检查记录见[优化实现记录](docs/reproduction/optimization-v1.md)，后续118项CPU准备检查见下方记录；这些历史检查与真实GPU实验分开。
 
 现已继续完成评分中的冗余复制优化、场景纹理身份校验、当前产物审计及空闲后的顺序实验推进工具，见 [CPU 准备记录](docs/reproduction/cpu-preparation-v2.md)。这些实现检查不代表新方法质量提升。
 
 ## 可视化实验界面
 
-已有中文浏览器界面：真实三维网格、分阶段回放、采集轨迹和指标曲线；可在空闲 GPU 上启动新的 office0 原始重建实验，并查看阶段与日志。使用已配置的服务器和 SSH 转发访问，见 [界面使用说明](docs/demo-interface.md)。数据与三维产物留在服务器，不随仓库发布。
+已有中文浏览器界面：24份正式结果的真实三维网格、分阶段回放、采集轨迹、热图、指标曲线与v1历史汇总；可在空闲 GPU 上启动新的 office0 原始重建实验，并查看阶段与日志。使用已配置的服务器和 SSH 转发访问，见 [界面使用说明](docs/demo-interface.md)。数据与三维产物留在服务器，不随仓库发布。
 
 ## 技术调研
 

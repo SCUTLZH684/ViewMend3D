@@ -14,7 +14,7 @@
     <a class="nav active" href="#workspace"><span>◈</span> 重建实验台</a>
     <a class="nav" href="https://github.com/SCUTLZH684/ViewMend3D/blob/main/docs/reproduction/activegs-office0.md" target="_blank" rel="noopener"><span>▤</span> 复现记录 <small>↗</small></a>
     <a class="nav" href="https://github.com/SCUTLZH684/ViewMend3D" target="_blank" rel="noopener"><span>⌘</span> 项目仓库 <small>↗</small></a>
-    <div class="project-note"><span class="tiny-label">当前阶段 · 02</span><strong>验证几何缺陷评分</strong><p>按统一观测预算比较原置信度策略、随机策略与几何缺陷策略。</p><div class="mini-progress"><i></i></div><small>Baseline 验证 → 方法改进 → 对照实验</small></div>
+    <div class="project-note"><span class="tiny-label">当前阶段 · 03</span><strong>复核 v1 实验结果</strong><p>完整对照已通过；缺陷评分未获稳定提升，保留全部负结果。</p><div class="mini-progress"><i></i></div><small>Baseline 验证 → 方法实现 → 结果复核</small></div>
     <div class="sidebar-bottom"><span class="online-dot" id="connection-dot"></span><span id="connection-label">连接实验服务…</span></div>
   </aside>
   <main id="workspace">
@@ -41,6 +41,22 @@
             <div class="metric-card"><span>Chamfer <small>↓</small></span><strong id="chamfer">—</strong><p>双向平均距离的均值</p></div>
           </section>
           <section class="panel chart-panel"><div class="panel-heading"><div><span class="section-number">02</span><h2>几何质量随更新变化</h2></div><select id="chart-metric" aria-label="曲线指标"><option value="distance">Accuracy / Completion</option><option value="coverage_percent">覆盖率</option><option value="chamfer_mm">Chamfer</option></select></div><div class="chart-legend" id="chart-legend"></div><div id="chart" class="chart"></div><div class="chart-note" id="chart-note">点击记录点，查看对应的三维结果。</div></section>
+          <section class="panel summary-panel" aria-label="v1 历史实验汇总">
+            <div class="panel-heading"><div><h2>v1 历史实验汇总</h2></div><span class="badge" id="summary-badge">读取中</span></div>
+            <p id="summary-state" class="summary-note" aria-live="polite">正在读取已审计的历史汇总…</p>
+            <div id="summary-content" hidden>
+              <p id="summary-conclusion" class="summary-conclusion"></p>
+              <div class="summary-budget"><label for="summary-budget">独立预算对照</label><select id="summary-budget" aria-label="汇总实验预算"><option value="observations">固定观测与更新</option><option value="time">固定任务时间</option></select></div>
+              <p id="summary-budget-note" class="summary-note"></p>
+              <p class="summary-note">均值 ± 样本标准差，n = 3；不是置信区间。两个预算分别比较，窄屏可横向滑动表格查看完整指标。</p>
+              <div class="summary-scroll" tabindex="0" role="region" aria-label="三种子质量均值与样本标准差"><table class="summary-table"><thead><tr><th>方法</th><th>Accuracy ↓ / cm</th><th>Completion ↓ / cm</th><th>覆盖率 ↑ / %</th><th>Chamfer ↓ / mm</th></tr></thead><tbody id="summary-quality"></tbody></table></div>
+              <h3 class="summary-subheading">相对 Confidence 的配对差</h3>
+              <p class="summary-note">先按相同种子相减，再汇总差值。距离负值表示更低；覆盖率正值表示更高，差值单位是百分点（pp）。</p>
+              <div class="summary-scroll" tabindex="0" role="region" aria-label="相对 Confidence 的三种子配对质量差"><table class="summary-table"><thead><tr><th>方法 − Confidence</th><th>Δ Accuracy / cm</th><th>Δ Completion / cm</th><th>Δ 覆盖率 / pp</th><th>Δ Chamfer / mm</th></tr></thead><tbody id="summary-paired"></tbody></table></div>
+              <details class="summary-details"><summary>查看耗时、采集数量与评分行为</summary><p class="summary-note">任务时间包含模拟飞行；墙钟为重建阶段耗时，网格评估与导出另计。显存仅统计 PyTorch 分配，未包括 Habitat / OpenGL。采集数量和路径长度不直接表示质量提升。</p><div class="summary-scroll" tabindex="0" role="region" aria-label="三种子实际实验成本"><table class="summary-table summary-cost-table"><thead><tr><th>方法</th><th>任务 / s</th><th>墙钟 / s</th><th>规划 / s</th><th>建图 / s</th><th>观测数</th><th>路径 / m</th><th>峰值显存 / MiB</th></tr></thead><tbody id="summary-cost"></tbody></table></div><p id="summary-diagnostics" class="summary-note"></p></details>
+              <div class="summary-evidence"><strong>历史证据与适用范围</strong><p id="summary-source"></p><a id="summary-report" target="_blank" rel="noopener">查看已审计的实验报告 ↗</a><ul id="summary-limitations"></ul></div>
+            </div>
+          </section>
           <section class="panel comparison-panel"><div class="panel-heading"><div><h2>已完成实验对比</h2></div><span class="badge" id="comparison-count">0 次</span></div><p class="comparison-note">按实验批次、协议和前缀组阅读。原作者流程含候选真值掩码；仅优化分支始终只有前缀观测。墙钟为建图阶段耗时，网格与评估另计。窄屏可横向滑动查看完整指标。</p><div class="comparison-scroll" tabindex="0" role="region" aria-label="已完成实验指标表，可横向滚动"><table class="comparison-table"><thead><tr><th>方法 / 种子</th><th>协议</th><th>采集 / 更新</th><th>Accuracy ↓</th><th>Completion ↓</th><th>覆盖率 ↑</th><th>Chamfer ↓</th><th>任务 / 墙钟</th></tr></thead><tbody id="comparison-body"><tr><td colspan="8">正在读取已完成实验…</td></tr></tbody></table></div></section>
         </div>
         <div class="control-column">

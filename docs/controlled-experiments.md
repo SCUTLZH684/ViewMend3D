@@ -1,6 +1,6 @@
 # ViewMend3D 受控实验运行说明
 
-本入口实现 [下一阶段优化框架](optimization-framework.md)。它与 `run_original.sh` 分开，禁止规划阶段查询候选真值，使用持久化的公共采集前缀，并保存种子、配置、源码摘要、完整指标和成本。新方法已经实现并通过评分与协议的 CPU 检查；完整 GPU 闭环和质量对照仍待实际验证。
+本入口实现 [下一阶段优化框架](optimization-framework.md)。它与 `run_original.sh` 分开，禁止规划阶段查询候选真值，使用持久化的公共采集前缀，并保存种子、配置、源码摘要、完整指标和成本。v1完整GPU闭环已通过：3短实验＋15固定观测＋9时间预算分支；正式结果未显示稳定质量提升，见[结果报告](reproduction/optimization-v1-results.md)。
 
 不占 GPU 的效率优化、当前文件审计和等待空闲后的顺序推进入口，见 [CPU 准备记录](reproduction/cpu-preparation-v2.md)。
 
@@ -71,7 +71,7 @@ export BENCHMARK_BUDGET=180
 bash scripts/activegs/run_benchmark.sh
 ```
 
-任务时间为同步规划＋建图＋估算移动时间；传感器采集与诊断写盘单列，另记录重建墙钟和完整网格/评估流水线墙钟。峰值显存统计为 Torch 分配量，不包含 Habitat/OpenGL，不能误写成整个进程的总显存。该时间协议已通过控制逻辑检查，完整 GPU 执行仍待验证。
+任务时间为同步规划＋建图＋估算移动时间；传感器采集与诊断写盘单列，另记录重建墙钟和完整网格/评估流水线墙钟。峰值显存统计为 Torch 分配量，不包含 Habitat/OpenGL，不能误写成整个进程的总显存。该时间协议的9个GPU分支已实测通过，实际最终观测数和负结果见[结果报告](reproduction/optimization-v1-results.md)。
 
 ## 4 审计和汇总
 
@@ -118,6 +118,6 @@ python tests/test_artifacts.py
 python tests/test_campaign.py
 ```
 
-这些检查验证评分边界、信息隔离、记录与接口，不能代替 GPU 模拟器、CUDA 渲染、网格提取和评估的完整运行。新增 GPU 证据必须记录在 `docs/reproduction/`，并更新本文状态。
+这些CPU检查验证评分边界、信息隔离、记录与接口。完整GPU证据与重开当前文件的最终审计已保存到[结果记录](reproduction/optimization-v1-results.md)。可用 `scripts/activegs/analyze_campaign.py` 重新审计整链；以新输出路径执行，不覆盖既有结果。
 
 `check_prefix_cpu.py` 是独立进程中的实际类状态恢复检查，使用 AST 提取上游类体以避开 LPIPS 模块导入的 CUDA 副作用；它不是完整模块导入或实际重建检查。
