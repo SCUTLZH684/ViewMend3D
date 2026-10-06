@@ -1,6 +1,7 @@
 # ViewMend3D development
 
 Follow `docs/optimization-framework.md` for the current optimization round.
+The completed v1 protocol is archived there; continued optimization follows the preregistered `docs/optimization-v2.md`. Keep v1 results and default method semantics intact.
 Keep the pinned original pipeline separate from controlled experiments.
 Do not obtain candidate ground-truth RGB-D, masks or mesh errors during planning.
 Use exact persisted common prefixes, explicit RNG domains, and recorded source versions.
