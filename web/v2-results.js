@@ -410,7 +410,7 @@ export function mountV2Results(root, { fetcher = fetch, url = '/data/optimizatio
           const picker = document.getElementById('run-select');
           if (!picker || ![...picker.options].some(option => option.value === id)) return;
           picker.value = id; picker.dispatchEvent(new Event('change', { bubbles: true }));
-          document.getElementById('viewer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('reconstruction')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }); pair.append(button); buttons.push(button);
       });
       preview.append(pair);

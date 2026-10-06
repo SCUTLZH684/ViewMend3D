@@ -426,7 +426,10 @@ function renderComparisonTable(runs) {
     tr.dataset.runId = id;
     const method = document.createElement('td'), button = document.createElement('button');
     button.className = 'comparison-link'; button.textContent = `${methodLabels[data.method_id] || data.method} / ${seedLabel(data)}`;
-    button.addEventListener('click', () => loadRun(id));
+    button.addEventListener('click', () => {
+      void loadRun(id);
+      $('reconstruction').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     method.append(button);
     const batch = document.createElement('small'); batch.textContent = runCategory(id, data.method_id); method.append(batch);
     method.title = `${id}\n配对组：${data.comparison_id || '未登记'}`;
