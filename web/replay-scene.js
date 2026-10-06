@@ -58,10 +58,18 @@ export class ReplayScene {
     this.cutaway = value;
     if (this.mesh) { this.mesh.material.clippingPlanes = value ? [this.clip] : []; this.mesh.material.needsUpdate = true; }
   }
-  async load(url) {
+  async load(url, expectedHash=null) {
     const version = ++this.version;
     if (this.mesh) this.mesh.visible = false;
-    const geometry = await this.loader.loadAsync(url);
+    let geometry;
+    if(expectedHash) {
+      const response=await fetch(url,{signal:AbortSignal.timeout(30000)});
+      if(!response.ok) throw new Error(`服务返回 ${response.status}`);
+      const bytes=await response.arrayBuffer();
+      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(v=>v.toString(16).padStart(2,'0')).join('');
+      if(hash!==expectedHash) throw new Error('Ground Truth 预览哈希不一致');
+      geometry=this.loader.parse(bytes);
+    } else geometry = await this.loader.loadAsync(url);
     if (version !== this.version) { geometry.dispose(); return false; }
     for (const [name, attribute] of Object.entries(geometry.attributes)) {
       if (attribute.array instanceof Float64Array) geometry.setAttribute(name, new THREE.BufferAttribute(new Float32Array(attribute.array), attribute.itemSize));

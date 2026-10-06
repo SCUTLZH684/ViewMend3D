@@ -179,7 +179,7 @@ def load_local_path(path):
         return CPUUnpickler(stream).load()
 
 
-def export(run, output, faces=80000, experiment=None):
+def export(run, output, faces=80000, experiment=None, upstream=None):
     import open3d as o3d
 
     experiment = resolve_experiment(run, experiment)
@@ -269,6 +269,8 @@ def export(run, output, faces=80000, experiment=None):
     replay = export_replay(run, experiment, output, manifest)
     if replay:
         manifest["replay"] = replay
+        from export_reference import export_reference
+        manifest["ground_truth"] = export_reference(experiment, output, manifest, upstream, faces)
         manifest["scope"] = "独立8帧过程演示，保存真实RGB-D与逐帧网格；额外记录与评估耗时，不纳入正式质量汇总。"
     encoded = json.dumps(manifest, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
     temp = output / "manifest.json.tmp"
@@ -290,7 +292,8 @@ if __name__ == "__main__":
     parser.add_argument("output", type=Path)
     parser.add_argument("--faces", type=int, default=80000)
     parser.add_argument("--experiment", type=Path, help="Completed experiment directory, absolute or relative to run")
+    parser.add_argument("--upstream", type=Path, help="ActiveGS checkout containing the recorded scene mesh")
     args = parser.parse_args()
     if args.faces < 1000:
         parser.error("--faces must be >= 1000")
-    export(args.run.resolve(), args.output.resolve(), args.faces, args.experiment)
+    export(args.run.resolve(), args.output.resolve(), args.faces, args.experiment, args.upstream)
