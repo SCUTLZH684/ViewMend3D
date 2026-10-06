@@ -35,6 +35,8 @@ def reference_source(experiment, protocol, upstream):
 def export_reference(experiment, output, manifest, upstream=None, faces=80000):
     if not manifest.get('replay'):
         return None
+    if manifest.get('camera_convention') != 'OpenCV camera-to-world' or manifest.get('up_axis') != 'z':
+        raise ValueError('Reference requires recorded OpenCV camera poses in the Z-up world')
     if faces < 1000:
         raise ValueError('Reference preview needs at least 1000 faces')
     source, source_hash = reference_source(experiment, manifest['protocol'], upstream or ROOT / 'external/active-gs')

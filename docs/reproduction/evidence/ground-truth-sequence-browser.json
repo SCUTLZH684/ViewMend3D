@@ -1,0 +1,500 @@
+{
+  "checked_at_utc": "2026-10-06T16:06:57.105Z",
+  "run_id": "web-replay-20261006T141303Z-ae2d2b",
+  "scope": "existing_real_recordings_display_only",
+  "verified_web_git_blobs": {
+    "web/capture-replay.js": "4ba74b5a574e2b251c90779f90600d4d0271f072",
+    "web/capture-replay.css": "9f99da8baf4adb3d9d6ff2a3d4464cd8594aa9cb",
+    "web/replay-state.js": "a09e71bb78d94b6e4a3196ace8f7bc964d01593c",
+    "web/replay-scene.js": "d1e6b79f82a1f948d74b318dd197888d77601747"
+  },
+  "sequence_steps": 16,
+  "manual_cycles": [
+    {
+      "event": 2,
+      "plan": {
+        "decision": "补拍第 2 帧：选中候选 #25 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_depth.png",
+        "map": "第 1 帧建图后 · 1 次观测的地图",
+        "phase": "算法为第 2 帧选中候选 #25：x / y / z = 1.15 / 0.60 / -0.27 m，位置与朝向见橙色相机。此时只有前 1 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_rgb.png",
+        "step": "步骤 3 / 16",
+        "title": "Habitat 拍到的第 1 帧 · 初始观测"
+      },
+      "acquired": {
+        "decision": "补拍第 2 帧：选中候选 #25 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+        "map": "第 2 帧建图后 · 2 次观测的地图",
+        "phase": "第 2 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 3 帧的补拍位置。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+        "step": "步骤 4 / 16",
+        "title": "Habitat 实际补拍的第 2 帧 · 算法选中候选 #25"
+      }
+    },
+    {
+      "event": 3,
+      "plan": {
+        "decision": "补拍第 3 帧：选中候选 #82 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+        "map": "第 2 帧建图后 · 2 次观测的地图",
+        "phase": "算法为第 3 帧选中候选 #82：x / y / z = 1.34 / 0.60 / -0.27 m，位置与朝向见橙色相机。此时只有前 2 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+        "step": "步骤 5 / 16",
+        "title": "Habitat 实际补拍的第 2 帧 · 算法选中候选 #25"
+      },
+      "acquired": {
+        "decision": "补拍第 3 帧：选中候选 #82 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_depth.png",
+        "map": "第 3 帧建图后 · 3 次观测的地图",
+        "phase": "第 3 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 4 帧的补拍位置。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png",
+        "step": "步骤 6 / 16",
+        "title": "Habitat 实际补拍的第 3 帧 · 算法选中候选 #82"
+      }
+    },
+    {
+      "event": 4,
+      "plan": {
+        "decision": "补拍第 4 帧：选中候选 #60 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_depth.png",
+        "map": "第 3 帧建图后 · 3 次观测的地图",
+        "phase": "算法为第 4 帧选中候选 #60：x / y / z = 1.15 / 0.60 / -0.47 m，位置与朝向见橙色相机。此时只有前 3 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png",
+        "step": "步骤 7 / 16",
+        "title": "Habitat 实际补拍的第 3 帧 · 算法选中候选 #82"
+      },
+      "acquired": {
+        "decision": "补拍第 4 帧：选中候选 #60 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_depth.png",
+        "map": "第 4 帧建图后 · 4 次观测的地图",
+        "phase": "第 4 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 5 帧的补拍位置。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png",
+        "step": "步骤 8 / 16",
+        "title": "Habitat 实际补拍的第 4 帧 · 算法选中候选 #60"
+      }
+    },
+    {
+      "event": 5,
+      "plan": {
+        "decision": "补拍第 5 帧：选中候选 #40 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_depth.png",
+        "map": "第 4 帧建图后 · 4 次观测的地图",
+        "phase": "算法为第 5 帧选中候选 #40：x / y / z = 1.34 / 0.60 / -0.47 m，位置与朝向见橙色相机。此时只有前 4 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png",
+        "step": "步骤 9 / 16",
+        "title": "Habitat 实际补拍的第 4 帧 · 算法选中候选 #60"
+      },
+      "acquired": {
+        "decision": "补拍第 5 帧：选中候选 #40 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_depth.png",
+        "map": "第 5 帧建图后 · 5 次观测的地图",
+        "phase": "第 5 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 6 帧的补拍位置。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png",
+        "step": "步骤 10 / 16",
+        "title": "Habitat 实际补拍的第 5 帧 · 算法选中候选 #40"
+      }
+    },
+    {
+      "event": 6,
+      "plan": {
+        "decision": "补拍第 6 帧：选中候选 #33 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_depth.png",
+        "map": "第 5 帧建图后 · 5 次观测的地图",
+        "phase": "算法为第 6 帧选中候选 #33：x / y / z = 1.34 / 0.41 / -0.47 m，位置与朝向见橙色相机。此时只有前 5 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png",
+        "step": "步骤 11 / 16",
+        "title": "Habitat 实际补拍的第 5 帧 · 算法选中候选 #40"
+      },
+      "acquired": {
+        "decision": "补拍第 6 帧：选中候选 #33 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_depth.png",
+        "map": "第 6 帧建图后 · 6 次观测的地图",
+        "phase": "第 6 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 7 帧的补拍位置。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png",
+        "step": "步骤 12 / 16",
+        "title": "Habitat 实际补拍的第 6 帧 · 算法选中候选 #33"
+      }
+    },
+    {
+      "event": 7,
+      "plan": {
+        "decision": "补拍第 7 帧：选中候选 #43 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_depth.png",
+        "map": "第 6 帧建图后 · 6 次观测的地图",
+        "phase": "算法为第 7 帧选中候选 #43：x / y / z = 1.34 / 0.03 / -0.47 m，位置与朝向见橙色相机。此时只有前 6 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png",
+        "step": "步骤 13 / 16",
+        "title": "Habitat 实际补拍的第 6 帧 · 算法选中候选 #33"
+      },
+      "acquired": {
+        "decision": "补拍第 7 帧：选中候选 #43 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_depth.png",
+        "map": "第 7 帧建图后 · 7 次观测的地图",
+        "phase": "第 7 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 8 帧的补拍位置。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png",
+        "step": "步骤 14 / 16",
+        "title": "Habitat 实际补拍的第 7 帧 · 算法选中候选 #43"
+      }
+    },
+    {
+      "event": 8,
+      "plan": {
+        "decision": "补拍第 8 帧：选中候选 #21 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_depth.png",
+        "map": "第 7 帧建图后 · 7 次观测的地图",
+        "phase": "算法为第 8 帧选中候选 #21：x / y / z = 1.15 / -1.52 / 0.53 m，位置与朝向见橙色相机。此时只有前 7 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png",
+        "step": "步骤 15 / 16",
+        "title": "Habitat 实际补拍的第 7 帧 · 算法选中候选 #43"
+      },
+      "acquired": {
+        "decision": "补拍第 8 帧：选中候选 #21 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_depth.png",
+        "map": "第 8 帧建图后 · 8 次观测的地图",
+        "phase": "8 次真实采集已全部回放：首帧 → 选点 → 补拍 → 更新地图，共循环补拍 7 次。可从 Ground Truth 重看；此短演示不证明方法质量提升。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_rgb.png",
+        "step": "步骤 16 / 16",
+        "title": "Habitat 实际补拍的第 8 帧 · 算法选中候选 #21"
+      }
+    }
+  ],
+  "automatic": {
+    "interval_ms": 1500,
+    "observed_steps": [
+      {
+        "decision": "",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_depth.png",
+        "map": "第 1 帧建图后 · 1 次观测的地图",
+        "phase": "第 1 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 2 帧的补拍位置。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_rgb.png",
+        "step": "步骤 2 / 16",
+        "title": "Habitat 拍到的第 1 帧 · 初始观测"
+      },
+      {
+        "decision": "补拍第 2 帧：选中候选 #25 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_depth.png",
+        "map": "第 1 帧建图后 · 1 次观测的地图",
+        "phase": "算法为第 2 帧选中候选 #25：x / y / z = 1.15 / 0.60 / -0.27 m，位置与朝向见橙色相机。此时只有前 1 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_rgb.png",
+        "step": "步骤 3 / 16",
+        "title": "Habitat 拍到的第 1 帧 · 初始观测"
+      },
+      {
+        "decision": "补拍第 2 帧：选中候选 #25 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+        "map": "第 2 帧建图后 · 2 次观测的地图",
+        "phase": "第 2 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 3 帧的补拍位置。",
+        "photoWidth": 0,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+        "step": "步骤 4 / 16",
+        "title": "Habitat 实际补拍的第 2 帧 · 算法选中候选 #25"
+      },
+      {
+        "decision": "补拍第 3 帧：选中候选 #82 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+        "map": "第 2 帧建图后 · 2 次观测的地图",
+        "phase": "算法为第 3 帧选中候选 #82：x / y / z = 1.34 / 0.60 / -0.27 m，位置与朝向见橙色相机。此时只有前 2 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+        "step": "步骤 5 / 16",
+        "title": "Habitat 实际补拍的第 2 帧 · 算法选中候选 #25"
+      },
+      {
+        "decision": "补拍第 3 帧：选中候选 #82 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_depth.png",
+        "map": "第 3 帧建图后 · 3 次观测的地图",
+        "phase": "第 3 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 4 帧的补拍位置。",
+        "photoWidth": 0,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png",
+        "step": "步骤 6 / 16",
+        "title": "Habitat 实际补拍的第 3 帧 · 算法选中候选 #82"
+      },
+      {
+        "decision": "补拍第 4 帧：选中候选 #60 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_depth.png",
+        "map": "第 3 帧建图后 · 3 次观测的地图",
+        "phase": "算法为第 4 帧选中候选 #60：x / y / z = 1.15 / 0.60 / -0.47 m，位置与朝向见橙色相机。此时只有前 3 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png",
+        "step": "步骤 7 / 16",
+        "title": "Habitat 实际补拍的第 3 帧 · 算法选中候选 #82"
+      },
+      {
+        "decision": "补拍第 4 帧：选中候选 #60 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_depth.png",
+        "map": "第 4 帧建图后 · 4 次观测的地图",
+        "phase": "第 4 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 5 帧的补拍位置。",
+        "photoWidth": 0,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png",
+        "step": "步骤 8 / 16",
+        "title": "Habitat 实际补拍的第 4 帧 · 算法选中候选 #60"
+      },
+      {
+        "decision": "补拍第 5 帧：选中候选 #40 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_depth.png",
+        "map": "第 4 帧建图后 · 4 次观测的地图",
+        "phase": "算法为第 5 帧选中候选 #40：x / y / z = 1.34 / 0.60 / -0.47 m，位置与朝向见橙色相机。此时只有前 4 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png",
+        "step": "步骤 9 / 16",
+        "title": "Habitat 实际补拍的第 4 帧 · 算法选中候选 #60"
+      },
+      {
+        "decision": "补拍第 5 帧：选中候选 #40 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_depth.png",
+        "map": "第 5 帧建图后 · 5 次观测的地图",
+        "phase": "第 5 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 6 帧的补拍位置。",
+        "photoWidth": 0,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png",
+        "step": "步骤 10 / 16",
+        "title": "Habitat 实际补拍的第 5 帧 · 算法选中候选 #40"
+      },
+      {
+        "decision": "补拍第 6 帧：选中候选 #33 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_depth.png",
+        "map": "第 5 帧建图后 · 5 次观测的地图",
+        "phase": "算法为第 6 帧选中候选 #33：x / y / z = 1.34 / 0.41 / -0.47 m，位置与朝向见橙色相机。此时只有前 5 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png",
+        "step": "步骤 11 / 16",
+        "title": "Habitat 实际补拍的第 5 帧 · 算法选中候选 #40"
+      },
+      {
+        "decision": "补拍第 6 帧：选中候选 #33 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_depth.png",
+        "map": "第 6 帧建图后 · 6 次观测的地图",
+        "phase": "第 6 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 7 帧的补拍位置。",
+        "photoWidth": 0,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png",
+        "step": "步骤 12 / 16",
+        "title": "Habitat 实际补拍的第 6 帧 · 算法选中候选 #33"
+      },
+      {
+        "decision": "补拍第 7 帧：选中候选 #43 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_depth.png",
+        "map": "第 6 帧建图后 · 6 次观测的地图",
+        "phase": "算法为第 7 帧选中候选 #43：x / y / z = 1.34 / 0.03 / -0.47 m，位置与朝向见橙色相机。此时只有前 6 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png",
+        "step": "步骤 13 / 16",
+        "title": "Habitat 实际补拍的第 6 帧 · 算法选中候选 #33"
+      },
+      {
+        "decision": "补拍第 7 帧：选中候选 #43 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_depth.png",
+        "map": "第 7 帧建图后 · 7 次观测的地图",
+        "phase": "第 7 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 8 帧的补拍位置。",
+        "photoWidth": 0,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png",
+        "step": "步骤 14 / 16",
+        "title": "Habitat 实际补拍的第 7 帧 · 算法选中候选 #43"
+      },
+      {
+        "decision": "补拍第 8 帧：选中候选 #21 / 100（100 个可达）",
+        "decisionHidden": false,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_depth.png",
+        "map": "第 7 帧建图后 · 7 次观测的地图",
+        "phase": "算法为第 8 帧选中候选 #21：x / y / z = 1.15 / -1.52 / 0.53 m，位置与朝向见橙色相机。此时只有前 7 帧观测；下面保留当前照片和地图。下一步才显示随后实际补拍的画面。",
+        "photoWidth": 512,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png",
+        "step": "步骤 15 / 16",
+        "title": "Habitat 实际补拍的第 7 帧 · 算法选中候选 #43"
+      },
+      {
+        "decision": "补拍第 8 帧：选中候选 #21 / 100（100 个可达）",
+        "decisionHidden": true,
+        "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_depth.png",
+        "map": "第 8 帧建图后 · 8 次观测的地图",
+        "phase": "8 次真实采集已全部回放：首帧 → 选点 → 补拍 → 更新地图，共循环补拍 7 次。可从 Ground Truth 重看；此短演示不证明方法质量提升。",
+        "photoWidth": 0,
+        "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_rgb.png",
+        "step": "步骤 16 / 16",
+        "title": "Habitat 实际补拍的第 8 帧 · 算法选中候选 #21"
+      }
+    ],
+    "stopped_after_final_mesh_loaded": true
+  },
+  "boundaries": {
+    "initial_reference_expanded": true,
+    "initial_capture_hidden": true,
+    "initial_previous_disabled": true,
+    "last_next_disabled": true
+  },
+  "before_after": {
+    "before": {
+      "decision": "补拍第 8 帧：选中候选 #21 / 100（100 个可达）",
+      "decisionHidden": true,
+      "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+      "map": "第 2 帧采集前 · 1 次观测的地图",
+      "phase": "第 2 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 3 帧的补拍位置。",
+      "photoWidth": 512,
+      "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+      "step": "步骤 4 / 16",
+      "title": "Habitat 实际补拍的第 2 帧 · 算法选中候选 #25"
+    },
+    "after": {
+      "decision": "补拍第 8 帧：选中候选 #21 / 100（100 个可达）",
+      "decisionHidden": true,
+      "depth": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+      "map": "第 2 帧建图后 · 2 次观测的地图",
+      "phase": "第 2 帧已经实际拍摄并用于建图。下一步根据当前地图选择第 3 帧的补拍位置。",
+      "photoWidth": 512,
+      "rgb": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+      "step": "步骤 4 / 16",
+      "title": "Habitat 实际补拍的第 2 帧 · 算法选中候选 #25"
+    }
+  },
+  "pause_held_step": 3,
+  "run_switch_cancels_playback": true,
+  "legacy_missing_sequence_message": "所选历史实验未保存完整 RGB-D 序列与逐帧网格，不能逐帧展示。请在下方选择“独立演示 · 8帧过程回放”，或在启动面板选择“逐帧演示 · 8次采集”运行一条新演示。历史网格检查点仍可在下方浏览。",
+  "reference_and_chosen_camera_linked": true,
+  "mobile_reference": {
+    "clientWidth": 375,
+    "elements": [
+      {
+        "left": 42.60000228881836,
+        "loaded": null,
+        "parent": "replay-reference-view",
+        "right": 332.60000228881836,
+        "tag": "CANVAS",
+        "width": 290
+      }
+    ],
+    "panel": {
+      "left": 15,
+      "right": 360.20001220703125,
+      "width": 345.20001220703125
+    },
+    "scrollWidth": 375
+  },
+  "mobile_acquired": {
+    "clientWidth": 375,
+    "elements": [
+      {
+        "left": 42.60000228881836,
+        "loaded": null,
+        "parent": "replay-reference-view",
+        "right": 332.60000228881836,
+        "tag": "CANVAS",
+        "width": 290
+      },
+      {
+        "left": 31.80000114440918,
+        "loaded": 512,
+        "parent": "",
+        "right": 183.600004196167,
+        "tag": "IMG",
+        "width": 151.8000030517578
+      },
+      {
+        "left": 191.6000061035156,
+        "loaded": 512,
+        "parent": "",
+        "right": 343.40000915527344,
+        "tag": "IMG",
+        "width": 151.8000030517578
+      },
+      {
+        "left": 31.80000114440918,
+        "loaded": null,
+        "parent": "replay-view",
+        "right": 343.4000072479248,
+        "tag": "CANVAS",
+        "width": 311.6000061035156
+      }
+    ],
+    "panel": {
+      "left": 15,
+      "right": 360.20001220703125,
+      "width": 345.20001220703125
+    },
+    "scrollWidth": 375
+  },
+  "desktop": {
+    "clientWidth": 1265,
+    "elements": [
+      {
+        "left": 295.6000061035156,
+        "loaded": null,
+        "parent": "replay-reference-view",
+        "right": 778.7000122070312,
+        "tag": "CANVAS",
+        "width": 483.1000061035156
+      },
+      {
+        "left": 276.8000183105469,
+        "loaded": 512,
+        "parent": "",
+        "right": 482.7750244140625,
+        "tag": "IMG",
+        "width": 205.9750061035156
+      },
+      {
+        "left": 492.7749938964844,
+        "loaded": 512,
+        "parent": "",
+        "right": 698.75,
+        "tag": "IMG",
+        "width": 205.9750061035156
+      },
+      {
+        "left": 720.75,
+        "loaded": null,
+        "parent": "replay-view",
+        "right": 1205.9875183105469,
+        "tag": "CANVAS",
+        "width": 485.2375183105469
+      }
+    ],
+    "panel": {
+      "left": 252,
+      "right": 1230.7999877929688,
+      "width": 978.7999877929688
+    },
+    "scrollWidth": 1265
+  },
+  "console_errors": []
+}

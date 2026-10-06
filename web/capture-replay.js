@@ -6,13 +6,14 @@ const num = (value, digits=3) => Number.isFinite(value) ? value.toFixed(digits) 
 
 export class CaptureReplay {
   constructor(host) {
+    this.host=host;
     host.innerHTML = `<div class="replay-heading"><div><span class="eyebrow">从真实场景到逐次补拍</span><h2>先看 Ground Truth，再跟着相机完成重建</h2></div><span class="badge" id="replay-badge">已完成结果回放</span></div>
       <p id="replay-empty">正在读取所选实验的逐帧记录…</p>
       <div id="replay-content" hidden>
         <p id="replay-source" class="replay-small"></p><p class="replay-scope">独立 8 帧教学演示 · 使用实际采集的 RGB-D、位姿、评分日志和逐帧网格。额外保存与评估增加耗时，未纳入正式方法质量汇总。</p>
         <ol class="replay-stages"><li id="replay-stage-reference">① Ground Truth 参考场景</li><li id="replay-stage-observed">② Habitat 实际拍摄</li><li id="replay-stage-plan">③ 算法选择下一视角</li><li id="replay-stage-repeat">④ 补拍 → 建图 → 再选点</li></ol>
         <details id="replay-reference-section" open><summary>查看 Ground Truth 参考场景与相机位置</summary><div class="replay-reference-grid"><div><div class="replay-viewport replay-reference-view" id="replay-reference-view"><span class="replay-overlay">Ground Truth · Replica office0 参考网格</span><span id="replay-reference-loading" class="replay-loading">读取完整场景的简化预览…</span><button id="replay-reference-reset" type="button">重置参考场景视角</button></div><label class="replay-reference-cut"><input id="replay-reference-cut" type="checkbox" checked>剖切屋顶，查看室内结构</label></div><div class="replay-reference-intro"><h3>这个房间就是我们要重建的目标</h3><p>桌椅、显示器、墙面等来自 Replica office0 的真实参考网格。可以拖动旋转、滚轮缩放，先看清场景，再看相机在其中拍到了什么。</p><p id="replay-reference-proof" class="replay-small"></p><p class="replay-boundary">Ground Truth 用于展示与评估。补拍算法根据已经采集的 RGB-D 所建立的当前地图选点；此演示不把参考网格误差或未拍摄候选的真实图像交给算法。</p><p id="replay-reference-current" class="replay-small"></p></div></div></details>
-        <div class="replay-actions"><button id="replay-start" type="button">从 Ground Truth 重看</button><button id="replay-prev" type="button">上一步</button><button id="replay-next" type="button" class="primary">下一步：Habitat 拍摄首帧</button><button id="replay-auto" type="button">自动播放全过程</button><span id="replay-sequence-count" class="replay-small"></span></div>
+        <div class="replay-actions" id="replay-controls"><button id="replay-start" type="button">从 Ground Truth 重看</button><button id="replay-prev" type="button">上一步</button><button id="replay-next" type="button" class="primary">下一步：Habitat 拍摄首帧</button><button id="replay-auto" type="button">自动播放全过程</button><label class="replay-speed">播放间隔 <select id="replay-speed"><option value="1500">快速 · 1.5秒</option><option value="3500" selected>标准 · 3.5秒</option><option value="6000">讲解 · 6秒</option></select></label><span id="replay-sequence-count" class="replay-small"></span></div>
         <p id="replay-phase" aria-live="polite" class="replay-phase"></p>
         <nav id="replay-filmstrip" class="replay-filmstrip" aria-label="跳转已记录的采集帧"></nav>
         <div id="replay-capture-content" hidden>
@@ -23,10 +24,12 @@ export class CaptureReplay {
         <div id="replay-decision" hidden><h3 id="replay-decision-title"></h3><p id="replay-reason"></p><div class="replay-table-scroll" tabindex="0" role="region" aria-label="下一帧候选评分"><table><thead><tr><th>候选</th><th>位置 / m</th><th>探索 E</th><th>不确定 U</th><th>几何 D</th><th>路径 / m</th><th>基线分数</th><th>几何奖励</th><th>最终得分 ↑</th></tr></thead><tbody id="replay-candidates"></tbody></table></div><p class="replay-small">显示可达候选中得分最高的 5 个，另保留选中项与基线项；编号沿用原始日志。E/U/D 来自当前地图，分数是选点依据，不是真值误差或成功概率。尚未拍摄的候选没有真实图像。</p></div>
       </div></div>`;
     this.version=0;this.playVersion=0;
-    $('replay-start').onclick=()=>{this.pause();void this.renderSequence(0);};
-    $('replay-prev').onclick=()=>{this.pause();void this.renderSequence(this.step-1);};
-    $('replay-next').onclick=()=>{this.pause();void this.renderSequence(this.step+1);};
+    $('replay-speed').setAttribute('aria-label','播放间隔');
+    $('replay-start').onclick=()=>void this.navigate(0);
+    $('replay-prev').onclick=()=>void this.navigate(this.step-1);
+    $('replay-next').onclick=()=>void this.navigate(this.step+1);
     $('replay-auto').onclick=()=>this.playing?this.pause():void this.play();
+    $('replay-speed').onchange=()=>this.pause();
     $('replay-before').onclick=()=>{this.pause();void this.renderSequence(2*this.index+1,true);};
     $('replay-after').onclick=()=>{this.pause();void this.renderSequence(2*this.index+1);};
     $('replay-reset').onclick=()=>this.scene?.reset(this.manifest.bounds);
@@ -72,7 +75,7 @@ export class CaptureReplay {
       $('replay-filmstrip').replaceChildren(...this.frames.map((frame,i)=>{
         const button=document.createElement('button'); button.type='button';button.textContent=i===0?'首帧 1':`补拍 ${frame.event}`;
         button.setAttribute('aria-label',`回放第 ${frame.event} 帧实际采集`);
-        button.onclick=()=>{this.pause();void this.renderSequence(2*i+1);};return button;
+        button.onclick=()=>void this.navigate(2*i+1);return button;
       }));
       void this.loadReference();
       await this.renderSequence(0);
@@ -111,6 +114,14 @@ export class CaptureReplay {
     this.playing=false; clearTimeout(this.timer); ++this.playVersion;
     $('replay-auto').textContent='自动播放全过程';
   }
+  follow() {
+    (this.step===0?this.host:$('replay-controls')).scrollIntoView({block:'start',behavior:'smooth'});
+  }
+  async navigate(step) {
+    this.pause();const version=this.playVersion;
+    await this.renderSequence(step);
+    if(this.frames && version===this.playVersion) this.follow();
+  }
   async play() {
     if(!this.frames) return;
     if(this.step===this.frames.length*2-1) await this.renderSequence(0);
@@ -120,9 +131,13 @@ export class CaptureReplay {
       if(!this.playing || version!==this.playVersion) return;
       if(this.step===this.frames.length*2-1){this.pause();return;}
       await this.renderSequence(this.step+1);
-      if(this.playing && version===this.playVersion) this.timer=setTimeout(advance,3500);
+      if(this.playing && version===this.playVersion) {
+        this.follow();
+        if(this.step===this.frames.length*2-1)this.pause();
+        else this.timer=setTimeout(advance,Number($('replay-speed').value));
+      }
     };
-    this.timer=setTimeout(advance,3500);
+    this.timer=setTimeout(advance,Number($('replay-speed').value));
   }
   async renderSequence(step, before=false) {
     if(!this.frames || step<0 || step>=this.frames.length*2) return;
@@ -134,6 +149,7 @@ export class CaptureReplay {
     $('replay-prev').disabled=step===0; $('replay-next').disabled=step===this.frames.length*2-1;
     $('replay-next').textContent=phase==='reference'?'下一步：Habitat 拍摄首帧':phase==='plan'?`下一步：实际补拍第 ${index+2} 帧`:index===this.frames.length-1?'全过程已回放':`下一步：算法选择第 ${index+2} 帧`;
     $('replay-sequence-count').textContent=`步骤 ${step+1} / ${this.frames.length*2}`;
+    $('replay-speed').title='只调整已有记录的播放间隔，不代表真实采集或实验耗时';
     ['reference','observed','plan','repeat'].forEach(name=>$(`replay-stage-${name}`).classList.toggle('active',name===phase || name==='repeat'&&phase==='observed'&&index>0));
     [...$('replay-filmstrip').children].forEach((button,i)=>{button.classList.toggle('active',i===index);button.setAttribute('aria-current',i===index?'step':'false');});
     $('replay-reference-current').textContent=phase==='reference'?'青色相机标出预设首帧位置与镜头朝向。点击“下一步”查看它实际拍到的图像。':phase==='plan'?`参考场景中同步标出第 ${index+1} 帧位置（青色）与第 ${index+2} 帧选中视角（橙色）。`:`参考场景中同步标出第 ${index+1} 帧实际相机位置（青色），绿色连线连接已采集位置。`;

@@ -1,0 +1,67 @@
+{
+  "scope": "display_only_ground_truth_preview_existing_eight_frame_demo",
+  "run_id": "web-replay-20261006T141303Z-ae2d2b",
+  "preserved_file_count": 223,
+  "preserved_files_all_match": true,
+  "ground_truth": {
+    "schema": "viewmend-reference-preview-v1",
+    "scene": "Replica office0",
+    "mesh": "ground_truth_cdb6ede0b9d4_80000_v2.ply",
+    "source_sha256": "cdb6ede0b9d455f491ef8fd63cd916a86a505b777842aabd6aa428edf9ff9032",
+    "preview_sha256": "19ce15b20a7498589debd32a732aa9d092641205c83e44f702c5816397843077",
+    "bounds": [
+      [
+        -2.005615234375,
+        -3.1536941528320312,
+        -1.168869137763977
+      ],
+      [
+        2.394385814666748,
+        1.8561344146728516,
+        1.8229918479919434
+      ]
+    ],
+    "up_axis": "z",
+    "transform": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "camera_convention": "OpenCV camera-to-world",
+    "original": {
+      "vertices": 589517,
+      "faces": 1177518
+    },
+    "preview": {
+      "vertices": 40221,
+      "faces": 79999
+    },
+    "source_loader": "trimesh.load_same_as_evaluation",
+    "usage": "display_and_evaluation_only_not_planner_input"
+  },
+  "preview_bytes": 2126221,
+  "replay_sha256": "81e4496cabf81b7810aee3a9d1de7a3d04f027513b7683dc794391cd07d71306",
+  "formal_v2_analysis_sha256": "541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd",
+  "public_run_count": 55
+}

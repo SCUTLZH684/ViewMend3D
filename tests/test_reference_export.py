@@ -28,6 +28,10 @@ class ReferenceTests(unittest.TestCase):
     def test_legacy_export_does_not_read_reference(self):
         self.assertIsNone(export_reference(Path('missing'), Path('missing'), {}))
 
+    def test_unknown_camera_coordinates_rejected_before_reading_scene(self):
+        with self.assertRaisesRegex(ValueError, 'OpenCV camera poses'):
+            export_reference(Path('missing'), Path('missing'), {'replay': {'file': 'replay.json'}, 'up_axis': 'y'})
+
 
 if __name__ == '__main__':
     unittest.main()
