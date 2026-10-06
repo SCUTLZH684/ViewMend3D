@@ -45,6 +45,14 @@ Linux/macOS 在全新克隆中用 `unzip ../viewmend3d-office0-replay-v1.zip` �
 
 **此包仅包含这条 8 帧演示。** 仓库内 v1/v2 正式统计仍可阅读，但其他历史运行的三维入口会因没有相应产物而禁用。若要浏览服务器上全部 55 条已完成运行，按[界面说明](demo-interface.md)通过 SSH 转发连接已有服务；同样无需在队员本机运行重建。
 
+## 已完成的本地验收
+
+2026-10-07 在 Windows 全新克隆中解压上述 ZIP，并用 `python -S scripts/web/server.py --read-only --port 8766` 启动。`-S` 禁用 Python 的第三方包加载；该克隆没有 GPU 环境或 Replica 数据集。36 个展示文件全部通过校验，浏览器完成 Ground Truth、首帧和 7 次“选点 → 实际补拍”的 16 步回放：选点阶段保留上一帧照片，补拍后才显示新照片，RGB 与深度均为 512 × 512。新实验、运行按钮及 GPU 控件禁用，浏览器错误为 0。
+
+实现提交为 `f119f57`；[浏览器验收记录](reproduction/evidence/team-demo-cpu-acceptance.json)保存逐次图像引用与只读状态，[文件与服务验收记录](reproduction/evidence/team-demo-package-acceptance.json)保存包哈希、校验数量与 HTTP 行为。服务器 143 项项目测试与 27 项启动服务检查通过；原有 223 个审计文件及正式 v2 分析哈希保持一致。这里验证的是回放可移植性，不是再次运行模型或新增质量优化实验。
+
+![在普通 Python 本地服务中回放实际第 2 帧 RGB-D 和建图结果](images/team-demo-cpu-replay.png)
+
 ## 如果队员重新运行模型
 
 重新运行需要[baseline 环境](reproduction/activegs-office0.md)、Replica 场景、NVIDIA GPU 和对应源码/配置。固定方法、种子、预算、数据和依赖版本有助于复现，但不保证跨硬件/平台/版本逐位一致；PyTorch 官方也明确说明这种[复现边界](https://docs.pytorch.org/docs/2.14/notes/randomness.html)。本项目未宣称所有 CUDA 自定义算子跨机器完全确定。

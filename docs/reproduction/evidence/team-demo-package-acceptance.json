@@ -1,0 +1,40 @@
+{
+  "schema": "viewmend-team-package-acceptance-v1",
+  "scope": "display_only_saved_artifacts_no_model_rerun",
+  "archive": {
+    "name": "viewmend3d-office0-replay-v1.zip",
+    "bytes": 12982961,
+    "sha256": "e18bd8d252b46a54f4b90650909742158cc2217a5f4036d3db984c0ca2c81404"
+  },
+  "fresh_clone_without_model_env_or_dataset": true,
+  "python_site_packages_disabled": true,
+  "status": {
+    "read_only": true,
+    "gpus": [],
+    "jobs": [],
+    "campaigns": {},
+    "run_count": 1
+  },
+  "post_new_job": {
+    "http_status": 403,
+    "response": {
+      "error": "本服务仅回放已有产物，不启动重建实验"
+    }
+  },
+  "job_directory_not_created": true,
+  "formal_v2_analysis_sha256": "541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd",
+  "server_preservation_audit": {
+    "preserved_file_count": 223,
+    "preserved_files_all_match": true,
+    "public_run_count": 55
+  },
+  "checks": {
+    "project_tests_passed": 143,
+    "launch_service_tests_passed": 27,
+    "replay_package_tests_in_project_suite": 3,
+    "node_syntax_and_replay_state_passed": true
+  },
+  "checked_at_utc": "2026-10-06T17:04:41.191403+00:00",
+  "package_files_verified": 36,
+  "package_files_all_match": true
+}

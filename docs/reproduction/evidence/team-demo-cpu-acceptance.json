@@ -1,0 +1,240 @@
+{
+  "schema": "viewmend-team-replay-acceptance-v1",
+  "checked_at_utc": "2026-10-06T17:03:34.171Z",
+  "scope": "display_only_saved_artifacts_no_model_rerun",
+  "source_commit": "f119f57",
+  "checkout": "fresh_local_clone_without_env_or_dataset",
+  "startup": "python -S scripts/web/server.py --read-only --port 8766",
+  "url": "http://127.0.0.1:8766/#capture-replay",
+  "reference_proof": "与本实验评估源文件 SHA-256 匹配 · 原始 1,177,518 个三角面 → 预览 79,999 个。保留原坐标与颜色；评估仍使用完整网格。",
+  "cycles": [
+    {
+      "next_frame": 2,
+      "planning_observation_label": "当前已采集 1 / 8 帧 · 512 × 512",
+      "planning_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_depth.png",
+          "width": 512
+        }
+      ],
+      "acquisition_observation_label": "当前已采集 2 / 8 帧 · 512 × 512",
+      "acquisition_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+          "width": 512
+        }
+      ],
+      "planning_retains_previous_frame": true,
+      "acquisition_shows_selected_frame": true
+    },
+    {
+      "next_frame": 3,
+      "planning_observation_label": "当前已采集 2 / 8 帧 · 512 × 512",
+      "planning_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_depth.png",
+          "width": 512
+        }
+      ],
+      "acquisition_observation_label": "当前已采集 3 / 8 帧 · 512 × 512",
+      "acquisition_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_depth.png",
+          "width": 512
+        }
+      ],
+      "planning_retains_previous_frame": true,
+      "acquisition_shows_selected_frame": true
+    },
+    {
+      "next_frame": 4,
+      "planning_observation_label": "当前已采集 3 / 8 帧 · 512 × 512",
+      "planning_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_depth.png",
+          "width": 512
+        }
+      ],
+      "acquisition_observation_label": "当前已采集 4 / 8 帧 · 512 × 512",
+      "acquisition_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_depth.png",
+          "width": 512
+        }
+      ],
+      "planning_retains_previous_frame": true,
+      "acquisition_shows_selected_frame": true
+    },
+    {
+      "next_frame": 5,
+      "planning_observation_label": "当前已采集 4 / 8 帧 · 512 × 512",
+      "planning_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_depth.png",
+          "width": 512
+        }
+      ],
+      "acquisition_observation_label": "当前已采集 5 / 8 帧 · 512 × 512",
+      "acquisition_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_depth.png",
+          "width": 512
+        }
+      ],
+      "planning_retains_previous_frame": true,
+      "acquisition_shows_selected_frame": true
+    },
+    {
+      "next_frame": 6,
+      "planning_observation_label": "当前已采集 5 / 8 帧 · 512 × 512",
+      "planning_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_depth.png",
+          "width": 512
+        }
+      ],
+      "acquisition_observation_label": "当前已采集 6 / 8 帧 · 512 × 512",
+      "acquisition_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_depth.png",
+          "width": 512
+        }
+      ],
+      "planning_retains_previous_frame": true,
+      "acquisition_shows_selected_frame": true
+    },
+    {
+      "next_frame": 7,
+      "planning_observation_label": "当前已采集 6 / 8 帧 · 512 × 512",
+      "planning_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_depth.png",
+          "width": 512
+        }
+      ],
+      "acquisition_observation_label": "当前已采集 7 / 8 帧 · 512 × 512",
+      "acquisition_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_depth.png",
+          "width": 512
+        }
+      ],
+      "planning_retains_previous_frame": true,
+      "acquisition_shows_selected_frame": true
+    },
+    {
+      "next_frame": 8,
+      "planning_observation_label": "当前已采集 7 / 8 帧 · 512 × 512",
+      "planning_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_depth.png",
+          "width": 512
+        }
+      ],
+      "acquisition_observation_label": "当前已采集 8 / 8 帧 · 512 × 512",
+      "acquisition_images": [
+        {
+          "id": "replay-rgb",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_rgb.png",
+          "width": 512
+        },
+        {
+          "id": "replay-depth",
+          "src": "/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_depth.png",
+          "width": 512
+        }
+      ],
+      "planning_retains_previous_frame": true,
+      "acquisition_shows_selected_frame": true
+    }
+  ],
+  "read_only": {
+    "new_experiment_disabled": true,
+    "launch_disabled": true,
+    "gpu_control_disabled": true,
+    "job_status": "此入口不执行新实验。正在展示的内容来自已完成运行的保存产物。"
+  },
+  "browser_errors": [],
+  "screenshots": [
+    "docs/images/team-demo-cpu-ground-truth.png",
+    "docs/images/team-demo-cpu-replay.png"
+  ]
+}
