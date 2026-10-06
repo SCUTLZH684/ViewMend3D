@@ -18,9 +18,9 @@ export function runCategory(id, method) {
     ['smoke', 'v2 · 短闭环验收']
   ];
   for (const [key, label] of v2) if (id.startsWith(`campaign-optimization-v2-${key}-`)) return label;
-  if (id.startsWith('campaign-optimization-v1-observations-')) return 'v1 · 固定60次更新';
-  if (id.startsWith('campaign-optimization-v1-time-')) return 'v1 · 180秒任务预算';
-  if (id.startsWith('campaign-optimization-v1-smoke-')) return 'v1 · 短闭环验收';
+  if (id.startsWith('campaign-observations-') || id.startsWith('campaign-optimization-v1-observations-')) return 'v1 · 固定60次更新';
+  if (id.startsWith('campaign-time-') || id.startsWith('campaign-optimization-v1-time-')) return 'v1 · 180秒任务预算';
+  if (id.startsWith('campaign-smoke-') || id.startsWith('campaign-optimization-v1-smoke-')) return 'v1 · 短闭环验收';
   if (id.startsWith('web-')) return '手动启动 · 单次实验';
   return method === 'confidence' ? '原作者流程 · 独立复现' : '其他已完成实验';
 }

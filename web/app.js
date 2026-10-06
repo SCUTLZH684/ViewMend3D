@@ -406,17 +406,20 @@ function renderComparisonTable(runs) {
   const completed = runs.map(run => ({ id: run.id, data: runSummaries.get(run.id) })).filter(row => row.data?.final);
   const currentId = $('run-select').value, mode = $('comparison-filter').value;
   const category = runCategory(currentId, manifest?.method_id);
+  const pairable = manifest && !originalRun(manifest) && Number.isInteger(manifest.seed) && manifest.comparison_id;
   const visible = completed.filter(row => mode === 'all' || (mode === 'stage'
     ? runCategory(row.id, row.data.method_id) === category
-    : manifest?.comparison_id ? row.data.comparison_id === manifest.comparison_id : row.id === currentId));
+    : pairable ? !originalRun(row.data) && row.data.seed === manifest.seed && row.data.comparison_id === manifest.comparison_id : row.id === currentId));
   $('comparison-count').textContent = `${visible.length} / ${completed.length} 条`;
   $('comparison-context').textContent = mode === 'all'
     ? '跨阶段清单仅用于查找运行；预算、种子、前缀或源码不同的条目不能直接作为方法优劣证据。'
     : mode === 'stage'
-      ? `${category}：各 seed 保留单独一行，此表不计算混合均值。手动运行也只是历史清单；正式配对统计请看 v2 汇总。`
-      : manifest?.comparison_id
+      ? `${category}：同一类别的运行清单，各 seed 保留单独一行。手动类别可能包含不同预算，不构成质量对照；正式配对统计请看 v2 汇总。`
+      : pairable
         ? '仅显示记录中 comparison_id 一致的运行：同种子、同预算协议、同公共前缀与实验来源。这里是单种子结果，不能替代多种子结论。'
-        : '当前结果没有登记可配对的 comparison_id，只显示自身。它能说明本次重建完成，不能独立证明方法优于基线。';
+        : manifest && originalRun(manifest)
+          ? '原作者流程的随机种子未固定，属于独立复现，默认仅显示自身；不同预算的原作者运行不构成同种子配对。'
+          : '当前结果没有登记可配对的种子与 comparison_id，只显示自身。它能说明本次重建完成，不能独立证明方法优于基线。';
   const rows = visible.map(({ id, data }) => {
     const tr = document.createElement('tr');
     tr.className = originalRun(data) ? 'original-row' : '';
