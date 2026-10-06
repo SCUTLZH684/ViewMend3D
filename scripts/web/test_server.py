@@ -337,22 +337,33 @@ class LauncherTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 server.parse_job(dict(payload, **{field: value}), [IDLE])
 
-    def test_guarded_web_worker_passes_recipe_and_spec_to_fixed_shell_pipeline(self):
+    def test_guarded_web_worker_passes_recipe_and_spec_to_fixed_python_pipeline(self):
         path = self.job_file()
         job = json.loads(path.read_text(encoding="utf-8"))
         job.update(server.parse_job({"gpu": 2, "protocol": "observations", "method": "defect_guarded",
                                     "seed": 1, "frames": 60}, [IDLE]))
         server.atomic_json(path, job)
         def start(command, **kwargs):
-            if command[0] == "bash":
+            self.assertEqual(command[0], str(self.root / ".envs/activegs/bin/python"))
+            if Path(command[1]).name == "run_benchmark.py":
                 self.assertEqual(kwargs["env"]["BENCHMARK_METHODS"], "defect_guarded")
                 self.assertEqual(kwargs["env"]["BENCHMARK_RECIPE"], "optimization-v2")
                 self.assertEqual(kwargs["env"]["BENCHMARK_CAMPAIGN_SPEC_SHA256"], server.campaign_spec_sha256("optimization-v2"))
                 run = Path(kwargs["env"]["RUN_DIR"])
+                self.assertEqual(command, [str(self.root / ".envs/activegs/bin/python"),
+                    str(self.root / "scripts/activegs/run_benchmark.py"),
+                    "--upstream", str(self.root / "external/active-gs"), "--run-dir", str(run),
+                    "--gpu", "2", "--methods", "defect_guarded", "--seeds", "1",
+                    "--frames", "60", "--prefix-frames", "20", "--protocol", "observations",
+                    "--budget", "180", "--recipe", "optimization-v2", "--campaign-spec-sha256",
+                    server.campaign_spec_sha256("optimization-v2")])
                 (run / "logs").mkdir(parents=True)
                 result = run / "experiments/benchmark/replica/office0/defect_guarded/1/final_result.json"
                 result.parent.mkdir(parents=True)
                 result.write_text("{}")
+            else:
+                self.assertEqual(Path(command[1]), self.root / "scripts/web/export_run.py")
+                self.assertIn("--experiment", command)
             return SimpleNamespace(pid=os.getpid(), wait=lambda: 0)
         with patch.object(server, "gpu_status", return_value=([IDLE], None)), \
              patch.object(server.subprocess, "Popen", side_effect=start):
@@ -383,13 +394,20 @@ class LauncherTests(unittest.TestCase):
         job.update(mode="benchmark", protocol="observations", method="suite", seed=1, frames=60, budget=180)
         server.atomic_json(path, job)
         def start(command, **kwargs):
-            if command[0] != "bash":
-                self.assertEqual(Path(command[1]).name, "export_run.py")
+            self.assertEqual(command[0], str(self.root / ".envs/activegs/bin/python"))
+            if Path(command[1]).name == "export_run.py":
+                self.assertEqual(Path(command[1]), self.root / "scripts/web/export_run.py")
                 return SimpleNamespace(pid=os.getpid(), wait=lambda: 0)
-            self.assertEqual(Path(command[1]).name, "run_benchmark.sh")
+            self.assertEqual(Path(command[1]), self.root / "scripts/activegs/run_benchmark.py")
             self.assertEqual(kwargs["env"]["BENCHMARK_METHODS"], "confidence_nooracle,random_matched,defect")
             self.assertEqual(kwargs["env"]["BENCHMARK_SEEDS"], "1")
             run = Path(kwargs["env"]["RUN_DIR"])
+            self.assertEqual(command, [str(self.root / ".envs/activegs/bin/python"),
+                str(self.root / "scripts/activegs/run_benchmark.py"),
+                "--upstream", str(self.root / "external/active-gs"), "--run-dir", str(run),
+                "--gpu", "2", "--methods", "confidence_nooracle", "random_matched", "defect",
+                "--seeds", "1", "--frames", "60", "--prefix-frames", "20",
+                "--protocol", "observations", "--budget", "180", "--recipe", "optimization-v1"])
             (run / "logs").mkdir(parents=True)
             for method in server.BENCHMARK_METHODS[:3]:
                 result = run / f"experiments/benchmark/replica/office0/{method}/1/final_result.json"
@@ -399,7 +417,8 @@ class LauncherTests(unittest.TestCase):
         with patch.object(server, "gpu_status", return_value=([IDLE], None)), \
                 patch.object(server.subprocess, "Popen", side_effect=start) as launches:
             server.worker(self.root, path)
-        exporters = [call.args[0] for call in launches.call_args_list if call.args[0][0] != "bash"]
+        exporters = [call.args[0] for call in launches.call_args_list
+                     if Path(call.args[0][1]).name == "export_run.py"]
         self.assertEqual(len(exporters), 3)
         self.assertTrue(all("--experiment" in command for command in exporters))
         self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["status"], "completed")

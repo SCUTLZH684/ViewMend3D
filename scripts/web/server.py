@@ -359,6 +359,18 @@ def environment(root, gpu, budget, run):
     return env
 
 
+def benchmark_command(root, job, env):
+    """Launch the stable Python child directly, matching the shell entry point."""
+    methods = ['confidence_nooracle', 'random_matched', 'defect'] if job['method'] == 'suite' else [job['method']]
+    command = [env['ACTIVEGS_PYTHON'], str(root / 'scripts/activegs/run_benchmark.py'),
+               '--upstream', env['ACTIVEGS_ROOT'], '--run-dir', env['RUN_DIR'], '--gpu', str(job['gpu']),
+               '--methods', *methods, '--seeds', str(job['seed']), '--frames', '60', '--prefix-frames', '20',
+               '--protocol', 'observations', '--budget', '180', '--recipe', env.get('BENCHMARK_RECIPE', DEFAULT_CAMPAIGN)]
+    if env.get('BENCHMARK_CAMPAIGN_SPEC_SHA256'):
+        command.extend(['--campaign-spec-sha256', env['BENCHMARK_CAMPAIGN_SPEC_SHA256']])
+    return command
+
+
 def worker(root, job_path):
     job = json.loads(job_path.read_text(encoding="utf-8"))
     run = root / "runs" / job["id"]
@@ -387,14 +399,15 @@ def worker(root, job_path):
             methods = ",".join(BENCHMARK_METHODS[:3]) if job["method"] == "suite" else job["method"]
             env.update(BENCHMARK_METHODS=methods, BENCHMARK_SEEDS=str(job["seed"]),
                        BENCHMARK_FRAMES="60", BENCHMARK_PREFIX="20", BENCHMARK_PROTOCOL="observations",
-                       BENCHMARK_BUDGET="180")
+                       BENCHMARK_BUDGET="180", TORCH_HOME=str(run.parent / "torch-cache"))
             if job.get("recipe") == "optimization-v2":
                 env.update(BENCHMARK_RECIPE=job["recipe"],
                            BENCHMARK_CAMPAIGN_SPEC_SHA256=job["campaign_spec_sha256"])
         # The original runner requires a directory that does not yet exist.
         runner_log = root / "runs/web-jobs" / f"{job['id']}.log"
         with runner_log.open("w") as log:
-            code = run_web_child(root, job_path, job, ["bash", str(root / "scripts/activegs" / runner)],
+            command = benchmark_command(root, job, env) if job.get("mode") == "benchmark" else ["bash", str(root / "scripts/activegs" / runner)]
+            code = run_web_child(root, job_path, job, command,
                                  env=env, stdout=log, stderr=subprocess.STDOUT)
         if run.exists():
             shutil.copyfile(runner_log, run / "logs/runner.log")

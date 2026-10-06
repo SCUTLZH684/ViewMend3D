@@ -1,0 +1,689 @@
+{
+  "version": "viewmend-v2-public-trajectory-review-v1",
+  "frozen_project_commit": "fafb552400903cd083a34f3966bf5068a95344d2",
+  "quality_metrics_used": false,
+  "read_only_inputs": true,
+  "audits": [
+    {
+      "private_audit_file": "v2-observed-trajectory-audit-20261006.json",
+      "audit_sha256": "eee46285cc32ad9440f210e4a81313b7e423e8cef21f22f0e015817201425c1d",
+      "input_count": 290,
+      "input_manifest_sha256": "f47c8ca8fa8856f8fb3bb8409eb290fbf91a0181176bf20f8f4fddf81c8a185a"
+    },
+    {
+      "private_audit_file": "v2-branch-numerical-differences-20261006.json",
+      "audit_sha256": "16a1b8fa4384139d745f354386298e8632e075af2eca5596481e77834e03ece6",
+      "input_count": 546,
+      "input_manifest_sha256": "ce55154148f4251c66e9ef04fcb8b50e7727b29fce7a3d5f202d430a9b05c06b"
+    }
+  ],
+  "actual_camera_comparisons": [
+    {
+      "stage": "development_observations",
+      "seed": 0,
+      "external_and_intrinsic_abs_tolerance": 1e-05,
+      "confidence_observations": 60,
+      "guarded_observations": 60,
+      "common_length": 60,
+      "declared_shared_prefix_observations": 20,
+      "common_prefix20_camera_and_intrinsic_equal": true,
+      "equal_extrinsic_prefix_length": 26,
+      "equal_extrinsic_pose_count": 26,
+      "equal_intrinsic_count": 60,
+      "equal_full_camera_count": 26,
+      "first_extrinsic_difference_observation_event": 27,
+      "all_common_extrinsics_equal": false,
+      "complete_sequences_equal_with_tolerance": false,
+      "guarded_same_map_s0_vs_s2_changed_events": [
+        31,
+        45
+      ],
+      "guarded_same_map_s0_vs_s2_changed_event_count": 2,
+      "guarded_zero_same_map_change_but_independent_trajectory_differs": false
+    },
+    {
+      "stage": "development_observations",
+      "seed": 1,
+      "external_and_intrinsic_abs_tolerance": 1e-05,
+      "confidence_observations": 60,
+      "guarded_observations": 60,
+      "common_length": 60,
+      "declared_shared_prefix_observations": 20,
+      "common_prefix20_camera_and_intrinsic_equal": true,
+      "equal_extrinsic_prefix_length": 22,
+      "equal_extrinsic_pose_count": 22,
+      "equal_intrinsic_count": 60,
+      "equal_full_camera_count": 22,
+      "first_extrinsic_difference_observation_event": 23,
+      "all_common_extrinsics_equal": false,
+      "complete_sequences_equal_with_tolerance": false,
+      "guarded_same_map_s0_vs_s2_changed_events": [],
+      "guarded_same_map_s0_vs_s2_changed_event_count": 0,
+      "guarded_zero_same_map_change_but_independent_trajectory_differs": true
+    },
+    {
+      "stage": "development_time",
+      "seed": 0,
+      "external_and_intrinsic_abs_tolerance": 1e-05,
+      "confidence_observations": 118,
+      "guarded_observations": 123,
+      "common_length": 118,
+      "declared_shared_prefix_observations": 20,
+      "common_prefix20_camera_and_intrinsic_equal": true,
+      "equal_extrinsic_prefix_length": 24,
+      "equal_extrinsic_pose_count": 24,
+      "equal_intrinsic_count": 118,
+      "equal_full_camera_count": 24,
+      "first_extrinsic_difference_observation_event": 25,
+      "all_common_extrinsics_equal": false,
+      "complete_sequences_equal_with_tolerance": false,
+      "guarded_same_map_s0_vs_s2_changed_events": [],
+      "guarded_same_map_s0_vs_s2_changed_event_count": 0,
+      "guarded_zero_same_map_change_but_independent_trajectory_differs": true
+    },
+    {
+      "stage": "development_time",
+      "seed": 1,
+      "external_and_intrinsic_abs_tolerance": 1e-05,
+      "confidence_observations": 113,
+      "guarded_observations": 111,
+      "common_length": 111,
+      "declared_shared_prefix_observations": 20,
+      "common_prefix20_camera_and_intrinsic_equal": true,
+      "equal_extrinsic_prefix_length": 23,
+      "equal_extrinsic_pose_count": 23,
+      "equal_intrinsic_count": 111,
+      "equal_full_camera_count": 23,
+      "first_extrinsic_difference_observation_event": 24,
+      "all_common_extrinsics_equal": false,
+      "complete_sequences_equal_with_tolerance": false,
+      "guarded_same_map_s0_vs_s2_changed_events": [
+        36,
+        39,
+        57,
+        96
+      ],
+      "guarded_same_map_s0_vs_s2_changed_event_count": 4,
+      "guarded_zero_same_map_change_but_independent_trajectory_differs": false
+    }
+  ],
+  "initial_candidate_and_scalar_comparisons": [
+    {
+      "stage": "development_observations",
+      "seed": 0,
+      "first_candidate_vector_difference_abs1e5": 22,
+      "first_exact_base_vector_difference_while_candidates_aligned": 24,
+      "first_selected_pose_difference_abs1e5": 27,
+      "initial_events": [
+        {
+          "event": 21,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": true,
+          "base_max_abs_difference_if_candidates_aligned": 0.0,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 0.0,
+          "confidence_selected_index": 62,
+          "guarded_baseline_selected_index": 62,
+          "guarded_selected_index": 62,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 22,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.504914164543152,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 23,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.8338850736618042,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 24,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": false,
+          "base_max_abs_difference_if_candidates_aligned": 9.056925773620605e-05,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 9.055435657501221e-05,
+          "confidence_selected_index": 97,
+          "guarded_baseline_selected_index": 97,
+          "guarded_selected_index": 97,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 25,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.1561143398284912,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 26,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.1478264331817627,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 27,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.9973391890525818,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.2080654799938202,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        }
+      ],
+      "aligned_candidate_event_count": 2,
+      "scope": "The base differences compare raw B only when the two ordered candidate vectors agree within 1e-5; maps may already differ. This is not a paired same-map render test or a causal diagnosis."
+    },
+    {
+      "stage": "development_observations",
+      "seed": 1,
+      "first_candidate_vector_difference_abs1e5": 23,
+      "first_exact_base_vector_difference_while_candidates_aligned": 22,
+      "first_selected_pose_difference_abs1e5": 23,
+      "initial_events": [
+        {
+          "event": 21,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": true,
+          "base_max_abs_difference_if_candidates_aligned": 0.0,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 0.0,
+          "confidence_selected_index": 4,
+          "guarded_baseline_selected_index": 4,
+          "guarded_selected_index": 4,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 22,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": false,
+          "base_max_abs_difference_if_candidates_aligned": 0.22296887263655663,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.00022296543465927243,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 3.571808338165283e-05,
+          "confidence_selected_index": 39,
+          "guarded_baseline_selected_index": 39,
+          "guarded_selected_index": 39,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 23,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.9980390667915344,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.3315059542655945,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 24,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.994573950767517,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.5421983450651169,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 25,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.1195425987243652,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.6871918588876724,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 26,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.994573950767517,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.7063168883323669,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 27,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.2956526279449463,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 1.514457643032074,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        }
+      ],
+      "aligned_candidate_event_count": 2,
+      "scope": "The base differences compare raw B only when the two ordered candidate vectors agree within 1e-5; maps may already differ. This is not a paired same-map render test or a causal diagnosis."
+    },
+    {
+      "stage": "development_time",
+      "seed": 0,
+      "first_candidate_vector_difference_abs1e5": 24,
+      "first_exact_base_vector_difference_while_candidates_aligned": 22,
+      "first_selected_pose_difference_abs1e5": 25,
+      "initial_events": [
+        {
+          "event": 21,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": true,
+          "base_max_abs_difference_if_candidates_aligned": 0.0,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 0.0,
+          "confidence_selected_index": 93,
+          "guarded_baseline_selected_index": 93,
+          "guarded_selected_index": 93,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 22,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": false,
+          "base_max_abs_difference_if_candidates_aligned": 7.908046245574951e-05,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 7.908046245574951e-05,
+          "confidence_selected_index": 2,
+          "guarded_baseline_selected_index": 2,
+          "guarded_selected_index": 2,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 23,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": false,
+          "base_max_abs_difference_if_candidates_aligned": 8.809566497802734e-05,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 8.809566497802734e-05,
+          "confidence_selected_index": 59,
+          "guarded_baseline_selected_index": 59,
+          "guarded_selected_index": 59,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 24,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.721739649772644,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 25,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.104348301887512,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.1994573473930359,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 26,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.869565963745117,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.3853713274002075,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 27,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.119542956352234,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.578057050704956,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        }
+      ],
+      "aligned_candidate_event_count": 3,
+      "scope": "The base differences compare raw B only when the two ordered candidate vectors agree within 1e-5; maps may already differ. This is not a paired same-map render test or a causal diagnosis."
+    },
+    {
+      "stage": "development_time",
+      "seed": 1,
+      "first_candidate_vector_difference_abs1e5": 24,
+      "first_exact_base_vector_difference_while_candidates_aligned": 22,
+      "first_selected_pose_difference_abs1e5": 24,
+      "initial_events": [
+        {
+          "event": 21,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": true,
+          "base_max_abs_difference_if_candidates_aligned": 0.0,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 0.0,
+          "confidence_selected_index": 73,
+          "guarded_baseline_selected_index": 73,
+          "guarded_selected_index": 73,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 22,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": false,
+          "base_max_abs_difference_if_candidates_aligned": 1.430511474609375e-06,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 1.430511474609375e-06,
+          "confidence_selected_index": 41,
+          "guarded_baseline_selected_index": 41,
+          "guarded_selected_index": 41,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 23,
+          "candidate_vectors_exact_equal": true,
+          "candidate_pose_max_abs_difference": 0.0,
+          "candidate_vectors_equal_abs1e5": true,
+          "base_vectors_exact_equal": false,
+          "base_max_abs_difference_if_candidates_aligned": 1.6741454601287842e-05,
+          "exploration_max_abs_difference_if_candidates_aligned": 0.0,
+          "uncertainty_max_abs_difference_if_candidates_aligned": 1.6741454601287842e-05,
+          "confidence_selected_index": 34,
+          "guarded_baseline_selected_index": 34,
+          "guarded_selected_index": 34,
+          "selected_pose_max_abs_difference": 0.0,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 24,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 1.992053508758545,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.38260889053344727,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 25,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.678261637687683,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.38537168502807617,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 26,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.6782615184783936,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.5339743196964264,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        },
+        {
+          "event": 27,
+          "candidate_vectors_exact_equal": false,
+          "candidate_pose_max_abs_difference": 2.295652747154236,
+          "candidate_vectors_equal_abs1e5": false,
+          "base_vectors_exact_equal": null,
+          "base_max_abs_difference_if_candidates_aligned": null,
+          "exploration_max_abs_difference_if_candidates_aligned": null,
+          "uncertainty_max_abs_difference_if_candidates_aligned": null,
+          "confidence_selected_index": null,
+          "guarded_baseline_selected_index": null,
+          "guarded_selected_index": null,
+          "selected_pose_max_abs_difference": 0.5780572891235352,
+          "roi_counts": [
+            30,
+            30
+          ],
+          "guarded_internal_selection_changed": false
+        }
+      ],
+      "aligned_candidate_event_count": 3,
+      "scope": "The base differences compare raw B only when the two ordered candidate vectors agree within 1e-5; maps may already differ. This is not a paired same-map render test or a causal diagnosis."
+    }
+  ],
+  "scope": "Development seeds only. Camera counts, scalar differences and local changed-event numbers; no camera matrices, raw candidate vectors, RGB-D or map tensors. Local S0/S2 comparisons do not establish independent trajectory equality or reward causality. Native numerical or backend causes have not been demonstrated."
+}

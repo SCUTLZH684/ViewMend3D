@@ -1,25 +1,42 @@
 # ViewMend3D 受控实验运行说明
 
-本入口实现 [下一阶段优化框架](optimization-framework.md)。它与 `run_original.sh` 分开，禁止规划阶段查询候选真值，使用持久化的公共采集前缀，并保存种子、配置、源码摘要、完整指标和成本。v1完整GPU闭环已通过：3短实验＋15固定观测＋9时间预算分支；正式结果未显示稳定质量提升，见[结果报告](reproduction/optimization-v1-results.md)。
+本入口实现[v1归档框架](optimization-framework.md)及[v2预注册协议](optimization-v2.md)。它与 `run_original.sh` 分开，禁止规划阶段查询候选真值，使用持久化公共采集前缀，保存种子、配置、源码摘要、完整指标和成本。v1完整GPU闭环已通过：3短实验＋15固定观测＋9时间预算分支；正式结果未显示稳定质量提升，见[v1报告](reproduction/optimization-v1-results.md)。v2另完成五阶段27分支、全部导出和fresh审计，四组24正式分支见[v2报告](reproduction/optimization-v2-results.md)。
 
 不占 GPU 的效率优化、当前文件审计和等待空闲后的顺序推进入口，见 [CPU 准备记录](reproduction/cpu-preparation-v2.md)。
 
 ## v2独立计划
 
-后续工作遵循[v2预注册框架](optimization-v2.md)，新方法为`defect_guarded`及仅去除深度门控的`defect_guarded_no_gate`。旧方法和默认v1入口保留。v2完整recipe与campaign spec进入公共前缀、每个分支及聚合报告；β固定0.1，不能通过网页临时覆盖。
+本轮已按[v2预注册框架](optimization-v2.md)完成，新方法为`defect_guarded`及仅去除深度门控的`defect_guarded_no_gate`。旧方法和默认v1入口保留。v2完整recipe与campaign spec进入公共前缀、每个分支及聚合报告；β固定0.1，未按开发质量或消融结果更换主方法、参数或种子。
 
 ```bash
 # 只读计划；不查询显卡、不创建run、不导入Torch/Habitat。
 /opt/conda/bin/python scripts/activegs/run_campaign.py --campaign optimization-v2 --plan
-# 每次至多推进一个阶段；存在活句柄/未知意图时只核查。
+# 每次至多推进一个阶段；活句柄/未知意图时只核查，本轮completed后不重跑。
 /opt/conda/bin/python scripts/activegs/run_campaign.py --campaign optimization-v2 --tick
 /opt/conda/bin/python scripts/activegs/run_campaign.py --campaign optimization-v2 --status
 # 必须27分支与5阶段完成；未完成时返回pending并拒绝生成质量汇总。
 /opt/conda/bin/python scripts/activegs/analyze_v2_campaign.py --root /workspace/ViewMend3D \
-  --output /workspace/ViewMend3D/setup/optimization-v2-final-analysis.json
+  --output /workspace/ViewMend3D/setup/optimization-v2-reanalysis-new.json
 ```
 
 顺序为3短实验、8开发固定观测、4开发固定时间、6留出固定观测、6留出固定时间。所有阶段的新baseline在本轮冻结源码上重新生成，共享真实前缀；开发n=2与留出n=3分别统计。源码与配置在整链中冻结，失败保留、不自动重试或覆盖，源变化则停止并审查。统计只覆盖office0，留出种子不表示跨场景验证。下文保留v1运行与结果说明。
+
+实际历史实验源为 `fafb552400903cd083a34f3966bf5068a95344d2`，五阶段27条与27份网页导出全部完成，worker/child已退出。最终分析重读原始二进制、完整网格、采集相机、成本与诊断，fresh聚合与保存paired结果一致。留出Completion/覆盖率均值局部改善，但部分种子和Accuracy等指标退化；四组小样本描述统计不支持稳定提升或显著性结论。奖励日志只比较该方法自身当前地图上同次候选集的S0首选与S2首选，不能把独立分支的全部质量差因果归于奖励。
+
+### CPU复现公开汇总与图表
+
+clone后可直接消费已审阅的[完整最终分析](reproduction/evidence/optimization-v2-final-analysis.json)，无需原数据集、地图或GPU。该JSON仅含指标、成本、标量诊断与来源元数据；原字节SHA256为 `541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd`。图表另需Matplotlib；去掉 `--plots` 时发布工具只用标准库。
+
+```bash
+CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 python scripts/activegs/publish_v2_results.py \
+  docs/reproduction/evidence/optimization-v2-final-analysis.json \
+  --expected-sha256 541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd \
+  --output-dir runs/v2-cpu-reproduction-new --plots
+```
+
+输出中文报告、compact快照、输入指纹及四组独立质量/成本图。两个绘图与发布入口都要求可信完整分析和独立SHA，核对五项源码身份、固定recipe、五阶段27分支、统计/配对/诊断链。新输出目录不能已存在；仓库内仅允许 `runs/` 或 `setup/`，不会自动写docs/web或覆盖历史结果。若单独重画图，可用 `scripts/activegs/plot_v2_results.py`，保持同一输入和 `--expected-sha256`，指定另一个新目录。
+
+公开JSON与SHA是已审阅实验的复现输入，自行标记complete或自算摘要不能证明真实GPU运行。重新审计原始产物仍使用上方 `analyze_v2_campaign.py`，输出须是尚不存在的新路径。
 
 ## 1 运行环境
 
@@ -116,7 +133,7 @@ python scripts/activegs/aggregate_benchmark.py \
   --experiment experiments/benchmark/replica/office0/defect/0
 ```
 
-前端显示方法、种子、协议、更新次数与实际观测数，按真实协议和前缀摘要标记可配对结果。原作者含候选真值掩码的结果单列。只有真实导出的诊断才显示缺陷热力图；未提供诊断或尚未执行的实验不会生成示意性指标。
+前端显示方法、种子、协议、更新次数与实际观测数，按真实协议和前缀摘要标记可配对结果。原作者含候选真值掩码的结果单列。只有真实导出的诊断才显示缺陷热力图；未提供诊断或尚未执行的实验不会生成示意性指标。v1历史汇总保留，v2四组分别显示n=2/3及seed列表，并可进入真实网格；均值±样本SD不作为置信区间。一次独立HTTP启动的60观测公平任务已完成GPU重建、3检查点与导出，未拼入正式27分支。
 
 分支还记录场景名称、包含纹理的场景输入指纹、场景网格内容哈希和解析配置上下文哈希。汇总拒绝跨种子混入不同场景或配置，并要求当前产物重新验收且对应实际事件、阶段、预算和成本；网页也将场景与配置身份纳入配对分组。
 
@@ -135,6 +152,6 @@ python tests/test_artifacts.py
 python tests/test_campaign.py
 ```
 
-这些CPU检查验证评分边界、信息隔离、记录与接口。完整GPU证据与重开当前文件的最终审计已保存到[结果记录](reproduction/optimization-v1-results.md)。可用 `scripts/activegs/analyze_campaign.py` 重新审计整链；以新输出路径执行，不覆盖既有结果。
+这些CPU检查验证评分边界、信息隔离、记录与接口。完整GPU证据与当前文件fresh审计见[v1结果](reproduction/optimization-v1-results.md)和[v2结果](reproduction/optimization-v2-results.md)。v1用 `scripts/activegs/analyze_campaign.py`、v2用 `scripts/activegs/analyze_v2_campaign.py` 重新审计；以新输出路径执行，不覆盖既有结果。
 
 `check_prefix_cpu.py` 是独立进程中的实际类状态恢复检查，使用 AST 提取上游类体以避开 LPIPS 模块导入的 CUDA 副作用；它不是完整模块导入或实际重建检查。

@@ -5,6 +5,7 @@
   <title>ViewMend3D · 重建实验台</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' rx='12' fill='%235b5bd6'/><path d='M12 15l12-7 12 7v18l-12 7-12-7zM12 15l12 7 12-7M24 22v18' fill='none' stroke='white' stroke-width='3'/></svg>">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/v2-results.css">
   <script type="importmap">{"imports":{"three":"/vendor/three.module.js"}}</script>
 </head>
 <body>
@@ -14,7 +15,7 @@
     <a class="nav active" href="#workspace"><span>◈</span> 重建实验台</a>
     <a class="nav" href="https://github.com/SCUTLZH684/ViewMend3D/blob/main/docs/reproduction/activegs-office0.md" target="_blank" rel="noopener"><span>▤</span> 复现记录 <small>↗</small></a>
     <a class="nav" href="https://github.com/SCUTLZH684/ViewMend3D" target="_blank" rel="noopener"><span>⌘</span> 项目仓库 <small>↗</small></a>
-    <div class="project-note"><span class="tiny-label">当前阶段 · 03</span><strong>探索 v2 有界几何奖励</strong><p>v1 未获稳定质量提升。v2 正按预注册协议检验评分与开销。</p><div class="mini-progress"><i></i></div><small>Baseline 验证 → 方法实现 → 结果复核</small></div>
+    <div class="project-note"><span class="tiny-label">当前阶段 · 03</span><strong>v2 完整实验已复核</strong><p>27 分支完成。留出平均完整度有小幅改善，个别种子仍退化。</p><div class="mini-progress"><i></i></div><small>下一步：重复性与奖励作用验证</small></div>
     <div class="sidebar-bottom"><span class="online-dot" id="connection-dot"></span><span id="connection-label">连接实验服务…</span></div>
   </aside>
   <main id="workspace">
@@ -57,6 +58,7 @@
               <div class="summary-evidence"><strong>历史证据与适用范围</strong><p id="summary-source"></p><a id="summary-report" target="_blank" rel="noopener">查看已审计的实验报告 ↗</a><ul id="summary-limitations"></ul></div>
             </div>
           </section>
+          <section id="v2-results" class="panel v2-results-panel" aria-label="v2完整实验汇总"><div class="panel-heading"><div><h2>v2 · 有界几何奖励结果</h2></div><span class="badge">尚未加载</span></div><p class="v2-note">整链fresh审计后才发布v2汇总；此处尚无可确认的汇总数值。</p></section>
           <section class="panel comparison-panel"><div class="panel-heading"><div><h2>已完成实验对比</h2></div><span class="badge" id="comparison-count">0 次</span></div><p class="comparison-note">按实验批次、协议和前缀组阅读。原作者流程含候选真值掩码；仅优化分支始终只有前缀观测。墙钟为建图阶段耗时，网格与评估另计。窄屏可横向滑动查看完整指标。</p><div class="comparison-scroll" tabindex="0" role="region" aria-label="已完成实验指标表，可横向滚动"><table class="comparison-table"><thead><tr><th>方法 / 种子</th><th>协议</th><th>采集 / 更新</th><th>Accuracy ↓</th><th>Completion ↓</th><th>覆盖率 ↑</th><th>Chamfer ↓</th><th>任务 / 墙钟</th></tr></thead><tbody id="comparison-body"><tr><td colspan="8">正在读取已完成实验…</td></tr></tbody></table></div></section>
         </div>
         <div class="control-column">
@@ -72,5 +74,6 @@
     </div>
   </main>
   <script type="module" src="/app.js"></script>
+  <script type="module" src="/v2-results.js"></script>
 </body>
 </html>

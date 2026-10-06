@@ -1,11 +1,11 @@
 # ViewMend3D
 Geometry-Aware Next-Best-View Selection for Active 3D Reconstruction
 
-当前处于探索阶段：ActiveGS + Replica office0 的原始 confidence 方法已完成单场景 GPU 验证（含两行启动兼容修复）。ViewMend3D v1 已完成 3 个短实验、15 个固定观测分支和9个时间预算分支的完整GPU验收。三种子公平对照表明几何缺陷评分未取得稳定质量提升，全部退化与消融结果见[完整实验报告](docs/reproduction/optimization-v1-results.md)。
+项目已完成原方法复现和两轮单场景优化验证，仍在研究探索阶段。ActiveGS + Replica office0 的原始 confidence 方法已完成 GPU 验证（含两行启动兼容修复）。ViewMend3D v1 已完成 3 个短实验、15 个固定观测分支和9个时间预算分支；三种子公平对照未取得稳定质量提升，质量、成本和消融结果见[v1完整报告](docs/reproduction/optimization-v1-results.md)。
 
 队员可先阅读 [当前项目说明](docs/project-overview.md)，了解目标、数据形式、baseline 实测结果、运行方式与下一阶段任务。
 
-v1协议已归档。后续优化严格按预注册的 [v2框架](docs/optimization-v2.md) 执行：有界几何奖励、批量几何计算，开发种子和留出种子分别验证。当前源码冻结时仅完成CPU实现与回放，尚无v2 GPU质量结论；[v1机制诊断](docs/reproduction/v1-geometry-diagnosis.md)不替代新的重建实验。运行参数、公共前缀与审计见 [受控实验说明](docs/controlled-experiments.md)。
+v2严格按[预注册框架](docs/optimization-v2.md)完成五阶段27条GPU实验、全部导出及当前原始产物fresh审计，其中24条正式质量分支分为开发/留出种子、观测/时间预算四组。固定主方法为有界几何奖励 `defect_guarded`。留出 Completion 和覆盖率均值部分改善，但种子表现与 Accuracy 等指标存在权衡，未获得稳定提升；同次候选集的 S0/S2 改选不能解释独立分支的全部质量差异。详见[v2完整报告](docs/reproduction/optimization-v2-results.md)。v1结果和[v1机制诊断](docs/reproduction/v1-geometry-diagnosis.md)保留，运行参数、公共前缀与审计见[受控实验说明](docs/controlled-experiments.md)。
 
 v2的164项Linux CPU检查、真实状态读写与共享启动锁验证、固定β历史候选回放见[源码冻结前验收](docs/reproduction/optimization-v2-cpu.md)。
 
@@ -15,7 +15,20 @@ v2的164项Linux CPU检查、真实状态读写与共享启动锁验证、固定
 
 ## 可视化实验界面
 
-已有中文浏览器界面：24份v1正式结果的真实三维网格、分阶段回放、采集轨迹、热图、指标曲线与历史汇总；支持原始、公平和v2固定评分方法的新实验入口，以及v1/v2计划状态。使用已配置的服务器和 SSH 转发访问，见 [界面使用说明](docs/demo-interface.md)。数据与三维产物留在服务器，不随仓库发布。
+已有中文浏览器界面：保留24份v1正式结果，新增v2四组独立汇总及真实网格入口，展示分阶段回放、采集轨迹、热图、指标与历史结果。支持原始、公平和v2固定评分方法的新实验入口，以及v1/v2计划状态；已完成一次真实HTTP请求→GPU重建→60次观测→导出的完整启动验收。使用服务器和SSH转发访问，见[界面说明](docs/demo-interface.md)。场景、地图和三维产物留在服务器；公开指标与审计元数据随仓库提供。
+
+## clone 后在 CPU 复现报告与图表
+
+可信的[v2完整最终分析](docs/reproduction/evidence/optimization-v2-final-analysis.json)只含指标、成本、诊断信号和来源元数据，原字节SHA256为 `541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd`。无需下载场景或占用GPU即可复现统计与图表；图表需要Matplotlib，去掉 `--plots` 时发布工具仅依赖Python标准库。输出目录必须从未存在。
+
+```bash
+CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 python scripts/activegs/publish_v2_results.py \
+  docs/reproduction/evidence/optimization-v2-final-analysis.json \
+  --expected-sha256 541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd \
+  --output-dir runs/v2-cpu-reproduction-new --plots
+```
+
+工具要求完整五阶段27分支、固定配方与源码身份，并重算统计/配对和诊断门控。公开JSON与SHA支持复现已审阅结果，不能仅凭一个自行标记complete的文件证明真实GPU运行。完整重建及交互式网格浏览仍需数据、依赖环境或服务器产物。
 
 ## 技术调研
 

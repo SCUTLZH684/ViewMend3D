@@ -553,7 +553,7 @@ function renderCampaign(campaign) {
     heldout_observations: '留出种子 · 固定观测', heldout_time: '留出种子 · 固定时间' };
   const badge = $('campaign-badge');
   const content = $('campaign-content');
-  if (!campaign || campaign.schema !== 'viewmend-campaign-status-v1') {
+  if (!campaign || !['viewmend-campaign-status-v1', 'viewmend-campaign-status-v2'].includes(campaign.schema)) {
     badge.textContent = '尚未建立计划';
     content.textContent = '服务端尚未提供优化实验计划记录。';
     return;
