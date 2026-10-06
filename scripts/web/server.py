@@ -21,6 +21,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
+READ_ONLY = False
 sys.path.insert(0, str(ROOT / "src"))
 from viewmend3d.launch_coordination import (blocking_campaign, blocking_web_job,
     launch_lock, observe_started_process, proc_identity, proc_start_identity, process_alive)
@@ -466,18 +467,19 @@ class Handler(BaseHTTPRequestHandler):
             return self.json({"error": "仅支持本机或 SSH 转发访问"}, 403)
         path = unquote(urlsplit(self.path).path)
         if path == "/api/status":
-            gpus, error = gpu_status()
+            gpus, error = ([], None) if READ_ONLY else gpu_status()
             available_runs = []
             for manifest in sorted((ROOT / "runs/web-assets").glob("*/manifest.json"), reverse=True):
                 # Avoid repeatedly reading the full trajectory in the status poll.
                 available_runs.append({"id": manifest.parent.name,
                                        "manifest": f"/assets/{manifest.parent.name}/manifest.json",
                                        "summary": f"/assets/{manifest.parent.name}/summary.json" if (manifest.parent / "summary.json").exists() else None})
-            return self.json({"gpus": gpus, "gpu_error": error, "jobs": jobs(ROOT),
+            return self.json({"gpus": gpus, "gpu_error": error, "jobs": [] if READ_ONLY else jobs(ROOT),
+                              "read_only": READ_ONLY,
                               "runs": available_runs, "method": "ActiveGS confidence", "scene": "Replica office0",
                               "benchmark_methods": list(BENCHMARK_METHODS), "benchmark_frames": 60,
-                              "campaign": campaign_status(ROOT),
-                              "campaigns": {name: campaign_status(ROOT, name) for name in CAMPAIGN_NAMES},
+                              "campaign": None if READ_ONLY else campaign_status(ROOT),
+                              "campaigns": {} if READ_ONLY else {name: campaign_status(ROOT, name) for name in CAMPAIGN_NAMES},
                               "v2_benchmark_methods": list(V2_BENCHMARK_METHODS)})
         if path.startswith("/api/"):
             return self.json({"error": "接口不存在"}, 404)
@@ -517,6 +519,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(chunk)
 
     def do_POST(self):
+        if READ_ONLY:
+            return self.json({"error": "本服务仅回放已有产物，不启动重建实验"}, 403)
         origin = self.headers.get("Origin")
         if (not self.valid_host() or self.headers.get("X-ViewMend3D") != "1"
                 or (origin and origin != "http://" + self.headers.get("Host", ""))):
@@ -584,7 +588,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--worker", type=Path)
+    parser.add_argument("--read-only", action="store_true", help="Replay saved assets on Windows/Linux/macOS using only Python stdlib; no GPU queries or experiment launches")
     args = parser.parse_args()
+    if args.read_only and args.worker:
+        parser.error("--read-only cannot start a worker")
+    READ_ONLY = args.read_only
+    if READ_ONLY:
+        print(f"ViewMend3D read-only replay: http://127.0.0.1:{args.port}", flush=True)
+        ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()
+        sys.exit(0)
     (ROOT / "runs/web-jobs").mkdir(parents=True, exist_ok=True)
     (ROOT / "runs/web-assets").mkdir(parents=True, exist_ok=True)
     if args.worker:

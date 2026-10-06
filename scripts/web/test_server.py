@@ -17,6 +17,31 @@ BUSY = {"index": 2, "available": False}
 
 
 class LauncherTests(unittest.TestCase):
+    def test_read_only_http_never_queries_gpu_or_launches_jobs(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(server, 'ROOT', Path(folder)), \
+                patch.object(server, 'READ_ONLY', True), \
+                patch.object(server, 'gpu_status', side_effect=AssertionError('GPU queried')), \
+                patch.object(server, 'launch_lock', side_effect=AssertionError('launch intent acquired')), \
+                patch.object(server.subprocess, 'Popen', side_effect=AssertionError('worker launched')):
+            httpd = server.ThreadingHTTPServer(('127.0.0.1',0), server.Handler)
+            thread = threading.Thread(target=httpd.serve_forever, daemon=True); thread.start()
+            port = httpd.server_address[1]
+            try:
+                connection = http.client.HTTPConnection('127.0.0.1', port)
+                connection.request('GET', '/api/status')
+                response = connection.getresponse(); value = json.loads(response.read())
+                self.assertEqual(response.status, 200); self.assertTrue(value['read_only'])
+                self.assertEqual(value['gpus'], []); self.assertEqual(value['jobs'], [])
+                self.assertEqual(value['campaigns'], {}); connection.close()
+                connection = http.client.HTTPConnection('127.0.0.1', port)
+                connection.request('POST', '/api/jobs', json.dumps({'gpu':2,'budget':60}),
+                    {'Content-Type':'application/json','X-ViewMend3D':'1','Origin':f'http://127.0.0.1:{port}'})
+                response = connection.getresponse(); response.read()
+                self.assertEqual(response.status,403); connection.close()
+                self.assertFalse((Path(folder) / 'runs/web-jobs').exists())
+            finally:
+                httpd.shutdown(); httpd.server_close(); thread.join()
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)

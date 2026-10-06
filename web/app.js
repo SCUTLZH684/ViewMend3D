@@ -627,6 +627,11 @@ function renderJob(job) {
 }
 
 function renderCampaign(campaign) {
+  if(state?.read_only) {
+    $('campaign-badge').textContent='只读回放';
+    $('campaign-content').textContent='此电脑回放保存的结果，不读取服务器实时实验状态；正式质量结论见上方冻结汇总。';
+    return;
+  }
   const labels = { not_started: '尚未建立计划', waiting: '等待空闲设备', running: '执行中',
     failed: '失败', completed: '已完成', unavailable: '状态不可读取' };
   const stages = { smoke: '短实验验证', observations: '固定观测对照与消融', time: '固定时间对照',
@@ -680,9 +685,12 @@ async function pollStatus() {
   polling = true;
   try {
     state = await fetchJSON('/api/status');
+    const readOnly=state.read_only===true;
     const chosenCampaign = $('campaign-select').value;
     renderCampaign(state.campaigns?.[chosenCampaign] || (chosenCampaign === 'optimization-v1' ? state.campaign : null));
-    $('connection-dot').className = 'online-dot connected'; $('connection-label').textContent = '实验服务已连接';
+    $('connection-dot').className = 'online-dot connected'; $('connection-label').textContent = readOnly?'本地只读回放已连接':'实验服务已连接';
+    $('new-experiment').disabled=readOnly;
+    for(const id of ['protocol','method','seed','budget','gpu']) $(id).disabled=readOnly;
     const chosenGPU = $('gpu').value;
     const available = state.gpus.filter(gpu => gpu.available);
     $('gpu').replaceChildren(...state.gpus.map(gpu => {
@@ -692,22 +700,24 @@ async function pollStatus() {
       return option;
     }));
     if (!available.length) {
-      const option = document.createElement('option'); option.value = ''; option.textContent = '当前没有空闲 GPU'; option.selected = true;
+      const option = document.createElement('option'); option.value = ''; option.textContent = readOnly?'观看回放无需 NVIDIA GPU':'当前没有空闲 GPU'; option.selected = true;
       $('gpu').prepend(option);
     } else $('gpu').value = available.some(gpu => String(gpu.index) === chosenGPU) ? chosenGPU : String(available[0].index);
     $('gpu-summary').classList.toggle('available', !!available.length);
-    $('gpu-summary').textContent = state.gpu_error || `${available.length} / ${state.gpus.length} 张卡空闲。${available.length ? '可在空闲设备上启动。' : '已有任务正在使用显卡，等待空闲后可启动。'}`;
+    $('gpu-summary').textContent = readOnly?'本地只读模式：直接读取演示包中的真实照片、网格与指标，不运行 Habitat 或模型。':state.gpu_error || `${available.length} / ${state.gpus.length} 张卡空闲。${available.length ? '可在空闲设备上启动。' : '已有任务正在使用显卡，等待空闲后可启动。'}`;
     const plannedBusy = Object.values(state.campaigns || { legacy: state.campaign }).some(campaign =>
       campaign?.configured && ['running', 'waiting', 'unavailable'].includes(campaign.status));
     const busy = state.jobs.some(job => activeStates.has(job.status)) || plannedBusy;
-    $('launch').disabled = submitting || busy || !available.length;
-    $('launch').textContent = busy ? '实验或优化计划正在执行…' : '▷ 启动实验';
+    $('launch').disabled = readOnly || submitting || busy || !available.length;
+    $('launch').textContent = readOnly?'仅回放已有结果':busy ? '实验或优化计划正在执行…' : '▷ 启动实验';
+    if(readOnly) $('launch-note').textContent='同一演示包中的照片、网格与指标一致。重新采集和重建需要配置 GPU 环境，结果可能有随机与硬件差异。';
     renderRunOptions(state.runs);
     if (!manifest && state.runs.length) await loadRun(state.runs[0].id);
     await refreshComparison(state.runs);
     if (!state.runs.length) showError($('page-error'), '尚无导出的三维结果。先完成实验，或按使用说明导出已有实验。');
     const job = state.jobs[0];
     renderJob(job);
+    if(readOnly){$('job-badge').textContent='已完成结果回放';$('job-content').textContent='此入口不执行新实验。正在展示的内容来自已完成运行的保存产物。';}
     if (job && job.status === 'completed' && seenJobStatus === `${job.id}:running`) await loadRun(job.result_id || job.id);
     if (job) seenJobStatus = `${job.id}:${job.status === 'exporting' ? 'running' : job.status}`;
   } catch (error) {
