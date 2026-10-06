@@ -1,0 +1,205 @@
+{
+  "schema": "viewmend-capture-replay-acceptance-v1",
+  "source": {
+    "activegs_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+    "upstream_python_sha256": "7a756b3a7a798c6e22ac170e84c24aa60e24ecf170327bc7e753d9787aa62766",
+    "viewmend_python_sha256": "3f26355b3eb38a0a2a0fd049081b2eab824d8d08b001a4569a27419ef78780d2",
+    "torch": "2.1.2+cu121",
+    "numpy": "1.26.4",
+    "trimesh": "4.4.1",
+    "open3d": "0.17.0"
+  },
+  "source_commit_snapshot": "3b7cee2feee8a83a7cbfe65e7504643bf51e34dc",
+  "run_id": "web-replay-20261006T141303Z-ae2d2b",
+  "export_id": "web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0",
+  "gpu": 1,
+  "job_wall_seconds": 390,
+  "worker_and_child_exited": true,
+  "recorded_frames": 8,
+  "actual_mesh_checkpoints": 8,
+  "scope": "independent_visual_demo_not_formal_quality_sample",
+  "future_candidate_sensor_queries": 0,
+  "replay_sha256": "81e4496cabf81b7810aee3a9d1de7a3d04f027513b7683dc794391cd07d71306",
+  "formal_analysis_sha256": "541b0effba87ae82928801a0ec2cfb26f4a5189674165c378a5ac7affadb61fd",
+  "web_run_count": 55,
+  "gpu_admission": {
+    "index": 1,
+    "used_mb": 19,
+    "utilization": 0
+  },
+  "cost": {
+    "method": "defect_guarded",
+    "seed": 0,
+    "events": 8,
+    "observations": 8,
+    "optimizer_steps": 80,
+    "additional_optimizer_steps": 70,
+    "mission_seconds": 11.560075636865804,
+    "wall_seconds": 9.108076068980154,
+    "wall_time_scope": "reconstruction only; shared prefix and branch including diagnostic/checkpoint writes; excludes startup/prefix cache serialization and loading/meshing/evaluation",
+    "shared_prefix_wall_seconds": 1.0336668950039893,
+    "sensor_seconds": 0.17526551795890555,
+    "diagnostic_seconds": 0.03595121798571199,
+    "peak_torch_allocated_mb": 1842.4052734375,
+    "gpu_model": "NVIDIA A100-SXM4-80GB",
+    "cuda_visible_devices": "1",
+    "torch_visible_device_index": 0,
+    "memory_scope": "PyTorch allocator only; excludes Habitat/OpenGL allocations",
+    "mapping_seconds": 3.8801492949423846,
+    "planning_seconds": 2.775925403984729,
+    "simulated_flight_seconds": 4.90400093793869,
+    "path_length_m": 4.90400093793869,
+    "branch_observation_calls": 7,
+    "blocked_future_observation_calls": 0,
+    "prefix_sha256": "093c0595dc55de0d958266529b240cbbe6016f6339bc66801cb1ee6e9cee1d9f",
+    "checkpoint_count": 8,
+    "stop_reason": "event_limit",
+    "meshing_evaluation_wall_seconds": 340.447994756978
+  },
+  "frames": [
+    {
+      "event": 1,
+      "valid_depth_pixels": 262144,
+      "candidate_count": 0,
+      "selected_index": null,
+      "baseline_selected_index": null,
+      "geometry_active": null,
+      "selection_changed": null,
+      "rgb_sha256": "e8b4d734faaaf28d242fb215d4645f704122e1d138af76a099fec5f7a52a0f94",
+      "depth_sha256": "e9600c7e656c05ea89c5f4c16bcd5a1fda5d516774b1708b54a7ee39cfaa66e5",
+      "mesh_faces": 36821,
+      "checkpoint_metrics": {
+        "accuracy_cm": 2.1908532805163916,
+        "completion_cm": 167.11893330944267,
+        "coverage_percent": 2.1622,
+        "chamfer_mm": 846.5489329497952
+      }
+    },
+    {
+      "event": 2,
+      "valid_depth_pixels": 262144,
+      "candidate_count": 100,
+      "selected_index": 24,
+      "baseline_selected_index": 24,
+      "geometry_active": true,
+      "selection_changed": false,
+      "rgb_sha256": "7bcd490b6b784a8b68a2a7df1c099c7f2723946cb6facbf436344a8b52b7522c",
+      "depth_sha256": "e95cbf2dae09a912aeb3a84c15fd0c6579e98a8656b7f50168c10bf64e96cdf9",
+      "mesh_faces": 160364,
+      "checkpoint_metrics": {
+        "accuracy_cm": 2.125029345884359,
+        "completion_cm": 61.089525084005366,
+        "coverage_percent": 13.618,
+        "chamfer_mm": 316.0727721494486
+      }
+    },
+    {
+      "event": 3,
+      "valid_depth_pixels": 262144,
+      "candidate_count": 100,
+      "selected_index": 81,
+      "baseline_selected_index": 81,
+      "geometry_active": true,
+      "selection_changed": false,
+      "rgb_sha256": "8a67a4ad738ba3a683dace8fe1e473cb7eb27123094e36cfdd9179d8d67d53c3",
+      "depth_sha256": "32ddd416be1c7e15d99bbaa2df0b50d1d18c3bda1078b069c9280f1fbacf610a",
+      "mesh_faces": 225107,
+      "checkpoint_metrics": {
+        "accuracy_cm": 1.8619241376738225,
+        "completion_cm": 42.78182338288878,
+        "coverage_percent": 23.5542,
+        "chamfer_mm": 223.218737602813
+      }
+    },
+    {
+      "event": 4,
+      "valid_depth_pixels": 262144,
+      "candidate_count": 100,
+      "selected_index": 59,
+      "baseline_selected_index": 59,
+      "geometry_active": true,
+      "selection_changed": false,
+      "rgb_sha256": "825ec2362e06b4eae79cfdede73f2a8e14ee3998afe83a9de1cdf887ddb93f39",
+      "depth_sha256": "d82a721b3f7b33748bacf284cbe93c9539314a2620c34127b99137fd54e548a8",
+      "mesh_faces": 267248,
+      "checkpoint_metrics": {
+        "accuracy_cm": 1.4893045337002542,
+        "completion_cm": 27.1478199363472,
+        "coverage_percent": 35.9842,
+        "chamfer_mm": 143.18562235023728
+      }
+    },
+    {
+      "event": 5,
+      "valid_depth_pixels": 262144,
+      "candidate_count": 100,
+      "selected_index": 39,
+      "baseline_selected_index": 39,
+      "geometry_active": true,
+      "selection_changed": false,
+      "rgb_sha256": "d05484d37c5495ae8eefa318b26c22b3ffb0493ab6d12cc98433382c0f5eb3da",
+      "depth_sha256": "1cc13e40ca064017edddd78546f3ac8dff459f95ad3bf0e2d0bc88bb9a6ac11b",
+      "mesh_faces": 287002,
+      "checkpoint_metrics": {
+        "accuracy_cm": 1.2643939299997864,
+        "completion_cm": 20.353880908891906,
+        "coverage_percent": 42.0974,
+        "chamfer_mm": 108.09137419445845
+      }
+    },
+    {
+      "event": 6,
+      "valid_depth_pixels": 262132,
+      "candidate_count": 100,
+      "selected_index": 32,
+      "baseline_selected_index": 32,
+      "geometry_active": true,
+      "selection_changed": false,
+      "rgb_sha256": "37b4010f51cdd3184e4c0ea438b8fa3644606658e0a7309fe6ee4efbde817c3c",
+      "depth_sha256": "76f7251a0bf30fb435b9c1081c479e70bfe8ce42ec365e7a50f3e794b0d4ca0c",
+      "mesh_faces": 341081,
+      "checkpoint_metrics": {
+        "accuracy_cm": 1.180970533990466,
+        "completion_cm": 13.537921615325013,
+        "coverage_percent": 50.7348,
+        "chamfer_mm": 73.5944607465774
+      }
+    },
+    {
+      "event": 7,
+      "valid_depth_pixels": 262144,
+      "candidate_count": 100,
+      "selected_index": 42,
+      "baseline_selected_index": 42,
+      "geometry_active": true,
+      "selection_changed": false,
+      "rgb_sha256": "50e8289ba796a37b4681f20c8d021f244cd04fe69a0e9d6ca36dc06d54baf6e8",
+      "depth_sha256": "1b45edf3c8d104cd2de3c0ebebf27b347b0c0eabdd32df76d6d655467721f544",
+      "mesh_faces": 383364,
+      "checkpoint_metrics": {
+        "accuracy_cm": 1.1379906391292962,
+        "completion_cm": 9.137381004721863,
+        "coverage_percent": 56.0194,
+        "chamfer_mm": 51.3768582192558
+      }
+    },
+    {
+      "event": 8,
+      "valid_depth_pixels": 261332,
+      "candidate_count": 100,
+      "selected_index": 20,
+      "baseline_selected_index": 20,
+      "geometry_active": true,
+      "selection_changed": false,
+      "rgb_sha256": "605884f4ca1318897cab1084aba52e88e3bf1ea04893d20ddc51310775a55302",
+      "depth_sha256": "e05ef3f764ba0a08d3a2f52f89bcc6f146ccce5c98be4befb2b99ed5def038a4",
+      "mesh_faces": 432424,
+      "checkpoint_metrics": {
+        "accuracy_cm": 1.0953029821107991,
+        "completion_cm": 5.821682190796711,
+        "coverage_percent": 64.7708,
+        "chamfer_mm": 34.58492586453755
+      }
+    }
+  ]
+}

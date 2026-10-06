@@ -606,9 +606,9 @@ function renderJob(job) {
   $('job-badge').textContent = labels[job.status] || job.status;
   const detail = document.createElement('div'); detail.className = 'job-detail';
   const heading = document.createElement('strong');
-  heading.textContent = job.status === 'completed' ? '三维结果已就绪' : job.status === 'failed' || job.status === 'interrupted' ? job.message : job.stage;
+  heading.textContent = job.status === 'completed' ? '三维结果已就绪' : job.status === 'failed' || job.status === 'interrupted' ? job.message : job.stage || job.message || '准备启动';
   const info = document.createElement('div');
-  const elapsed = `${activeStates.has(job.status) ? '完整流水线已用时' : '完整流水线总耗时'} ${job.wall_seconds} s`;
+  const elapsed = `${activeStates.has(job.status) ? '完整流水线已用时' : '完整流水线总耗时'} ${Number.isFinite(job.wall_seconds) ? job.wall_seconds : 0} s`;
   info.textContent = ['observations', 'replay'].includes(job.protocol)
     ? `GPU ${job.gpu} · ${job.protocol === 'replay' ? '独立逐帧演示 · ' : ''}${methodLabels[job.method] || job.method} · 种子 ${job.seed} · ${job.frames} 次更新 · ${elapsed}`
     : `GPU ${job.gpu} · 预算 ${job.budget} s · ${elapsed}`;

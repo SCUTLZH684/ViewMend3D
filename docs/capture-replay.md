@@ -29,6 +29,7 @@
   --upstream /workspace/ViewMend3D/external/active-gs \
   --run-dir /workspace/ViewMend3D/runs/my-replay-demo --gpu 1 \
   --recipe optimization-v2 --methods defect_guarded --seeds 0 \
+  --campaign-spec-sha256 d3802aa30065a1a38c25dcd0a742440cc0440b8791519c0cf2a489bbfd53f541 \
   --protocol observations --frames 8 --prefix-frames 1 \
   --checkpoint-every 1 --record-replay
 ```
@@ -36,3 +37,9 @@
 网页 worker 自动评估与导出，CLI 完成后按既有 `export_run.py` 用法导出该分支。原始观测、地图、缓存和运行输出在 `.gitignore` 保护的 `runs/` 下，不入仓库；队员需要已有数据和 GPU 环境才能运行新的真实采集。
 
 CPU 验证：8 项记录/导出/启动约束检查，以及全部 8 帧的浏览器状态对应契约。CPU 合成夹具仅验证程序约束，真实演示验收另行记录。
+
+## 真实演示验收（2026-10-06）
+
+独立运行 `web-replay-20261006T141303Z-ae2d2b` 使用物理 GPU 1，入场显存 19 MiB、利用率 0%。冻结运行源码提交为 `3b7cee2`，真实科学源码哈希、图像哈希、逐帧候选及网格验收见[记录](reproduction/evidence/capture-replay-acceptance.json)。8 次实际采集、8 份非空网格与评估、网页导出全部完成，完整流水线墙钟 390 秒；worker 与 child 均已退出。
+
+第 1 帧初始化，第 2—8 帧每轮 100 个候选，规划候选真值传感器查询为 0。全部 RGB-D 哈希、相机位姿/内参、候选选点与逐帧地图计数已核对。公开运行列表由 54 条变为 55 条，仅增加这一独立演示；正式实验汇总与冻结完整分析 SHA-256 保持不变。

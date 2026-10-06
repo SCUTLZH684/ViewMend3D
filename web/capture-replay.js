@@ -74,12 +74,12 @@ export class CaptureReplay {
     const reasons={weak_geometry:'几何信号过弱',constant_geometry:'候选几何信号相同',base_all_zero:'基础效用为零',single_reachable:'只有一个可达候选',weight_zero:'奖励关闭',none:'几何奖励已应用'};
     $('replay-reason').textContent=decision.all_zero_utility_fallback
       ? '本轮基础效用为零，日志记录了随机回退评分，再考虑移动代价。不能把这个选点解释为“几何缺陷最大”。'
-      : `在可达候选中选择最终得分最高项。${decision.geometry_active ? '有界几何奖励已应用' : `本轮回退至基线：${reasons[decision.geometry_fallback_reason] || decision.geometry_fallback_reason}`}；相对此批候选的 Confidence 选点${selected===baseline ? '保持一致' : '发生变化'}。`;
+      : `在可达候选中选择最终得分最高项。${decision.geometry_active ? `本轮已加入有界几何奖励，选中项奖励为 ${num(decision.geometry_bonus[selected],6)}` : `本轮回退至基线：${reasons[decision.geometry_fallback_reason] || decision.geometry_fallback_reason}`}；相对此批候选的 Confidence 选点${selected===baseline ? '保持一致' : '发生变化'}。`;
     $('replay-candidates').replaceChildren(...indices.map(i=>{
       const row=document.createElement('tr'); row.classList.toggle('selected-candidate',i===selected);
       const pose=decision.candidate_poses[i];
       const values=[`#${i+1}${i===selected?' · 选中':''}${i===baseline?' · 基线':''}`, [0,1,2].map(j=>num(pose[j][3],2)).join(', '),
-        ...['exploration','uncertainty','defect','path_lengths','baseline_scores','geometry_bonus','final_scores'].map(k=>num(decision[k]?.[i], k==='path_lengths'?2:4))];
+        ...['exploration','uncertainty','defect','path_lengths','baseline_scores','geometry_bonus','final_scores'].map(k=>num(decision[k]?.[i], k==='path_lengths'?2:['baseline_scores','geometry_bonus','final_scores'].includes(k)?6:4))];
       row.append(...values.map(value=>{const cell=document.createElement('td');cell.textContent=value;return cell;}));return row;
     }));
   }
