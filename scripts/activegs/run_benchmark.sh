@@ -8,6 +8,10 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 GPU=${GPU:-0}
 IFS=',' read -r -a BENCHMARK_METHOD_ARRAY <<< "${BENCHMARK_METHODS:-confidence_nooracle,random_matched,defect}"
 IFS=',' read -r -a BENCHMARK_SEED_ARRAY <<< "${BENCHMARK_SEEDS:-0,1,2}"
+BENCHMARK_RECIPE_ARGS=(--recipe "${BENCHMARK_RECIPE:-optimization-v1}")
+if [[ -n "${BENCHMARK_CAMPAIGN_SPEC_SHA256:-}" ]]; then
+    BENCHMARK_RECIPE_ARGS+=(--campaign-spec-sha256 "$BENCHMARK_CAMPAIGN_SPEC_SHA256")
+fi
 export CUDA_VISIBLE_DEVICES="$GPU"
 export OMP_NUM_THREADS=${OMP_NUM_THREADS:-8}
 export OPENBLAS_NUM_THREADS=${OPENBLAS_NUM_THREADS:-8}
@@ -17,4 +21,5 @@ exec "$ACTIVEGS_PYTHON" "$SCRIPT_DIR/run_benchmark.py" \
     --upstream "$ACTIVEGS_ROOT" --run-dir "$RUN_DIR" --gpu "$GPU" \
     --methods "${BENCHMARK_METHOD_ARRAY[@]}" --seeds "${BENCHMARK_SEED_ARRAY[@]}" \
     --frames "${BENCHMARK_FRAMES:-60}" --prefix-frames "${BENCHMARK_PREFIX:-20}" \
-    --protocol "${BENCHMARK_PROTOCOL:-observations}" --budget "${BENCHMARK_BUDGET:-180}" "$@"
+    --protocol "${BENCHMARK_PROTOCOL:-observations}" --budget "${BENCHMARK_BUDGET:-180}" \
+    "${BENCHMARK_RECIPE_ARGS[@]}" "$@"

@@ -6,7 +6,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from viewmend3d.protocol import METHODS, Protocol
+from viewmend3d.protocol import METHODS, V1_METHODS, Protocol, optimization_recipe
 
 
 def main():
@@ -26,6 +26,8 @@ def main():
     parser.add_argument("--roi-count", type=int, default=30)
     parser.add_argument("--sample-points", type=int, default=500000)
     parser.add_argument("--prefix-cache-dir", type=Path)
+    parser.add_argument("--recipe", choices=("optimization-v1", "optimization-v2"), default="optimization-v1")
+    parser.add_argument("--campaign-spec-sha256")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     try:
@@ -33,12 +35,18 @@ def main():
         seeds = tuple(args.seeds)
         if not methods or len(set(methods)) != len(methods) or not set(methods) <= set(METHODS):
             raise ValueError(f"methods must be unique values from {METHODS}")
+        allowed = V1_METHODS if args.recipe == "optimization-v1" else optimization_recipe(args.recipe)["methods"]
+        if not set(methods) <= set(allowed):
+            raise ValueError("Methods do not belong to the selected versioned recipe")
+        if args.recipe == "optimization-v2" and args.scene != "replica/office0":
+            raise ValueError("The preregistered v2 campaign fixes scene replica/office0")
         if not seeds or len(set(seeds)) != len(seeds) or any(seed < 0 for seed in seeds):
             raise ValueError("seeds must be unique nonnegative integers")
         protocol = Protocol(observations=args.frames, prefix=args.prefix_frames,
                             checkpoint_every=args.checkpoint_every, mode=args.protocol, seconds=args.budget,
                             candidate_count=args.candidate_count, roi_count=args.roi_count,
-                            sample_points=args.sample_points).validate()
+                            sample_points=args.sample_points, recipe=args.recipe,
+                            campaign_spec_sha256=args.campaign_spec_sha256).validate()
         if args.gpu < 0:
             raise ValueError("GPU must be nonnegative")
         if not args.upstream.is_dir() or not (args.upstream / "config/main.yaml").is_file():

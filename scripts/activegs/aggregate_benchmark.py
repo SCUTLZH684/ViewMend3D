@@ -8,6 +8,12 @@ import json
 import math
 import statistics
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from viewmend3d.protocol import (METHODS, V1_METHODS, PROTOCOL_VERSION, V2_PROTOCOL_VERSION,
+                               validate_recipe_record, optimization_recipe)
+from viewmend3d.diagnostic_audit import audit_guarded_run
 
 from check_artifacts import check as check_current_artifacts
 
@@ -16,7 +22,6 @@ METRICS = ("mesh_accuracy", "mesh_completion", "mesh_completion_ratio", "mesh_ch
 COSTS = ("mission_seconds", "wall_seconds", "planning_seconds", "mapping_seconds",
          "sensor_seconds", "path_length_m", "observations", "optimizer_steps")
 IDENTITY = ("scene", "scene_mesh_sha256", "context_hash")
-METHODS = ("confidence_nooracle", "random_matched", "defect", "defect_no_gate", "refine_only")
 
 
 def number(value, name):
@@ -113,7 +118,8 @@ def audit_execution(experiment, protocol, result):
 def read_run(experiment):
     protocol = json.loads((experiment / "protocol.json").read_text(encoding="utf-8"))
     result = json.loads((experiment / "final_result.json").read_text(encoding="utf-8"))
-    if protocol.get("version") != VERSION:
+    version = protocol.get("version")
+    if version not in (PROTOCOL_VERSION, V2_PROTOCOL_VERSION):
         raise ValueError(f"Unsupported/original protocol: {experiment}")
     seed = protocol.get("seed")
     if type(seed) is not int or seed < 0 or protocol.get("method") not in METHODS:
@@ -123,6 +129,32 @@ def read_run(experiment):
     for key in ("scene_mesh_sha256", "context_hash"):
         digest(protocol.get(key), key)
     recipe = protocol["protocol"]
+    if version == PROTOCOL_VERSION:
+        if protocol["method"] not in V1_METHODS:
+            raise ValueError("New scoring methods require an explicitly versioned v2 recipe")
+        validate_recipe_record({**recipe, "version": version})
+    else:
+        validate_recipe_record(recipe)
+        if recipe.get("version") != version:
+            raise ValueError("Branch and nested protocol versions disagree")
+        for key in ("recipe", "recipe_sha256", "campaign_spec_sha256"):
+            if protocol.get(key) != recipe[key]:
+                raise ValueError("Branch and nested recipe identities disagree")
+        spec = optimization_recipe("optimization-v2")
+        method = protocol["method"]
+        if method not in spec["methods"] or protocol.get("scoring_recipe") != spec["methods"][method]:
+            raise ValueError("V2 scoring method recipe is missing or changed")
+        digest(protocol.get("scene_assets_sha256"), "scene_assets_sha256")
+        config = json.loads((experiment / "exp_config.json").read_text(encoding="utf-8"))
+        planner = config.get("planner", {})
+        expected = {"sample_num": 100, "max_roi_sample_num": 30, "path_length_factor": .5,
+                    "render_ratio": .25, "explore_weight": 1000., "geometry_weight": .5,
+                    "geometry_beta": .1, "geometry_backend": "batched",
+                    "geometry_thresholds": spec["geometry_thresholds"], "planner_name": method}
+        if any(planner.get(key) != value for key, value in expected.items()):
+            raise ValueError("V2 resolved planner configuration disagrees with the fixed recipe")
+        if config.get("mapper", {}).get("gaussian_map", {}).get("optimization_steps") != 10:
+            raise ValueError("V2 resolved mapper configuration changed its event budget")
     if recipe.get("mode") not in ("observations", "time"):
         raise ValueError("Unsupported controlled budget mode")
     for key in ("prefix", "observations", "mapping_optimizer_steps_per_event", "safety_event_cap"):
@@ -179,8 +211,9 @@ def read_run(experiment):
     digest(protocol.get("prefix_sha256"), "prefix_sha256")
     digest(protocol.get("prefix_camera_sha256"), "prefix_camera_sha256")
     audit_execution(experiment, protocol, result)
+    diagnostic_audit = audit_guarded_run(experiment, protocol) if version == V2_PROTOCOL_VERSION else None
     return {"method": protocol["method"], "seed": seed, "protocol": protocol,
-            "result": result, "cost": cost, "experiment": experiment}
+            "result": result, "cost": cost, "experiment": experiment, "diagnostic_audit": diagnostic_audit}
 
 
 def stats(values):
@@ -211,13 +244,16 @@ def aggregate(experiments, methods, expected_seeds):
     evaluation = runs[0]["result"]["evaluation"]
     source = runs[0]["protocol"]["source_versions"]
     identity = {key: runs[0]["protocol"][key] for key in IDENTITY}
+    version = runs[0]["protocol"]["version"]
+    if version == V2_PROTOCOL_VERSION:
+        identity.update(scene_assets_sha256=runs[0]["protocol"]["scene_assets_sha256"])
     for run in runs:
         current = run["protocol"]
         if current["protocol"] != recipe or current["eval_seed"] != eval_seed:
             raise ValueError("Mixed acquisition/optimization/randomness protocols")
         if run["result"]["evaluation"] != evaluation or current["source_versions"] != source:
             raise ValueError("Mixed evaluator or source versions")
-        if {key: current[key] for key in IDENTITY} != identity:
+        if {key: current[key] for key in identity} != identity:
             raise ValueError("Mixed scenes, scene assets or resolved configurations")
     for seed in expected_seeds:
         digests = {pairs[method, seed]["protocol"]["prefix_sha256"] for method in methods}
@@ -245,11 +281,17 @@ def aggregate(experiments, methods, expected_seeds):
                 higher_better = key == "mesh_completion_ratio"
                 paired[method][key] = {**stats(differences), "differences_by_seed": dict(zip(map(str, expected_seeds), differences)),
                                       "improved_seeds": sum(value > 0 if higher_better else value < 0 for value in differences)}
-    return {"version": VERSION, "protocol": recipe, "evaluation": evaluation, "source_versions": source,
+    report = {"version": version, "protocol": recipe, "evaluation": evaluation, "source_versions": source,
             **identity,
             "seeds": expected_seeds, "methods": by_method, "per_run": per_run,
             "paired_difference_vs_confidence": paired,
             "scope": "Descriptive paired statistics on the recorded single scene; no statistical significance or cross-scene generalization claim."}
+    if version == V2_PROTOCOL_VERSION:
+        report.update({key: recipe[key] for key in ("recipe", "recipe_sha256", "campaign_spec_sha256")})
+        report["guarded_diagnostics"] = [{"method": run["method"], "seed": run["seed"],
+                                         **run["diagnostic_audit"]}
+                                        for run in runs if run["diagnostic_audit"] is not None]
+    return report
 
 
 def markdown(report):

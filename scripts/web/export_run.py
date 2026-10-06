@@ -21,6 +21,8 @@ METHOD_LABELS = {
     "defect": "ViewMend3D · 几何缺陷评分",
     "defect_no_gate": "Defect · 移除深度跳变门控",
     "refine_only": "Refine only · 仅优化已有观测",
+    "defect_guarded": "Defect v2 · 有界几何奖励",
+    "defect_guarded_no_gate": "Defect v2 · 有界奖励，移除深度门控",
 }
 
 
@@ -141,6 +143,14 @@ def export_diagnostics(experiment, output, event, run=None):
               "candidate_count": count, "candidate": candidate,
               "heatmap_scale": diagnostic.get("heatmap_scale"),
               "heatmap_max": diagnostic.get("selected_heatmap_max")}
+    if diagnostic.get("scoring_version") == "bounded_geometry_v2":
+        for key in ("scoring_version", "geometry_backend", "geometry_beta", "geometry_bonus_cap",
+                    "geometry_fallback_reason", "geometry_signal_active", "geometry_discriminative",
+                    "baseline_selected_index", "baseline_regret", "regret_bound_satisfied", "selection_changed"):
+            result[key] = diagnostic.get(key)
+        bonuses = diagnostic.get("geometry_bonus", [])
+        if selected < len(bonuses):
+            result["candidate"]["geometry_bonus"] = bonuses[selected]
     heatmap_ref = diagnostic.get("selected_heatmap", diagnostic.get("heatmap", diagnostic.get("heatmap_path")))
     possible = [folder / f"step_{event:03}_heatmap.png", folder / f"event_{event:03}_heatmap.png",
                 folder / f"heatmap_{event:03}.png"]

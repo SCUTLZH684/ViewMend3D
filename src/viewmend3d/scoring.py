@@ -175,3 +175,105 @@ def view_scores(utilities, path_lengths, path_length_factor=0.5):
         scores[reachable] = torch.rand(int(reachable.sum()), device=clean.device,
                                        dtype=clean.dtype)
     return torch.where(reachable, scores, torch.full_like(scores, -torch.inf))
+
+
+def guarded_view_scores(base, defect, path_lengths, path_length_factor=0.5,
+                        beta=0.1, minimum_peak=1e-4, baseline_utilities=None):
+    """Add a bounded geometry bonus to one unchanged baseline score draw.
+
+    The bonus is at most ``beta / n_reachable`` and is peak-normalized only
+    on reachable candidates. There is no second score normalization. The
+    bound limits regret in the baseline proxy score, not reconstruction
+    error. Weak, constant, disabled, and all-zero-base cases return the very
+    same baseline tensor, including its single planning RNG draw.
+
+    An adapter may supply its existing pre-normalized baseline utilities to
+    preserve that adapter's floating-point evaluation order exactly. Raw
+    ``base`` remains the basis of zero-signal checks and utility diagnostics.
+    """
+    if not isinstance(base, torch.Tensor) or not base.is_floating_point():
+        raise ValueError("base utilities must be a floating-point tensor")
+    if base.ndim != 1 or base.numel() == 0 or defect.shape != base.shape:
+        raise ValueError("base and defect must be equally sized nonempty vectors")
+    if not math.isfinite(beta) or beta < 0:
+        raise ValueError("beta must be finite and nonnegative")
+    if not math.isfinite(minimum_peak) or minimum_peak < 0:
+        raise ValueError("minimum_peak must be finite and nonnegative")
+    lengths = torch.as_tensor(path_lengths, dtype=base.dtype, device=base.device)
+    if baseline_utilities is not None and baseline_utilities.shape != base.shape:
+        raise ValueError("baseline utilities must match base utilities")
+    # This is deliberately the only view_scores call: all-zero utility
+    # fallback must consume exactly the baseline's RNG draw once.
+    baseline = view_scores(base if baseline_utilities is None else baseline_utilities,
+                           lengths, path_length_factor)
+    reachable = torch.isfinite(lengths) & (lengths >= 0)
+    n_reachable = int(reachable.sum())
+    clean_base = torch.where(reachable, nonnegative_finite(base), torch.zeros_like(base))
+    clean_defect = nonnegative_finite(defect.to(base))
+    clean_defect = torch.where(reachable, clean_defect, torch.zeros_like(base))
+    peak = clean_defect[reachable].max()
+    geometry_range = peak - clean_defect[reachable].min()
+    signal_active = bool((peak >= minimum_peak) & (peak > 0))
+    discriminative = bool(geometry_range > 0)
+    cap = beta / n_reachable
+    bonus = torch.zeros_like(base)
+    peak_normalized = torch.zeros_like(base)
+    if beta == 0:
+        fallback = "weight_zero"
+    elif not bool(clean_base.sum() > 0):
+        fallback = "base_all_zero"
+    elif n_reachable == 1:
+        fallback = "single_reachable"
+    elif not signal_active:
+        fallback = "weak_geometry"
+    elif not discriminative:
+        fallback = "constant_geometry"
+    else:
+        fallback = "none"
+        peak_normalized = (clean_defect / peak).clamp(0, 1)
+        bonus = cap * peak_normalized
+    applied = fallback == "none"
+    scores = baseline + bonus if applied else baseline
+    baseline_index = int(torch.argmax(baseline))
+    selected = int(torch.argmax(scores))
+    regret = baseline[baseline_index] - baseline[selected]
+    # Permit ordinary addition roundoff without broadening the mathematical
+    # bonus rule or excluding candidates via an extra eligibility guard.
+    tolerance = 4 * torch.finfo(base.dtype).eps * (
+        float(baseline[reachable].abs().max()) + cap)
+    if float(regret) > cap + tolerance:
+        raise RuntimeError("bounded geometry score exceeds baseline regret cap")
+    costs = torch.zeros_like(lengths)
+    costs[reachable] = lengths[reachable] / lengths[reachable].sum().clamp_min(
+        torch.finfo(lengths.dtype).tiny)
+    normalized_base = normalize_sum(clean_base)
+    diagnostics = {
+        "scoring_version": "bounded_geometry_v2",
+        "geometry_beta": beta,
+        "geometry_bonus_cap": cap,
+        "n_reachable": n_reachable,
+        "baseline_scores": baseline,
+        "baseline_selected_index": baseline_index,
+        "selected_index": selected,
+        "selected_baseline_score": baseline[selected],
+        "baseline_regret": regret,
+        "regret_tolerance": tolerance,
+        "regret_bound_satisfied": True,
+        "geometry_peak": peak,
+        "geometry_range": geometry_range,
+        "defect_peak_normalized": peak_normalized,
+        "geometry_bonus": bonus,
+        "geometry_signal_active": signal_active,
+        "geometry_discriminative": discriminative,
+        "geometry_active": applied,
+        "geometry_fallback_reason": fallback,
+        "selection_changed": selected != baseline_index,
+        "base_delta_vs_baseline": clean_base[selected] - clean_base[baseline_index],
+        "path_delta_vs_baseline": lengths[selected] - lengths[baseline_index],
+        "base_normalized_delta_vs_baseline": normalized_base[selected] - normalized_base[baseline_index],
+        "path_cost_delta_vs_baseline": costs[selected] - costs[baseline_index],
+        "normalization_domain": "reachable_candidates",
+        "geometry_normalization": "peak_reachable_candidates",
+        "tie_policy": "first_argmax",
+    }
+    return scores, diagnostics

@@ -21,10 +21,14 @@ from utils.common import Planner2Gui
 from utils.operations import GaussianRenderer
 
 from .scoring import (GeometryThresholds, combine_utilities, geometry_defect,
-                      nonnegative_finite, normalize_sum, view_scores)
+                      guarded_view_scores, nonnegative_finite, normalize_sum,
+                      view_scores)
 
 
-METHODS = ("defect", "confidence_nooracle", "random_matched", "defect_no_gate")
+GUARDED_METHODS = ("defect_guarded", "defect_guarded_no_gate")
+NO_DEPTH_GATE_METHODS = ("defect_no_gate", "defect_guarded_no_gate")
+METHODS = ("defect", "confidence_nooracle", "random_matched", "defect_no_gate",
+           *GUARDED_METHODS)
 
 
 def _json_value(value):
@@ -52,7 +56,8 @@ class DefectPlanner(PlanBase):
     """
 
     def __init__(self, cfg, device, method="defect", diagnostics_dir=None,
-                 geometry_weight=None, thresholds=None):
+                 geometry_weight=None, thresholds=None, geometry_beta=None,
+                 geometry_backend=None):
         super().__init__(cfg, torch.device(device))
         if method not in METHODS:
             raise ValueError(f"unknown planner method: {method}")
@@ -65,6 +70,16 @@ class DefectPlanner(PlanBase):
             raise ValueError("invalid render_ratio or explore_weight")
         if not math.isfinite(self.geometry_weight) or self.geometry_weight < 0:
             raise ValueError("geometry_weight must be finite and nonnegative")
+        self.guarded = method in GUARDED_METHODS
+        self.geometry_beta = float(geometry_beta if geometry_beta is not None
+                                   else getattr(cfg, "geometry_beta", 0.1)) if self.guarded else 0.0
+        self.geometry_backend = (geometry_backend if geometry_backend is not None
+                                 else getattr(cfg, "geometry_backend", "batched")) if self.guarded else "per_view"
+        if self.guarded:
+            if not math.isfinite(self.geometry_beta) or self.geometry_beta < 0:
+                raise ValueError("geometry_beta must be finite and nonnegative")
+            if self.geometry_backend != "batched":
+                raise ValueError("guarded methods require geometry_backend=batched")
         if thresholds is None:
             thresholds = getattr(cfg, "geometry_thresholds", None)
         self.thresholds = (thresholds if isinstance(thresholds, GeometryThresholds)
@@ -81,7 +96,7 @@ class DefectPlanner(PlanBase):
             torch.cuda.synchronize(self.device)
 
     def _new_diagnostics(self):
-        return {
+        diagnostics = {
             "step": int(self.diagnostics_step if self.diagnostics_step is not None
                         else self._plan_calls),
             "method": self.method,
@@ -91,10 +106,16 @@ class DefectPlanner(PlanBase):
             "render_ratio": self.render_ratio,
             "explore_weight": self.explore_weight,
             "path_length_factor": float(self.path_length_factor),
-            "geometry_weight": self.geometry_weight if self.method.startswith("defect") else 0.0,
+            "geometry_weight": self.geometry_weight if self.method.startswith("defect") and not self.guarded else 0.0,
             "geometry_thresholds": asdict(self.thresholds),
-            "depth_discontinuity_gate": self.method != "defect_no_gate",
+            "depth_discontinuity_gate": self.method not in NO_DEPTH_GATE_METHODS,
         }
+        if self.guarded:
+            diagnostics.update({"scoring_version": "bounded_geometry_v2",
+                                "geometry_beta": self.geometry_beta,
+                                "geometry_backend": self.geometry_backend,
+                                "use_depth_gate": self.method not in NO_DEPTH_GATE_METHODS})
+        return diagnostics
 
     @torch.no_grad()
     def cal_utility(self, gaussian_map, voxel_map, candidates, simulator):
@@ -138,6 +159,8 @@ class DefectPlanner(PlanBase):
             exploration, uncertainty, defects = [], [], []
             valid_fractions, positive_fractions = [], []
             geometry_measured = self.method.startswith("defect")
+            geometry_inputs = {name: [] for name in ("depth", "normal", "depth_normal",
+                                                     "opacity", "confidence")} if self.guarded else None
             for index in range(count):
                 _, depth, normal, opacity, d2n, confidence, *_ = renderer.render_view(index)
                 depths = depth[0]
@@ -161,11 +184,19 @@ class DefectPlanner(PlanBase):
                                                  posinf=far, neginf=0.0)
                 depth_surface[depth_surface < 0.001] = far * 0.5
                 uncertainty.append(((1 - confidence_for_base) * depth_surface / far).mean())
-                if geometry_measured:
+                if self.guarded:
+                    # Retain only current-map channels from the one existing
+                    # render. Stack once after all candidates; no future
+                    # simulator query or second candidate render is needed.
+                    for name, value in (("depth", depth), ("normal", normal),
+                                        ("depth_normal", d2n), ("opacity", opacity),
+                                        ("confidence", confidence)):
+                        geometry_inputs[name].append(value.detach())
+                elif geometry_measured:
                     result = geometry_defect(
                         depth, normal, d2n, opacity, confidence, bounds,
                         thresholds=self.thresholds,
-                        use_depth_gate=self.method != "defect_no_gate",
+                        use_depth_gate=self.method not in NO_DEPTH_GATE_METHODS,
                     )
                     defects.append(result["score"])
                     valid_fractions.append(result["valid_fraction"])
@@ -177,13 +208,25 @@ class DefectPlanner(PlanBase):
                 else:
                     defects.append(torch.zeros((), device=self.device))
 
+            if self.guarded:
+                batch_inputs = {name: torch.stack(images) for name, images in geometry_inputs.items()}
+                geometry_inputs.clear()
+                result = geometry_defect(**batch_inputs, depth_range=bounds,
+                                         thresholds=self.thresholds,
+                                         use_depth_gate=self.method not in NO_DEPTH_GATE_METHODS)
+                defects = result["score"]
+                valid_fractions = result["valid_fraction"]
+                positive_fractions = result["positive_fraction"]
+                self._heatmaps = list(result["heatmap"].detach().unbind(0))
+                del batch_inputs
             exploration = nonnegative_finite(torch.stack(exploration)).cpu()
             uncertainty = nonnegative_finite(torch.stack(uncertainty)).cpu()
-            defects = nonnegative_finite(torch.stack(defects)).cpu()
+            defects = nonnegative_finite(defects if self.guarded else torch.stack(defects)).cpu()
             base = self.explore_weight * exploration + uncertainty
-            weight = self.geometry_weight if geometry_measured else 0.0
-            utilities = combine_utilities(base, defects, weight=weight,
-                                           minimum_peak=self.thresholds.minimum_peak)
+            weight = self.geometry_weight if geometry_measured and not self.guarded else 0.0
+            utilities = (base if self.guarded else
+                         combine_utilities(base, defects, weight=weight,
+                                           minimum_peak=self.thresholds.minimum_peak))
             active = bool(weight > 0 and defects.max() >= self.thresholds.minimum_peak
                           and defects.sum() > 0)
             self.last_diagnostics.update(_json_value({
@@ -195,15 +238,22 @@ class DefectPlanner(PlanBase):
                 "utility": utilities, "geometry_measured": geometry_measured,
                 "geometry_active": active,
                 "defect_max": defects.max(),
-                "valid_fraction": torch.stack(valid_fractions) if valid_fractions else None,
-                "positive_fraction": torch.stack(positive_fractions) if positive_fractions else None,
+                "valid_fraction": valid_fractions if self.guarded else (torch.stack(valid_fractions) if valid_fractions else None),
+                "positive_fraction": positive_fractions if self.guarded else (torch.stack(positive_fractions) if positive_fractions else None),
             }))
+            if self.guarded:
+                self.last_diagnostics.update({"geometry_measured_count": count,
+                                              "geometry_batch_count": 1,
+                                              "geometry_active": False,
+                                              "geometry_fallback_reason": "pending_reachability"})
         self._synchronize()
         elapsed = time.perf_counter() - started
         self.last_diagnostics["utility_seconds"] = elapsed
         return utilities, elapsed
 
     def cal_view_scores(self, view_utilities, path_lengths):
+        if self.guarded and self.last_diagnostics.get("base") is None:
+            raise RuntimeError("guarded scoring requires current-map utility diagnostics")
         lengths = torch.as_tensor(path_lengths, dtype=view_utilities.dtype,
                                   device=view_utilities.device)
         reachable = torch.isfinite(lengths) & (lengths >= 0)
@@ -217,7 +267,7 @@ class DefectPlanner(PlanBase):
                                      device=view_utilities.device)
             base = torch.where(reachable, base, torch.zeros_like(base))
             defect = torch.where(reachable, defect, torch.zeros_like(defect))
-            weight = self.geometry_weight if self.method.startswith("defect") else 0.0
+            weight = self.geometry_weight if self.method.startswith("defect") and not self.guarded else 0.0
             view_utilities = combine_utilities(base, defect, weight, self.thresholds.minimum_peak)
             active = bool(weight > 0 and defect.max() >= self.thresholds.minimum_peak
                           and defect.sum() > 0)
@@ -227,7 +277,15 @@ class DefectPlanner(PlanBase):
                 "defect_normalized": normalize_sum(defect) if active else torch.zeros_like(defect),
                 "geometry_active": active,
             }))
-        scores = view_scores(view_utilities, lengths, self.path_length_factor)
+        if self.guarded:
+            scores, details = guarded_view_scores(
+                base, defect, lengths, self.path_length_factor,
+                beta=self.geometry_beta, minimum_peak=self.thresholds.minimum_peak,
+                baseline_utilities=view_utilities,
+            )
+            self.last_diagnostics.update(_json_value(details))
+        else:
+            scores = view_scores(view_utilities, lengths, self.path_length_factor)
         costs = torch.zeros_like(lengths)
         costs[reachable] = lengths[reachable] / lengths[reachable].sum().clamp_min(torch.finfo(lengths.dtype).tiny)
         self.last_diagnostics.update(_json_value({

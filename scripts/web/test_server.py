@@ -117,10 +117,54 @@ class LauncherTests(unittest.TestCase):
         self.assertEqual(server.campaign_status(self.root)["status"], "unavailable")
 
     def test_campaign_waiting_reason_preserves_other_job_and_gpu_distinction(self):
-        for reason in ("managed_web_job", "gpu_busy"):
+        for reason in ("managed_web_job", "gpu_busy", "managed_campaign"):
             with self.subTest(reason=reason):
                 self.campaign_file(self.campaign_state(waiting_reason=reason))
                 self.assertEqual(server.campaign_status(self.root)["waiting_reason"], reason)
+
+    def v2_campaign_file(self, **changes):
+        name = "optimization-v2"
+        profile = server.get_profile(name)
+        state = {"version": profile["version"], "campaign": name,
+                 "campaign_spec": profile, "campaign_spec_sha256": server.campaign_spec_sha256(name),
+                 "status": "waiting", "stage_index": 0, "attempts": [], "active": None,
+                 "updated_at": "2026-10-06T02:00:00+00:00", **changes}
+        path = self.root / "runs/campaigns" / name / "state.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(state), encoding="utf-8")
+        return path
+
+    def test_v2_projection_uses_five_registered_stage_counts_and_preserves_v1(self):
+        profile = server.get_profile("optimization-v2")
+        complete = [{"token": f"fixture-v2-{index}", "stage": stage["name"], "stage_index": index, "status": "completed", "gpu": 2,
+                     "validated_experiments": len(stage["methods"]) * len(stage["seeds"])}
+                    for index, stage in enumerate(profile["stages"])]
+        self.v2_campaign_file(stage_index=3, attempts=complete[:3], active=complete[2])
+        state = server.campaign_status(self.root, "optimization-v2")
+        self.assertEqual(state["completed_experiments"], 15)
+        self.assertEqual(state["total_stages"], 5)
+        self.assertEqual(state["stage"], "heldout_observations")
+        self.assertFalse(server.campaign_status(self.root)["configured"])
+        self.v2_campaign_file(status="completed", stage_index=5, attempts=complete, active=complete[-1])
+        self.assertEqual(server.campaign_status(self.root, "optimization-v2")["completed_experiments"], 27)
+
+    def test_v2_projection_missing_or_altered_recipe_never_claims_completion(self):
+        path = self.v2_campaign_file(campaign_spec_sha256="a" * 64)
+        before = path.read_bytes()
+        state = server.campaign_status(self.root, "optimization-v2")
+        self.assertEqual(state["status"], "unavailable")
+        self.assertIsNone(state["completed_experiments"])
+        self.assertEqual(path.read_bytes(), before)
+        self.v2_campaign_file(status="completed", stage_index=3)
+        self.assertEqual(server.campaign_status(self.root, "optimization-v2")["status"], "unavailable")
+
+    def test_http_unknown_v2_launch_intent_blocks_before_gpu_query_and_worker(self):
+        self.v2_campaign_file(status="failed", active={"status": "failed", "child_launching": True})
+        with patch.object(server, "gpu_status", side_effect=AssertionError("GPU queried")), \
+             patch.object(server.subprocess, "Popen", side_effect=AssertionError("worker started")), \
+             self.http_service() as request:
+            status, _ = request({"gpu": 2, "budget": 60})
+        self.assertEqual(status, 409)
 
     def test_http_live_campaign_blocks_even_when_gpu_query_would_report_idle(self):
         identity = {"pid": 1234, "starttime": "123", "argv": ["python", "campaign_worker.py"]}
@@ -282,6 +326,56 @@ class LauncherTests(unittest.TestCase):
                 server.parse_job(dict(valid, **{key: value}), [IDLE])
         with self.assertRaises(ValueError):
             server.parse_job(dict(valid, command="arbitrary"), [IDLE])
+
+    def test_guarded_web_method_selects_fixed_recipe_and_refuses_parameter_overrides(self):
+        payload = {"gpu": 2, "protocol": "observations", "method": "defect_guarded", "seed": 0, "frames": 60}
+        spec = server.parse_job(payload, [IDLE])
+        self.assertEqual(spec["recipe"], "optimization-v2")
+        self.assertEqual(spec["campaign_spec_sha256"], server.campaign_spec_sha256("optimization-v2"))
+        self.assertNotIn("recipe", server.parse_job(dict(payload, method="defect"), [IDLE]))
+        for field, value in (("beta", 0.2), ("recipe", "optimization-v1"), ("campaign_spec_sha256", "a" * 64)):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                server.parse_job(dict(payload, **{field: value}), [IDLE])
+
+    def test_guarded_web_worker_passes_recipe_and_spec_to_fixed_shell_pipeline(self):
+        path = self.job_file()
+        job = json.loads(path.read_text(encoding="utf-8"))
+        job.update(server.parse_job({"gpu": 2, "protocol": "observations", "method": "defect_guarded",
+                                    "seed": 1, "frames": 60}, [IDLE]))
+        server.atomic_json(path, job)
+        def start(command, **kwargs):
+            if command[0] == "bash":
+                self.assertEqual(kwargs["env"]["BENCHMARK_METHODS"], "defect_guarded")
+                self.assertEqual(kwargs["env"]["BENCHMARK_RECIPE"], "optimization-v2")
+                self.assertEqual(kwargs["env"]["BENCHMARK_CAMPAIGN_SPEC_SHA256"], server.campaign_spec_sha256("optimization-v2"))
+                run = Path(kwargs["env"]["RUN_DIR"])
+                (run / "logs").mkdir(parents=True)
+                result = run / "experiments/benchmark/replica/office0/defect_guarded/1/final_result.json"
+                result.parent.mkdir(parents=True)
+                result.write_text("{}")
+            return SimpleNamespace(pid=os.getpid(), wait=lambda: 0)
+        with patch.object(server, "gpu_status", return_value=([IDLE], None)), \
+             patch.object(server.subprocess, "Popen", side_effect=start):
+            server.worker(self.root, path)
+        self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["status"], "completed")
+
+    def test_guarded_web_worker_rejects_tampered_recipe_before_pipeline(self):
+        path = self.job_file()
+        job = json.loads(path.read_text(encoding="utf-8"))
+        job.update(server.parse_job({"gpu": 2, "protocol": "observations", "method": "defect_guarded",
+                                    "seed": 0, "frames": 60}, [IDLE]))
+        job["campaign_spec_sha256"] = "a" * 64
+        server.atomic_json(path, job)
+        with patch.object(server, "gpu_status", return_value=([IDLE], None)), \
+             patch.object(server.subprocess, "Popen", side_effect=AssertionError("pipeline started")):
+            server.worker(self.root, path)
+        self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["status"], "failed")
+
+    def test_old_web_job_cannot_inherit_v2_recipe_from_server_environment(self):
+        with patch.dict(os.environ, {"BENCHMARK_RECIPE": "optimization-v2", "BENCHMARK_CAMPAIGN_SPEC_SHA256": "a" * 64}):
+            env = server.environment(self.root, 2, 180, self.root / "fixture-run")
+        self.assertNotIn("BENCHMARK_RECIPE", env)
+        self.assertNotIn("BENCHMARK_CAMPAIGN_SPEC_SHA256", env)
 
     def test_benchmark_suite_exports_every_completed_method(self):
         path = self.job_file()

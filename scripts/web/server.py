@@ -24,19 +24,22 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 from viewmend3d.launch_coordination import (blocking_campaign, blocking_web_job,
     launch_lock, observe_started_process, proc_identity, proc_start_identity, process_alive)
+from viewmend3d.campaign_profiles import (DEFAULT_CAMPAIGN, CAMPAIGN_NAMES,
+    get_profile, campaign_spec_sha256, validate_profile_state)
 
 STAGES = [("preflight.log", "环境与初始观测"), ("data_generation.log", "生成评估视角"),
           ("main.log", "主动采集与重建"), ("mesh_generation.log", "生成三维网格"),
           ("eval.log", "几何评估")]
 ACTIVE = {"starting", "running", "exporting"}
-BENCHMARK_METHODS = ("confidence_nooracle", "random_matched", "defect", "defect_no_gate", "refine_only")
+V2_BENCHMARK_METHODS = ("defect_guarded", "defect_guarded_no_gate")
+BENCHMARK_METHODS = ("confidence_nooracle", "random_matched", "defect", "defect_no_gate", "refine_only") + V2_BENCHMARK_METHODS
 CAMPAIGN_VERSION = "viewmend-campaign-v1"
 CAMPAIGN_STAGES = ("smoke", "observations", "time")
 CAMPAIGN_COUNTS = (3, 15, 9)
 ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 START_LOCK = threading.Lock()
 STATIC_CACHE = {}
-JOB_PUBLIC_FIELDS = {"id", "gpu", "budget", "mode", "protocol", "method", "seed", "frames",
+JOB_PUBLIC_FIELDS = {"id", "gpu", "budget", "mode", "protocol", "method", "seed", "frames", "recipe",
     "record_interval", "status", "started_unix", "message", "wall_seconds", "stage", "log",
     "result_id", "result_ids", "process_state"}
 
@@ -105,19 +108,25 @@ def _campaign_process_state(active):
     return "starting" if starting else "unverified"
 
 
-def campaign_status(root):
-    """Return a strict, read-only public projection of optimization-v1 state.
+def campaign_status(root, name=DEFAULT_CAMPAIGN):
+    """Return a strict, read-only projection of a registered campaign state.
 
     Stored completion is never inferred from a missing process. A stored
     running state additionally reports whether its registered handle is live.
     Internal paths, command lines and source identities are not returned.
     """
-    result = {"schema": "viewmend-campaign-status-v1", "configured": False,
+    profile = get_profile(name)
+    stage_names = tuple(stage["name"] for stage in profile["stages"])
+    counts = tuple(len(stage["methods"]) * len(stage["seeds"]) for stage in profile["stages"])
+    total_stages = len(stage_names)
+    result = {"schema": "viewmend-campaign-status-v1" if name == DEFAULT_CAMPAIGN else "viewmend-campaign-status-v2", "configured": False,
               "status": "not_started", "stage": None, "completed_stages": 0,
-              "total_stages": 3, "completed_experiments": 0, "total_experiments": 27,
+              "total_stages": total_stages, "completed_experiments": 0, "total_experiments": sum(counts),
               "gpu": None, "process_state": None, "checked_at": None,
               "updated_at": None, "waiting_reason": None, "error": None}
-    path = root / "runs/campaigns/optimization-v1/state.json"
+    if name != DEFAULT_CAMPAIGN:
+        result["campaign"] = name
+    path = root / "runs/campaigns" / name / "state.json"
     if not path.exists():
         return result
     result["configured"] = True
@@ -135,14 +144,13 @@ def campaign_status(root):
             return value
         state = json.loads(path.read_text(encoding="utf-8"), parse_constant=reject_constant,
                            object_pairs_hook=unique_object)
-        if not isinstance(state, dict) or state.get("version") != CAMPAIGN_VERSION:
-            raise ValueError("unsupported campaign schema")
+        validate_profile_state(state, name)
         status, index = state.get("status"), state.get("stage_index")
         if status not in ("not_started", "waiting", "running", "failed", "completed"):
             raise ValueError("invalid campaign status")
-        if type(index) is not int or not 0 <= index <= 3:
+        if type(index) is not int or not 0 <= index <= total_stages:
             raise ValueError("invalid campaign stage index")
-        if (status == "completed") != (index == 3) or (status == "not_started" and index != 0):
+        if (status == "completed") != (index == total_stages) or (status == "not_started" and index != 0):
             raise ValueError("campaign status and stage disagree")
         attempts = state.get("attempts")
         active = state.get("active")
@@ -152,22 +160,22 @@ def campaign_status(root):
         for attempt in attempts:
             if not isinstance(attempt, dict):
                 raise ValueError("invalid campaign attempt")
-            step, name = attempt.get("stage_index"), attempt.get("stage")
-            if type(step) is not int or not 0 <= step < 3 or name != CAMPAIGN_STAGES[step]:
+            step, stage_name = attempt.get("stage_index"), attempt.get("stage")
+            if type(step) is not int or not 0 <= step < total_stages or stage_name != stage_names[step]:
                 raise ValueError("invalid campaign attempt stage")
             if attempt.get("status") not in ("starting", "running", "completed", "deferred", "failed"):
                 raise ValueError("invalid campaign attempt status")
             if attempt["status"] == "completed":
                 count = attempt.get("validated_experiments")
-                if type(count) is not int or count != CAMPAIGN_COUNTS[step] or step in completed:
+                if type(count) is not int or count != counts[step] or step in completed:
                     raise ValueError("invalid validated experiment count")
                 completed[step] = count
         if set(completed) != set(range(index)):
             raise ValueError("completed campaign stages lack matching validation records")
         if active:
             active_index = active.get("stage_index")
-            if (type(active_index) is not int or not 0 <= active_index < 3
-                    or active.get("stage") != CAMPAIGN_STAGES[active_index]):
+            if (type(active_index) is not int or not 0 <= active_index < total_stages
+                    or active.get("stage") != stage_names[active_index]):
                 raise ValueError("invalid active campaign stage")
             gpu = active.get("gpu")
             if type(gpu) is not int or gpu < 0:
@@ -184,9 +192,9 @@ def campaign_status(root):
         if error is not None and (not isinstance(error, str) or len(error) > 8192):
             raise ValueError("invalid campaign error")
         waiting_reason = state.get("waiting_reason")
-        if waiting_reason not in (None, "gpu_busy", "managed_web_job"):
+        if waiting_reason not in (None, "gpu_busy", "managed_web_job", "managed_campaign"):
             raise ValueError("invalid campaign waiting reason")
-        result.update(status=status, stage=CAMPAIGN_STAGES[index] if index < 3 else None,
+        result.update(status=status, stage=stage_names[index] if index < total_stages else None,
                       completed_stages=index, completed_experiments=sum(completed.values()),
                       checked_at=_campaign_timestamp((check or {}).get("checked_at")),
                       updated_at=_campaign_timestamp(state.get("updated_at")),
@@ -246,7 +254,11 @@ def parse_job(payload, gpus):
             or type(payload["frames"]) is not int or payload["frames"] != 60):
         raise ValueError("公平协议只支持 60 次更新、种子 0/1/2 和列出的算法")
     gpu, _ = validate_job({"gpu": payload["gpu"], "budget": 180}, gpus)
-    return dict(payload, gpu=gpu, mode="benchmark", budget=180)
+    spec = dict(payload, gpu=gpu, mode="benchmark", budget=180)
+    if payload["method"] in V2_BENCHMARK_METHODS:
+        spec.update(recipe="optimization-v2",
+                    campaign_spec_sha256=campaign_spec_sha256("optimization-v2"))
+    return spec
 
 
 def tail(path, limit=14000):
@@ -333,6 +345,10 @@ def run_web_child(root, job_path, job, command, **kwargs):
 
 def environment(root, gpu, budget, run):
     env = os.environ.copy()
+    # A previous shell's explicit recipe must not leak into old webpage jobs.
+    # Guarded jobs add their checked recipe again after this common setup.
+    env.pop("BENCHMARK_RECIPE", None)
+    env.pop("BENCHMARK_CAMPAIGN_SPEC_SHA256", None)
     env.update(ACTIVEGS_ROOT=str(root / "external/active-gs"),
                ACTIVEGS_PYTHON=str(root / ".envs/activegs/bin/python"), RUN_DIR=str(run),
                GPU=str(gpu), CUDA_VISIBLE_DEVICES=str(gpu), BUDGET=str(budget),
@@ -356,7 +372,10 @@ def worker(root, job_path):
                 raise RuntimeError(error)
             request = ({key: job[key] for key in ("gpu", "protocol", "method", "seed", "frames")}
                        if job.get("mode") == "benchmark" else {"gpu": job["gpu"], "budget": job["budget"]})
-            parse_job(request, gpus)
+            checked_spec = parse_job(request, gpus)
+            if checked_spec.get("recipe") and any(job.get(key) != checked_spec[key]
+                    for key in ("recipe", "campaign_spec_sha256")):
+                raise RuntimeError("网页实验固定 v2 recipe 或 spec 记录不一致；没有启动实验")
             worker_argv = job.get("worker_argv") or [sys.executable, str(Path(__file__).resolve()), "--worker", str(job_path)]
             job.update(status="running", worker_pid=os.getpid(), worker=proc_identity(os.getpid()),
                        worker_start=proc_start_identity(os.getpid()), worker_argv=worker_argv)
@@ -369,6 +388,9 @@ def worker(root, job_path):
             env.update(BENCHMARK_METHODS=methods, BENCHMARK_SEEDS=str(job["seed"]),
                        BENCHMARK_FRAMES="60", BENCHMARK_PREFIX="20", BENCHMARK_PROTOCOL="observations",
                        BENCHMARK_BUDGET="180")
+            if job.get("recipe") == "optimization-v2":
+                env.update(BENCHMARK_RECIPE=job["recipe"],
+                           BENCHMARK_CAMPAIGN_SPEC_SHA256=job["campaign_spec_sha256"])
         # The original runner requires a directory that does not yet exist.
         runner_log = root / "runs/web-jobs" / f"{job['id']}.log"
         with runner_log.open("w") as log:
@@ -436,7 +458,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.json({"gpus": gpus, "gpu_error": error, "jobs": jobs(ROOT),
                               "runs": available_runs, "method": "ActiveGS confidence", "scene": "Replica office0",
                               "benchmark_methods": list(BENCHMARK_METHODS), "benchmark_frames": 60,
-                              "campaign": campaign_status(ROOT)})
+                              "campaign": campaign_status(ROOT),
+                              "campaigns": {name: campaign_status(ROOT, name) for name in CAMPAIGN_NAMES},
+                              "v2_benchmark_methods": list(V2_BENCHMARK_METHODS)})
         if path.startswith("/api/"):
             return self.json({"error": "接口不存在"}, 404)
         base = ROOT / "runs/web-assets" if path.startswith("/assets/") else ROOT / "web"

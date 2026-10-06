@@ -11,6 +11,7 @@ const methodLabels = {
   suite: '配对对照 · 三种主策略',
   confidence_nooracle: 'Confidence · 无未来掩码', random_matched: 'Random · 匹配采样',
   defect: 'Defect · 几何缺陷评分', defect_no_gate: 'Defect · 移除跳变门控',
+  defect_guarded: 'Defect v2 · 有界几何奖励', defect_guarded_no_gate: 'Defect v2 · 有界奖励，移除深度门控',
   refine_only: 'Refine only · 仅优化已有观测', confidence: 'ActiveGS · 原作者流程'
 };
 let historicalSummary;
@@ -188,6 +189,15 @@ function renderDiagnostic(checkpoint) {
     if (Number.isFinite(candidate[key])) lines.push(`${label}：${candidate[key].toPrecision(4)}`);
   }
   if (Number.isFinite(diagnostic.heatmap_max)) lines.push(`热图范围 0–1 · 当前最大值 ${diagnostic.heatmap_max.toPrecision(4)}`);
+  if (diagnostic.scoring_version === 'bounded_geometry_v2') {
+    const reasons = { none: '信号已应用', weight_zero: '奖励关闭', base_all_zero: '基础效用为零',
+      single_reachable: '只有一个可达候选', weak_geometry: '几何信号过弱', constant_geometry: '候选几何信号相同' };
+    lines.push(`v2 奖励${diagnostic.geometry_active ? '已应用' : '回退至基线'} · ${reasons[diagnostic.geometry_fallback_reason] || '原因待核查'}`);
+    if (Number.isFinite(diagnostic.geometry_bonus_cap)) lines.push(`奖励上限：${diagnostic.geometry_bonus_cap.toPrecision(4)}`);
+    if (Number.isFinite(candidate.geometry_bonus)) lines.push(`选中候选奖励：${candidate.geometry_bonus.toPrecision(4)}`);
+    if (Number.isFinite(diagnostic.baseline_regret)) lines.push(`基线代理分数损失：${diagnostic.baseline_regret.toPrecision(4)}`);
+    lines.push(`相对此批候选的基线选择${diagnostic.selection_changed ? '发生变化' : '保持一致'}；分数约束不保证重建质量。`);
+  }
   $('diagnostic-content').replaceChildren(...lines.map(text => {
     const line = document.createElement('div'); line.textContent = text; return line;
   }));
@@ -196,7 +206,7 @@ function renderDiagnostic(checkpoint) {
 function configureLaunch() {
   const original = $('protocol').value === 'original';
   const current = $('method').value;
-  const keys = original ? ['confidence'] : ['suite', 'defect', 'confidence_nooracle', 'random_matched', 'defect_no_gate', 'refine_only'];
+  const keys = original ? ['confidence'] : ['suite', 'defect_guarded', 'defect_guarded_no_gate', 'defect', 'confidence_nooracle', 'random_matched', 'defect_no_gate', 'refine_only'];
   $('method').replaceChildren(...keys.map(key => {
     const option = document.createElement('option'); option.value = key; option.textContent = methodLabels[key]; return option;
   }));
@@ -206,7 +216,9 @@ function configureLaunch() {
   $('frames-row').hidden = original;
   $('launch-note').textContent = original
     ? '预算是原作者累计任务时间。此流程含候选真值掩码，保留为独立复现入口。网格与评估耗时另计。'
-    : '公平对照关闭未来观测掩码，前 20 次采集使用统一策略。仅优化分支随后只优化已有 20 次观测。';
+    : $('method').value.startsWith('defect_guarded')
+      ? 'v2 使用固定的有界几何奖励，质量和速度收益仍需实验。此处启动单个新实验，完整对照由优化计划执行。'
+      : '公平对照关闭未来观测掩码，前 20 次采集使用统一策略。仅优化分支随后只优化已有 20 次观测。';
 }
 
 async function showCheckpoint(index) {
@@ -536,7 +548,9 @@ function renderJob(job) {
 function renderCampaign(campaign) {
   const labels = { not_started: '尚未建立计划', waiting: '等待空闲设备', running: '执行中',
     failed: '失败', completed: '已完成', unavailable: '状态不可读取' };
-  const stages = { smoke: '短实验验证', observations: '固定观测对照与消融', time: '固定时间对照' };
+  const stages = { smoke: '短实验验证', observations: '固定观测对照与消融', time: '固定时间对照',
+    development_observations: '开发种子 · 固定观测与消融', development_time: '开发种子 · 固定时间',
+    heldout_observations: '留出种子 · 固定观测', heldout_time: '留出种子 · 固定时间' };
   const badge = $('campaign-badge');
   const content = $('campaign-content');
   if (!campaign || campaign.schema !== 'viewmend-campaign-status-v1') {
@@ -546,6 +560,7 @@ function renderCampaign(campaign) {
   }
   badge.textContent = labels[campaign.status] || '状态待核查';
   const lines = [];
+  if (campaign.campaign) lines.push(`计划：${campaign.campaign}`);
   if (!campaign.configured) lines.push('尚未建立执行计划，没有启动计划内实验。');
   else if (campaign.status === 'running' && campaign.process_state !== 'live') {
     badge.textContent = campaign.process_state === 'starting' ? '身份确认中' : '状态待核查';
@@ -556,6 +571,9 @@ function renderCampaign(campaign) {
     if (campaign.waiting_reason === 'managed_web_job') {
       badge.textContent = '等待其他实验';
       lines.push('已有网页实验或启动记录待核查，计划等待该任务结束。');
+    } else if (campaign.waiting_reason === 'managed_campaign') {
+      badge.textContent = '等待其他计划';
+      lines.push('另一优化计划仍有进程或启动记录，本计划暂不启动。');
     } else if (campaign.waiting_reason === 'gpu_busy') lines.push('显卡正被使用，等待空闲设备。');
     else {
       badge.textContent = '等待下一次检查';
@@ -581,7 +599,8 @@ async function pollStatus() {
   polling = true;
   try {
     state = await fetchJSON('/api/status');
-    renderCampaign(state.campaign);
+    const chosenCampaign = $('campaign-select').value;
+    renderCampaign(state.campaigns?.[chosenCampaign] || (chosenCampaign === 'optimization-v1' ? state.campaign : null));
     $('connection-dot').className = 'online-dot connected'; $('connection-label').textContent = '实验服务已连接';
     const chosenGPU = $('gpu').value;
     const available = state.gpus.filter(gpu => gpu.available);
@@ -597,9 +616,11 @@ async function pollStatus() {
     } else $('gpu').value = available.some(gpu => String(gpu.index) === chosenGPU) ? chosenGPU : String(available[0].index);
     $('gpu-summary').classList.toggle('available', !!available.length);
     $('gpu-summary').textContent = state.gpu_error || `${available.length} / ${state.gpus.length} 张卡空闲。${available.length ? '可在空闲设备上启动。' : '已有任务正在使用显卡，等待空闲后可启动。'}`;
-    const busy = state.jobs.some(job => activeStates.has(job.status));
+    const plannedBusy = Object.values(state.campaigns || { legacy: state.campaign }).some(campaign =>
+      campaign?.configured && ['running', 'waiting', 'unavailable'].includes(campaign.status));
+    const busy = state.jobs.some(job => activeStates.has(job.status)) || plannedBusy;
     $('launch').disabled = submitting || busy || !available.length;
-    $('launch').textContent = busy ? '实验正在执行…' : '▷ 启动实验';
+    $('launch').textContent = busy ? '实验或优化计划正在执行…' : '▷ 启动实验';
     const selectedRun = $('run-select').value;
     const oldRunIds = [...$('run-select').options].map(option => option.value).join(',');
     if (oldRunIds !== state.runs.map(run => run.id).join(',')) {
@@ -643,6 +664,9 @@ $('launch-form').addEventListener('submit', async event => {
   finally { submitting = false; await pollStatus(); }
 });
 $('protocol').addEventListener('change', configureLaunch);
+$('method').addEventListener('change', configureLaunch);
+$('campaign-select').addEventListener('change', () => renderCampaign(state?.campaigns?.[$('campaign-select').value]
+  || ($('campaign-select').value === 'optimization-v1' ? state?.campaign : null)));
 $('summary-budget').addEventListener('change', renderHistoricalSummary);
 $('new-experiment').addEventListener('click', () => { $('launch-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('protocol').focus({ preventScroll: true }); });
 $('run-select').addEventListener('change', event => loadRun(event.target.value));

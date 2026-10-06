@@ -26,7 +26,7 @@ class CampaignTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         campaign.location(self.root).mkdir(parents=True)
-        self.lock = patch.object(campaign, "campaign_lock", lambda _: nullcontext())
+        self.lock = patch.object(campaign, "campaign_lock", lambda _, name=campaign.NAME: nullcontext())
         self.lock.start()
         self.launch = patch.object(campaign, "launch_lock", lambda _: nullcontext())
         self.launch.start()
@@ -407,7 +407,7 @@ class CampaignTests(unittest.TestCase):
             yield
             events.append("shared_exit")
         @contextmanager
-        def inner(_):
+        def inner(_, name=campaign.NAME):
             events.append("state_enter")
             yield
             events.append("state_exit")

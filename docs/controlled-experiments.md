@@ -4,6 +4,23 @@
 
 不占 GPU 的效率优化、当前文件审计和等待空闲后的顺序推进入口，见 [CPU 准备记录](reproduction/cpu-preparation-v2.md)。
 
+## v2独立计划
+
+后续工作遵循[v2预注册框架](optimization-v2.md)，新方法为`defect_guarded`及仅去除深度门控的`defect_guarded_no_gate`。旧方法和默认v1入口保留。v2完整recipe与campaign spec进入公共前缀、每个分支及聚合报告；β固定0.1，不能通过网页临时覆盖。
+
+```bash
+# 只读计划；不查询显卡、不创建run、不导入Torch/Habitat。
+/opt/conda/bin/python scripts/activegs/run_campaign.py --campaign optimization-v2 --plan
+# 每次至多推进一个阶段；存在活句柄/未知意图时只核查。
+/opt/conda/bin/python scripts/activegs/run_campaign.py --campaign optimization-v2 --tick
+/opt/conda/bin/python scripts/activegs/run_campaign.py --campaign optimization-v2 --status
+# 必须27分支与5阶段完成；未完成时返回pending并拒绝生成质量汇总。
+/opt/conda/bin/python scripts/activegs/analyze_v2_campaign.py --root /workspace/ViewMend3D \
+  --output /workspace/ViewMend3D/setup/optimization-v2-final-analysis.json
+```
+
+顺序为3短实验、8开发固定观测、4开发固定时间、6留出固定观测、6留出固定时间。所有阶段的新baseline在本轮冻结源码上重新生成，共享真实前缀；开发n=2与留出n=3分别统计。源码与配置在整链中冻结，失败保留、不自动重试或覆盖，源变化则停止并审查。统计只覆盖office0，留出种子不表示跨场景验证。下文保留v1运行与结果说明。
+
 ## 1 运行环境
 
 先完成 [已验证的 ActiveGS 环境](reproduction/activegs-office0.md)。当前服务器布局中的上游、Python 和私有 EGL 库如下；其他机器需替换路径。

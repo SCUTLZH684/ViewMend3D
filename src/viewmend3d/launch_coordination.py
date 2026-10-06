@@ -12,6 +12,8 @@ from pathlib import Path
 import sys
 import time
 
+from .campaign_profiles import CAMPAIGN_NAMES, get_profile, validate_profile_state
+
 WEB_ACTIVE = {"starting", "running", "exporting"}
 WEB_TERMINAL = {"failed", "completed", "interrupted"}
 CAMPAIGN_STATES = {"not_started", "waiting", "running", "failed", "completed"}
@@ -191,18 +193,17 @@ def blocking_web_job(root):
     return None
 
 
-def blocking_campaign(root):
-    path = Path(root) / "runs/campaigns/optimization-v1/state.json"
+def _blocking_campaign(root, name):
+    path = Path(root) / "runs/campaigns" / name / "state.json"
     if not path.exists():
         return None
-    base = {"owner": "campaign"}
+    base = {"owner": "campaign", "campaign": name}
     try:
         state = _read_json(path)
         status = state.get("status")
-        if state.get("version") != "viewmend-campaign-v1" or status not in CAMPAIGN_STATES:
+        if state.get("version") != get_profile(name)["version"] or status not in CAMPAIGN_STATES:
             return {**base, "reason": "unknown_status"}
-        if type(state.get("stage_index")) is not int or not 0 <= state["stage_index"] <= 3:
-            return {**base, "reason": "unverified_metadata"}
+        validate_profile_state(state, name)
         active = state.get("active")
         if active is not None:
             if not isinstance(active, dict) or active.get("status") not in ATTEMPT_STATES:
@@ -221,3 +222,20 @@ def blocking_campaign(root):
         return None
     except (OSError, ValueError, TypeError, IndexError, KeyError):
         return {**base, "reason": "unverified_metadata"}
+
+
+def blocking_campaign(root, exclude=None):
+    """Inspect every registered campaign; never infer exit from missing state.
+
+    The caller must hold launch_lock when it uses this for GPU admission. A
+    controller excludes itself only after checking its own handles and intent.
+    Unknown/unverifiable metadata in another campaign conservatively blocks.
+    """
+    if exclude is not None and exclude not in CAMPAIGN_NAMES:
+        raise ValueError("Only a registered campaign may be excluded")
+    for name in CAMPAIGN_NAMES:
+        if name != exclude:
+            blocker = _blocking_campaign(root, name)
+            if blocker:
+                return blocker
+    return None

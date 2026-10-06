@@ -1,0 +1,129 @@
+{
+  "version": "viewmend-v2-cpu-evidence-v1",
+  "scope": "CPU implementation/evidence/coordination checks; no v2 GPU reconstruction or quality/speed measurement",
+  "unittest_groups": [
+    {
+      "suite": "tests",
+      "count": 129,
+      "status": "passed"
+    },
+    {
+      "suite": "scripts/web",
+      "count": 35,
+      "status": "passed"
+    }
+  ],
+  "total_unittest_count": 164,
+  "cuda_visible_devices": "",
+  "linux_flock_three_entry_race_passed": true,
+  "real_json_roundtrip_worker_and_child_transitions_passed": true,
+  "shell_syntax_passed": true,
+  "javascript_syntax_passed": true,
+  "static_environment": {
+    "static_environment_passed": true,
+    "gpu_modules_imported": false,
+    "sources": {
+      "activegs_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+      "startup_fix_files": [
+        "data_generation.py",
+        "main.py"
+      ]
+    },
+    "packages": {
+      "torch": "2.1.2+cu121",
+      "torchvision": "0.16.2+cu121",
+      "numpy": "1.26.4",
+      "open3d": "0.17.0",
+      "trimesh": "4.4.1",
+      "lpips": "0.1.4",
+      "habitat-sim": "0.2.4"
+    },
+    "scene": "replica/office0",
+    "scene_assets_sha256": "39952360dfbf16321e7649f6572d514fc40e3dd2e49af7c4cb7834ae890fee66"
+  },
+  "actual_config_cpu_check": {
+    "status": "passed",
+    "scope": "Actual runtime config statements extracted unchanged and applied to pinned Hydra config on CPU; no simulator or GPU runtime import",
+    "source_sha256": "be8a66044a6b99fa73931317fd85f708c108dbeb839e6bceb02604e1a64aae94",
+    "campaign_spec_sha256": "d3802aa30065a1a38c25dcd0a742440cc0440b8791519c0cf2a489bbfd53f541",
+    "recipe_sha256": "13dc1b2b721d3129b74e3046bd02731cd8c60950c2ee45f8d6842b0e692cd745",
+    "planner": {
+      "planner_name": "confidence",
+      "type": "confidence",
+      "radius": 0.5,
+      "init_pose": [
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          -1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "robot_size": 0.3,
+      "pitch_angle": null,
+      "sample_num": 100,
+      "max_roi_sample_num": 30,
+      "use_confidence": true,
+      "path_length_factor": 0.5,
+      "render_ratio": 0.25,
+      "explore_weight": 1000.0,
+      "geometry_weight": 0.5,
+      "geometry_beta": 0.1,
+      "geometry_backend": "batched",
+      "geometry_thresholds": {
+        "opacity": 0.7,
+        "normal_norm": 0.5,
+        "residual_deadzone": 0.05,
+        "depth_jump_absolute": 0.05,
+        "depth_jump_relative": 0.05,
+        "min_valid_fraction": 0.01,
+        "minimum_peak": 0.0001
+      }
+    },
+    "torch_imported": false,
+    "habitat_imported": false
+  },
+  "runtime_source_sha256": {
+    "src/viewmend3d/scoring.py": "c4c66685d56274d4ddc7f8bd56793cc0b326c9221b54cac558c5f1f1b6aa3c0c",
+    "src/viewmend3d/planner.py": "9a9b6bbad60e7c1f2fc7e9ca27d1f5f8e99cd520d9ef0f41ce1aa3a20b07f484",
+    "src/viewmend3d/protocol.py": "7e7ce473d2e6b182c0ac004f61ea2f354854d058a7755066c55e0ebf13f3f73a",
+    "src/viewmend3d/benchmark.py": "be8a66044a6b99fa73931317fd85f708c108dbeb839e6bceb02604e1a64aae94",
+    "src/viewmend3d/diagnostic_audit.py": "57d3ee502f2208b16d612b0b0d961f3c5c40b521647bff1d2c4445b5b924d349",
+    "scripts/activegs/run_campaign.py": "53e7bbb80464cc076018453d8e21a1a0ec2c8c5b50c3db550ca6a0f7a75d18d6",
+    "scripts/activegs/aggregate_benchmark.py": "77174a7310721c85f53e17d6b7d0541b6c5840d930e5de4daf4bfe1ae065868e",
+    "scripts/activegs/analyze_v2_campaign.py": "68f56c8dc2efef430d745246a09bb5474bd09619b8ac2636b0818b6df8e8e1bd"
+  },
+  "old_candidate_replay": {
+    "scope": "Historical candidate proxy-score replay only",
+    "input_sha256_checked_count": 368,
+    "event_count": 361,
+    "beta": 0.1,
+    "all_regret_bounds_satisfied": true,
+    "quality_or_speed_measured": false,
+    "summary_sha256": "e8c918e2130290ad623c5a6167e48cf9b9944858f803c1793eee458f43cd71d7"
+  },
+  "limitations": [
+    "CUDA/EGL/rendering/mapping/meshing/evaluation are not proved by CPU tests.",
+    "The bounded baseline proxy-score regret does not bound actual reconstruction error.",
+    "Seed holdout uses the same office0 scene, not unseen scenes.",
+    "Web POST GPU pipeline still requires an independent real end-to-end run."
+  ]
+}

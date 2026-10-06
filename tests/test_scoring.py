@@ -7,7 +7,7 @@ import tempfile
 import sys
 from types import ModuleType, SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from PIL import Image
 import torch
@@ -15,7 +15,8 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from viewmend3d.scoring import (GeometryThresholds, combine_utilities,
-                               geometry_defect, normalize_sum, view_scores)
+                               geometry_defect, guarded_view_scores,
+                               normalize_sum, view_scores)
 
 
 def plane(size=16):
@@ -88,11 +89,27 @@ class GeometryTests(unittest.TestCase):
     def test_batch_matches_individual_views(self):
         first, second = plane(), plane()
         second["depth_normal"] *= -1
-        batch = {key: torch.stack((first[key], second[key])) for key in first if key != "depth_range"}
-        result = geometry_defect(**batch, depth_range=first["depth_range"])
-        self.assertEqual(tuple(result["heatmap"].shape), (2, 16, 16))
-        for index, data in enumerate((first, second)):
-            self.assertTrue(torch.allclose(result["score"][index], geometry_defect(**data)["score"]))
+        third = plane()
+        third["depth"][:, 8:] = 5.0
+        third["depth_normal"] *= -1
+        third["opacity"][5, 5] = float("nan")
+        fourth = plane()
+        fourth["opacity"].zero_()
+        views = (first, second, third, fourth)
+        batch = {key: torch.stack([view[key] for view in views]) for key in first if key != "depth_range"}
+        for use_depth_gate in (True, False):
+            with self.subTest(use_depth_gate=use_depth_gate):
+                result = geometry_defect(**batch, depth_range=first["depth_range"],
+                                         use_depth_gate=use_depth_gate)
+                self.assertEqual(tuple(result["heatmap"].shape), (4, 16, 16))
+                for index, data in enumerate(views):
+                    expected = geometry_defect(**data, use_depth_gate=use_depth_gate)
+                    for name in expected:
+                        if name == "mask":
+                            self.assertTrue(torch.equal(result[name][index], expected[name]))
+                        else:
+                            torch.testing.assert_close(result[name][index], expected[name],
+                                                       rtol=1e-6, atol=1e-7)
 
     def test_empty_geometry_and_invalid_thresholds_fail(self):
         with self.assertRaises(ValueError):
@@ -159,6 +176,148 @@ class UtilityTests(unittest.TestCase):
         second = view_scores(torch.zeros(4), [0.0, float("inf"), 2.0, -1.0])
         self.assertTrue(torch.equal(first, second))
         self.assertIn(int(first.argmax()), (0, 2))
+
+
+class GuardedUtilityTests(unittest.TestCase):
+    def test_constant_geometry_counterexample_preserves_baseline(self):
+        base = torch.tensor([55.0, 45.0])
+        lengths = [57.5, 42.5]
+        defect = torch.tensor([0.1, 0.1])
+        baseline = view_scores(base, lengths)
+        legacy = view_scores(combine_utilities(base, defect), lengths)
+        scores, diagnostics = guarded_view_scores(base, defect, lengths)
+        self.assertEqual(int(baseline.argmax()), 0)
+        self.assertEqual(int(legacy.argmax()), 1)
+        self.assertTrue(torch.equal(scores, baseline))
+        self.assertEqual(diagnostics["geometry_fallback_reason"], "constant_geometry")
+        self.assertTrue(diagnostics["geometry_signal_active"])
+        self.assertFalse(diagnostics["geometry_discriminative"])
+        self.assertFalse(diagnostics["geometry_active"])
+
+    def test_beta_zero_is_exact_and_consumes_only_one_baseline_rng_draw(self):
+        for base in (torch.tensor([4., 2., 7., 9.]), torch.zeros(4)):
+            with self.subTest(base=base.tolist()):
+                lengths = [0., float("inf"), 3., -1.]
+                torch.manual_seed(193)
+                expected = view_scores(base, lengths)
+                expected_rng = torch.get_rng_state()
+                torch.manual_seed(193)
+                with patch("viewmend3d.scoring.view_scores", wraps=view_scores) as scorer:
+                    scores, diagnostics = guarded_view_scores(base, torch.tensor([0., 100., .9, 1.]),
+                                                              lengths, beta=0)
+                self.assertEqual(scorer.call_count, 1)
+                self.assertTrue(torch.equal(scores, expected))
+                self.assertTrue(torch.equal(torch.get_rng_state(), expected_rng))
+                self.assertEqual(diagnostics["geometry_fallback_reason"], "weight_zero")
+                self.assertEqual(float(diagnostics["baseline_regret"]), 0)
+
+    def test_zero_base_random_fallback_cannot_be_overridden_by_geometry(self):
+        base, defect = torch.zeros(3), torch.tensor([0., 100., .4])
+        lengths = [0., -1., 0.]
+        torch.manual_seed(29)
+        baseline = view_scores(base, lengths)
+        expected_rng = torch.get_rng_state()
+        torch.manual_seed(29)
+        scores, diagnostics = guarded_view_scores(base, defect, lengths)
+        self.assertTrue(torch.equal(scores, baseline))
+        self.assertTrue(torch.equal(torch.get_rng_state(), expected_rng))
+        self.assertEqual(diagnostics["geometry_fallback_reason"], "base_all_zero")
+        self.assertFalse(diagnostics["geometry_active"])
+
+    def test_nonfinite_base_uses_existing_sanitization(self):
+        base = torch.tensor([float("nan"), float("inf"), -1., 2.])
+        defect = torch.tensor([.2, .4, .1, .9])
+        lengths = torch.zeros(4)
+        scores, diagnostics = guarded_view_scores(base, defect, lengths)
+        self.assertTrue(torch.equal(diagnostics["baseline_scores"], view_scores(base, lengths)))
+        self.assertTrue(bool(torch.isfinite(scores).all()))
+        self.assertEqual(int(scores.argmax()), 3)
+
+    def test_weak_invalid_and_unreachable_geometry_have_no_bonus(self):
+        base = torch.tensor([2., 1., 100., 200.])
+        lengths = [0., 0., float("inf"), -1.]
+        baseline = view_scores(base, lengths)
+        for defect in (torch.zeros(4), torch.tensor([1e-6, 2e-6, 1e8, 1e8]),
+                       torch.tensor([float("nan"), float("inf"), 1e9, -1.])):
+            with self.subTest(defect=defect.tolist()):
+                scores, diagnostics = guarded_view_scores(base, defect, lengths)
+                self.assertTrue(torch.equal(scores, baseline))
+                self.assertEqual(diagnostics["n_reachable"], 2)
+                self.assertEqual(diagnostics["geometry_fallback_reason"], "weak_geometry")
+                self.assertTrue(torch.equal(diagnostics["geometry_bonus"], torch.zeros(4)))
+
+    def test_reachable_peak_and_bonus_rule_do_not_rescale_path_penalty(self):
+        base = torch.tensor([55., 45., 1000.])
+        lengths = [57.5, 42.5, float("inf")]
+        scores, diagnostics = guarded_view_scores(base, torch.tensor([.1, .2, 1e9]), lengths)
+        baseline = view_scores(base, lengths)
+        expected_bonus = torch.tensor([.025, .05, 0.])
+        self.assertTrue(torch.equal(diagnostics["geometry_bonus"], expected_bonus))
+        self.assertTrue(torch.equal(scores, baseline + expected_bonus))
+        self.assertAlmostEqual(float(diagnostics["geometry_peak"]), .2)
+        self.assertTrue(bool(torch.isneginf(scores[-1])))
+        self.assertEqual(diagnostics["selected_index"], 0)
+
+    def test_randomized_regret_is_bounded_and_reports_actual_differences(self):
+        generator = torch.Generator().manual_seed(147)
+        for _ in range(100):
+            base = torch.rand(100, generator=generator)
+            defect = torch.rand(100, generator=generator)
+            lengths = torch.rand(100, generator=generator) * 5
+            lengths[::7] = float("inf")
+            scores, diagnostics = guarded_view_scores(base, defect, lengths)
+            selected, baseline_index = diagnostics["selected_index"], diagnostics["baseline_selected_index"]
+            baseline = view_scores(base, lengths)
+            self.assertTrue(torch.equal(diagnostics["baseline_scores"], baseline))
+            self.assertLessEqual(float(baseline.max() - baseline[selected]),
+                                 diagnostics["geometry_bonus_cap"] + diagnostics["regret_tolerance"])
+            self.assertEqual(float(diagnostics["baseline_regret"]), float(baseline.max() - baseline[selected]))
+            self.assertEqual(float(diagnostics["base_delta_vs_baseline"]), float(base[selected] - base[baseline_index]))
+            self.assertEqual(float(diagnostics["path_delta_vs_baseline"]), float(lengths[selected] - lengths[baseline_index]))
+            self.assertEqual(int(scores.argmax()), selected)
+            self.assertFalse(bool((diagnostics["geometry_bonus"][::7] != 0).any()))
+
+    def test_changed_selection_records_real_regret_and_raw_deltas(self):
+        base = torch.tensor([.51, .49])
+        scores, diagnostics = guarded_view_scores(base, torch.tensor([0., 1.]), [0., 0.])
+        self.assertEqual(int(scores.argmax()), 1)
+        self.assertEqual(diagnostics["baseline_selected_index"], 0)
+        self.assertTrue(diagnostics["selection_changed"])
+        self.assertAlmostEqual(float(diagnostics["baseline_regret"]), .02, places=6)
+        self.assertAlmostEqual(float(diagnostics["base_delta_vs_baseline"]), -.02, places=6)
+        self.assertEqual(float(diagnostics["path_delta_vs_baseline"]), 0.)
+        self.assertLess(float(diagnostics["baseline_regret"]), diagnostics["geometry_bonus_cap"])
+
+    def test_single_reachable_and_zero_paths(self):
+        scores, diagnostics = guarded_view_scores(torch.tensor([1., 5.]), torch.tensor([.1, .9]),
+                                                  [float("nan"), 0.])
+        self.assertEqual(int(scores.argmax()), 1)
+        self.assertEqual(diagnostics["geometry_fallback_reason"], "single_reachable")
+        scores, diagnostics = guarded_view_scores(torch.tensor([1., 1.]), torch.tensor([0., .9]), [0., 0.])
+        self.assertTrue(torch.equal(scores, torch.tensor([.5, .55])))
+        self.assertEqual(float(diagnostics["baseline_regret"]), 0)
+
+    def test_existing_adapter_baseline_evaluation_order_is_preserved(self):
+        base, defect = torch.tensor([1., 3., 8.]), torch.tensor([0., .4, .2])
+        utilities = combine_utilities(base, torch.zeros(3), weight=0)
+        expected = view_scores(utilities, [1., 2., 3.])
+        actual, diagnostics = guarded_view_scores(base, defect, [1., 2., 3.], beta=0,
+                                                  baseline_utilities=utilities)
+        self.assertTrue(torch.equal(actual, expected))
+        self.assertTrue(torch.equal(diagnostics["baseline_scores"], expected))
+
+    def test_bad_arguments_and_no_reachable_fail_explicitly(self):
+        for beta in (-1., float("nan"), float("inf")):
+            with self.subTest(beta=beta), self.assertRaises(ValueError):
+                guarded_view_scores(torch.ones(2), torch.ones(2), [0., 0.], beta=beta)
+        with self.assertRaises(ValueError):
+            guarded_view_scores(torch.ones(2), torch.ones(3), [0., 0.])
+        with self.assertRaises(ValueError):
+            guarded_view_scores(torch.ones(2), torch.ones(2), [0.])
+        with self.assertRaises(ValueError):
+            guarded_view_scores(torch.empty(0), torch.empty(0), [])
+        with self.assertRaisesRegex(RuntimeError, "no reachable"):
+            guarded_view_scores(torch.ones(2), torch.ones(2), [float("inf"), float("nan")])
 
 
 class PlannerInterfaceTests(unittest.TestCase):
@@ -247,6 +406,66 @@ class PlannerInterfaceTests(unittest.TestCase):
         self.assertTrue(torch.equal(baseline_scores, defect_scores))
         self.assertEqual(defect.last_diagnostics["future_candidate_observation_queries"], 0)
         self.assertGreater(defect.last_diagnostics["defect"][1], 0)
+
+    def test_guarded_batch_uses_existing_renders_and_beta_zero_matches_baseline(self):
+        Planner, Renderer = self.load_planner()
+        cfg, simulator, gaussian, voxel, candidates = self.fixtures()
+        baseline = Planner(cfg, "cpu", method="confidence_nooracle")
+        baseline_utility, _ = baseline.cal_utility(gaussian, voxel, candidates, simulator)
+        baseline_scores = baseline.cal_view_scores(baseline_utility, [1., 2.])
+        guarded = Planner(cfg, "cpu", method="defect_guarded", geometry_beta=0)
+        scorer = Mock(wraps=geometry_defect)
+        # Patch the actual import's globals, leaving upstream modules as
+        # the deterministic CPU doubles installed by load_planner.
+        with patch.dict(Planner.cal_utility.__wrapped__.__globals__, {"geometry_defect": scorer}):
+            utility, _ = guarded.cal_utility(gaussian, voxel, candidates, simulator)
+        self.assertEqual(scorer.call_count, 1)
+        self.assertEqual(tuple(scorer.call_args.kwargs["normal"].shape), (2, 3, 16, 16))
+        scores = guarded.cal_view_scores(utility, [1., 2.])
+        self.assertEqual(Renderer.calls, 4)
+        self.assertTrue(torch.equal(scores, baseline_scores))
+        self.assertEqual(guarded.last_diagnostics["geometry_measured_count"], 2)
+        self.assertEqual(guarded.last_diagnostics["geometry_batch_count"], 1)
+        self.assertEqual(guarded.last_diagnostics["geometry_fallback_reason"], "weight_zero")
+        self.assertEqual(guarded.last_diagnostics["future_candidate_observation_queries"], 0)
+        self.assertEqual(guarded.last_diagnostics["geometry_backend"], "batched")
+
+    def test_guarded_batch_matches_legacy_geometry_and_ablation_gate(self):
+        Planner, Renderer = self.load_planner()
+        cfg, simulator, gaussian, voxel, candidates = self.fixtures()
+        for legacy_method, new_method, use_depth_gate in (
+                ("defect", "defect_guarded", True),
+                ("defect_no_gate", "defect_guarded_no_gate", False)):
+            with self.subTest(method=new_method):
+                legacy = Planner(cfg, "cpu", method=legacy_method)
+                legacy.cal_utility(gaussian, voxel, candidates, simulator)
+                new = Planner(cfg, "cpu", method=new_method)
+                scorer = Mock(wraps=geometry_defect)
+                with patch.dict(Planner.cal_utility.__wrapped__.__globals__, {"geometry_defect": scorer}):
+                    utility, _ = new.cal_utility(gaussian, voxel, candidates, simulator)
+                self.assertEqual(scorer.call_count, 1)
+                self.assertEqual(scorer.call_args.kwargs["use_depth_gate"], use_depth_gate)
+                self.assertEqual(new.last_diagnostics["depth_discontinuity_gate"], use_depth_gate)
+                self.assertEqual(new.last_diagnostics["base"], legacy.last_diagnostics["base"])
+                self.assertEqual(new.last_diagnostics["defect"], legacy.last_diagnostics["defect"])
+                for actual, expected in zip(new._heatmaps, legacy._heatmaps):
+                    torch.testing.assert_close(actual, expected, rtol=1e-6, atol=1e-7)
+                scores = new.cal_view_scores(utility, [1., 1.])
+                diagnostics = new.last_diagnostics
+                self.assertEqual(diagnostics["selected_index"], int(scores.argmax()))
+                self.assertEqual(diagnostics["scoring_version"], "bounded_geometry_v2")
+                self.assertLessEqual(diagnostics["baseline_regret"],
+                                     diagnostics["geometry_bonus_cap"] + diagnostics["regret_tolerance"])
+                self.assertEqual(len(diagnostics["geometry_bonus"]), 2)
+        self.assertEqual(Renderer.calls, 8)
+
+    def test_guarded_methods_reject_unregistered_geometry_backend(self):
+        Planner, _ = self.load_planner()
+        cfg, _, _, _, _ = self.fixtures()
+        with self.assertRaisesRegex(ValueError, "geometry_backend"):
+            Planner(cfg, "cpu", method="defect_guarded", geometry_backend="per_view")
+        with self.assertRaisesRegex(ValueError, "geometry_beta"):
+            Planner(cfg, "cpu", method="defect_guarded", geometry_beta=float("nan"))
 
     def test_renderer_images_are_unchanged_during_utility_scoring(self):
         Planner, Renderer = self.load_planner()

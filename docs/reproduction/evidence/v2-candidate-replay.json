@@ -1,0 +1,187 @@
+{
+  "version": "viewmend-v2-fixed-beta-old-candidate-replay-v1",
+  "generated_at": "2026-10-06T07:14:18.898676+00:00",
+  "scope": "CPU proxy-score replay on historical v1 Defect maps/candidate sets; no new reconstruction or quality/cost measurement",
+  "future_candidate_gt_read": false,
+  "quality_metrics_read_or_used": false,
+  "beta": 0.1,
+  "path_length_factor": 0.5,
+  "dtype": "torch.float32",
+  "torch_version": "2.1.2+cu121",
+  "cuda_visible_devices": "",
+  "v1_source_identity": {
+    "project_commit": "54b091c5f79478467da4acb3be48227f18c9b27e",
+    "project_source_sha256": "9d986cabc799a1ee42c41456ee0223a392422e29550abdd5a0eb01ec06bf53bc",
+    "upstream_commit": "558121a00b2eca84d9851a609e99ebb8e26ea2d8",
+    "upstream_source_sha256": "2e2c5cfd6c8cab123da58ddc420fd588d3f08c6b2f6ed07cfce2363079a5fc0f",
+    "upstream_diff_sha256": "dae6df308d4b27016270ae5ed40019e0b61d75b930223925cf262361b75ffeba"
+  },
+  "scoring_source_sha256": "c4c66685d56274d4ddc7f8bd56793cc0b326c9221b54cac558c5f1f1b6aa3c0c",
+  "replay_script_sha256": "dcc15ca8f7793fe176dcfee0d912e326dd8617f6c7ac3c9b95092a230627c8b1",
+  "prior_input_manifest_sha256": "e8610ac1bd8c105afa59693c535845768db6c5ca4fc8d5bd3a2527581caad635",
+  "prior_input_manifest_entry_count": 821,
+  "sha256_checked_input_count": 368,
+  "checked_input_digest": "6ffa95f18961d03c793f6064c0adf0aa0e98f53453acc89f162bcbee27298723",
+  "groups": {
+    "observations": {
+      "stage_token": "ae8337e0aca54980b2806f3c2b82aec8",
+      "seeds": [
+        {
+          "seed": 0,
+          "event_count": 40,
+          "selection_changed_vs_same_candidate_baseline": 1,
+          "selection_changed_vs_recorded_v1_defect": 26,
+          "baseline_regret_mean": 7.417052984237671e-07,
+          "baseline_regret_max": 2.9668211936950684e-05,
+          "bonus_cap_mean": 0.001,
+          "bonus_cap_min": 0.001,
+          "bonus_cap_max": 0.001,
+          "fallback_counts": {
+            "none": 40
+          },
+          "all_regret_bounds_satisfied": true,
+          "maximum_recorded_tolerance": 7.730694920837777e-08,
+          "legacy_scores_max_abs_reconstruction_difference": 0.0,
+          "legacy_argmax_matches_recorded_count": 40
+        },
+        {
+          "seed": 1,
+          "event_count": 40,
+          "selection_changed_vs_same_candidate_baseline": 1,
+          "selection_changed_vs_recorded_v1_defect": 26,
+          "baseline_regret_mean": 1.2563541531562806e-07,
+          "baseline_regret_max": 5.025416612625122e-06,
+          "bonus_cap_mean": 0.001,
+          "bonus_cap_min": 0.001,
+          "bonus_cap_max": 0.001,
+          "fallback_counts": {
+            "none": 40
+          },
+          "all_regret_bounds_satisfied": true,
+          "maximum_recorded_tolerance": 2.7902912790978008e-08,
+          "legacy_scores_max_abs_reconstruction_difference": 0.0,
+          "legacy_argmax_matches_recorded_count": 40
+        },
+        {
+          "seed": 2,
+          "event_count": 40,
+          "selection_changed_vs_same_candidate_baseline": 1,
+          "selection_changed_vs_recorded_v1_defect": 24,
+          "baseline_regret_mean": 1.5744008123874665e-07,
+          "baseline_regret_max": 6.297603249549866e-06,
+          "bonus_cap_mean": 0.001,
+          "bonus_cap_min": 0.001,
+          "bonus_cap_max": 0.001,
+          "fallback_counts": {
+            "none": 40
+          },
+          "all_regret_bounds_satisfied": true,
+          "maximum_recorded_tolerance": 7.129326365884481e-08,
+          "legacy_scores_max_abs_reconstruction_difference": 0.0,
+          "legacy_argmax_matches_recorded_count": 40
+        }
+      ],
+      "pooled_candidate_event_diagnostics": {
+        "event_count": 120,
+        "selection_changed_vs_same_candidate_baseline": 3,
+        "selection_changed_vs_recorded_v1_defect": 76,
+        "baseline_regret_mean": 3.415935983260473e-07,
+        "baseline_regret_max": 2.9668211936950684e-05,
+        "bonus_cap_mean": 0.001,
+        "bonus_cap_min": 0.001,
+        "bonus_cap_max": 0.001,
+        "fallback_counts": {
+          "none": 120
+        },
+        "all_regret_bounds_satisfied": true,
+        "maximum_recorded_tolerance": 7.730694920837777e-08,
+        "legacy_scores_max_abs_reconstruction_difference": 0.0,
+        "legacy_argmax_matches_recorded_count": 120
+      }
+    },
+    "time": {
+      "stage_token": "1280678ec08c48afbdbdf1e2c5d9e05a",
+      "seeds": [
+        {
+          "seed": 0,
+          "event_count": 78,
+          "selection_changed_vs_same_candidate_baseline": 2,
+          "selection_changed_vs_recorded_v1_defect": 55,
+          "baseline_regret_mean": 3.624205979017111e-06,
+          "baseline_regret_max": 0.0002810172736644745,
+          "bonus_cap_mean": 0.001,
+          "bonus_cap_min": 0.001,
+          "bonus_cap_max": 0.001,
+          "fallback_counts": {
+            "none": 78
+          },
+          "all_regret_bounds_satisfied": true,
+          "maximum_recorded_tolerance": 5.363879910191827e-08,
+          "legacy_scores_max_abs_reconstruction_difference": 0.0,
+          "legacy_argmax_matches_recorded_count": 78
+        },
+        {
+          "seed": 1,
+          "event_count": 82,
+          "selection_changed_vs_same_candidate_baseline": 2,
+          "selection_changed_vs_recorded_v1_defect": 47,
+          "baseline_regret_mean": 4.042155768086271e-06,
+          "baseline_regret_max": 0.0002063550055027008,
+          "bonus_cap_mean": 0.001,
+          "bonus_cap_min": 0.001,
+          "bonus_cap_max": 0.001,
+          "fallback_counts": {
+            "none": 82
+          },
+          "all_regret_bounds_satisfied": true,
+          "maximum_recorded_tolerance": 9.331360831765778e-08,
+          "legacy_scores_max_abs_reconstruction_difference": 0.0,
+          "legacy_argmax_matches_recorded_count": 82
+        },
+        {
+          "seed": 2,
+          "event_count": 81,
+          "selection_changed_vs_same_candidate_baseline": 2,
+          "selection_changed_vs_recorded_v1_defect": 62,
+          "baseline_regret_mean": 2.6729187847655495e-06,
+          "baseline_regret_max": 0.0001844950020313263,
+          "bonus_cap_mean": 0.001,
+          "bonus_cap_min": 0.001,
+          "bonus_cap_max": 0.001,
+          "fallback_counts": {
+            "none": 81
+          },
+          "all_regret_bounds_satisfied": true,
+          "maximum_recorded_tolerance": 6.18083849985851e-08,
+          "legacy_scores_max_abs_reconstruction_difference": 0.0,
+          "legacy_argmax_matches_recorded_count": 81
+        }
+      ],
+      "pooled_candidate_event_diagnostics": {
+        "event_count": 241,
+        "selection_changed_vs_same_candidate_baseline": 6,
+        "selection_changed_vs_recorded_v1_defect": 164,
+        "baseline_regret_mean": 3.4466857299270473e-06,
+        "baseline_regret_max": 0.0002810172736644745,
+        "bonus_cap_mean": 0.001,
+        "bonus_cap_min": 0.001,
+        "bonus_cap_max": 0.001,
+        "fallback_counts": {
+          "none": 241
+        },
+        "all_regret_bounds_satisfied": true,
+        "maximum_recorded_tolerance": 9.331360831765778e-08,
+        "legacy_scores_max_abs_reconstruction_difference": 0.0,
+        "legacy_argmax_matches_recorded_count": 241
+      }
+    }
+  },
+  "limitations": [
+    "Each event reuses the map and candidates reached by old v1 Defect; future maps and candidates would change under v2.",
+    "Same-candidate baseline is an offline proxy counterfactual, not a rerun of the confidence method.",
+    "No mesh, candidate ground truth, RGB-D, or quality metric is loaded for this replay.",
+    "No beta tuning or lambda grid is performed; beta remains the preregistered 0.1.",
+    "Seed 2 is historical exploratory evidence only and is not added to v2's fixed development or heldout stages.",
+    "Proxy regret and selection changes imply neither reconstruction improvement nor speedup."
+  ]
+}

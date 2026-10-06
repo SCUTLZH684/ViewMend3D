@@ -14,7 +14,7 @@ import subprocess
 import time
 from contextlib import contextmanager
 
-from .protocol import Protocol, domain_seed
+from .protocol import Protocol, domain_seed, optimization_recipe
 from .randomness import random_domain
 
 
@@ -24,6 +24,17 @@ def atomic_json(path, value):
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
     temporary.replace(path)
+
+
+def recipe_metadata(protocol, method=None):
+    """Keep recipe identity at both the public record and nested protocol."""
+    if protocol.recipe == "optimization-v1":
+        return {}
+    record = protocol.as_dict()
+    result = {key: record[key] for key in ("recipe", "recipe_sha256", "campaign_spec_sha256")}
+    if method is not None:
+        result["scoring_recipe"] = record["recipe_spec"]["methods"][method]
+    return result
 
 
 def sha256_file(path):
@@ -305,6 +316,7 @@ def run_branch(cfg, protocol, seed, method, simulator, device, prefix_path, pref
                            "prefix_sha256": prefix_meta["cache_sha256"],
                            "prefix_camera_sha256": prefix_meta["camera_sha256"],
                            "refinement_post_processing": False if method == "refine_only" else True}
+    experiment_protocol.update(recipe_metadata(protocol, method))
     atomic_json(destination / "protocol.json", experiment_protocol)
     atomic_json(destination / "checkpoints.json", checkpoints)
     if protocol.mode == "time" and recorder.t_mission >= protocol.seconds:
@@ -452,6 +464,11 @@ def run_benchmark(upstream, run_dir, gpu, protocol, methods, seeds, scene="repli
                   prefix_cache_dir=None):
     import sys
     upstream, run_dir = Path(upstream).resolve(), Path(run_dir).resolve()
+    protocol.validate()
+    if protocol.recipe == "optimization-v2" and not set(methods) <= set(optimization_recipe(protocol.recipe)["methods"]):
+        raise ValueError("A method is outside the fixed v2 recipe")
+    if protocol.recipe == "optimization-v2" and scene != "replica/office0":
+        raise ValueError("The preregistered v2 campaign fixes scene replica/office0")
     if run_dir.exists():
         raise ValueError("run-dir must be new; existing experiments are never overwritten")
     admission = require_idle_gpu(gpu)
@@ -481,6 +498,18 @@ def run_benchmark(upstream, run_dir, gpu, protocol, methods, seeds, scene="repli
         cfg.experiment.record_rgbd = False
         cfg.experiment.record_global_path = True
         cfg.experiment.budget = protocol.seconds
+        if protocol.recipe == "optimization-v2":
+            spec = optimization_recipe(protocol.recipe)
+            # Explicit configuration is hashed in the common-prefix context.
+            # The old defect keeps its per-view implementation and weight.
+            for key, value in (("path_length_factor", spec["path_length_factor"]),
+                               ("render_ratio", spec["render_ratio"]),
+                               ("explore_weight", spec["explore_weight"]),
+                               ("geometry_weight", spec["methods"]["defect"]["geometry_weight"]),
+                               ("geometry_beta", spec["methods"]["defect_guarded"]["geometry_beta"]),
+                               ("geometry_backend", "batched"),
+                               ("geometry_thresholds", spec["geometry_thresholds"])):
+                OmegaConf.update(cfg, f"planner.{key}", value, force_add=True)
         versions = source_versions(upstream)
         context, context_hash = prefix_context(cfg, protocol, versions)
         run_dir.mkdir(parents=True)
@@ -494,6 +523,7 @@ def run_benchmark(upstream, run_dir, gpu, protocol, methods, seeds, scene="repli
                    "config": OmegaConf.to_container(cfg, resolve=True),
                    "determinism": "Separated seeded RNGs; custom CUDA kernels may have numerical nondeterminism",
                    "status": "running", "experiments": []}
+        runtime.update(recipe_metadata(protocol))
         atomic_json(run_dir / "benchmark-summary.json", runtime)
         freeze = subprocess.run([sys.executable, "-m", "pip", "freeze"], capture_output=True,
                                 text=True, check=True).stdout
