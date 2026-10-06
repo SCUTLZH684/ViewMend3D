@@ -587,11 +587,14 @@ function renderJob(job) {
   const heading = document.createElement('strong');
   heading.textContent = job.status === 'completed' ? '三维结果已就绪' : job.status === 'failed' || job.status === 'interrupted' ? job.message : job.stage;
   const info = document.createElement('div');
+  const elapsed = `${activeStates.has(job.status) ? '完整流水线已用时' : '完整流水线总耗时'} ${job.wall_seconds} s`;
   info.textContent = job.protocol === 'observations'
-    ? `GPU ${job.gpu} · ${methodLabels[job.method] || job.method} · 种子 ${job.seed} · ${job.frames} 次更新 · 耗时 ${job.wall_seconds} s`
-    : `GPU ${job.gpu} · 预算 ${job.budget} s · 耗时 ${job.wall_seconds} s`;
+    ? `GPU ${job.gpu} · ${methodLabels[job.method] || job.method} · 种子 ${job.seed} · ${job.frames} 次更新 · ${elapsed}`
+    : `GPU ${job.gpu} · 预算 ${job.budget} s · ${elapsed}`;
   const id = document.createElement('div'); id.className = 'small'; id.textContent = job.id;
-  detail.append(heading, info, id);
+  const timeNote = document.createElement('p'); timeNote.className = 'job-stage-note';
+  timeNote.textContent = '从任务启动计时，包含环境准备、重建、网格评估与网页导出；与质量表中的“重建阶段墙钟”口径不同。';
+  detail.append(heading, info, id, timeNote);
   if (job.status === 'completed') {
     const button = document.createElement('button');
     button.className = 'job-link'; button.style.cssText = 'border:0;background:none;padding:0;font-size:11px;';
@@ -663,7 +666,7 @@ async function pollStatus() {
     const available = state.gpus.filter(gpu => gpu.available);
     $('gpu').replaceChildren(...state.gpus.map(gpu => {
       const option = document.createElement('option'); option.value = String(gpu.index);
-      option.textContent = `GPU ${gpu.index} · ${gpu.available ? '空闲' : '占用'} · ${(gpu.used_mb / 1024).toFixed(1)} GB`;
+      option.textContent = `GPU ${gpu.index} · ${gpu.available ? '空闲' : '占用'} · ${(gpu.used_mb / 1024).toFixed(1)} GiB`;
       option.disabled = !gpu.available;
       return option;
     }));
