@@ -43,3 +43,15 @@ CPU 验证：8 项记录/导出/启动约束检查，以及全部 8 帧的浏览
 独立运行 `web-replay-20261006T141303Z-ae2d2b` 使用物理 GPU 1，入场显存 19 MiB、利用率 0%。冻结运行源码提交为 `3b7cee2`，真实科学源码哈希、图像哈希、逐帧候选及网格验收见[记录](reproduction/evidence/capture-replay-acceptance.json)。8 次实际采集、8 份非空网格与评估、网页导出全部完成，完整流水线墙钟 390 秒；worker 与 child 均已退出。
 
 第 1 帧初始化，第 2—8 帧每轮 100 个候选，规划候选真值传感器查询为 0。全部 RGB-D 哈希、相机位姿/内参、候选选点与逐帧地图计数已核对。公开运行列表由 54 条变为 55 条，仅增加这一独立演示；正式实验汇总与冻结完整分析 SHA-256 保持不变。
+
+浏览器已逐一核对 7 次“准备补拍 → 采集下一帧”切换：准备时保留当前观测与地图，随后显示正确的下一帧 RGB-D 与网格；第 2 帧的采集前/建图后按钮和首末帧边界通过。页面 console 错误为 0。桌面可见内容宽度/滚动宽度均为 1265 px；390 px 手机视口中均为 375 px，两张图与三维视口完整留在卡片内，宽表格独立滚动。记录见[浏览器验收](reproduction/evidence/capture-replay-browser.json)。
+
+下面是实际浏览器截图。青色是当前相机，橙色是下一次选中的位置与朝向；评分与图像来自同一条演示的原始产物。
+
+![第7帧实际RGB-D、当前网格与第8帧选中视角](images/capture-replay-planning.png)
+
+![第8帧候选的实际评分、几何奖励及补拍操作](images/capture-replay-scores.png)
+
+![随后实际拍到的第8帧RGB-D与建图结果](images/capture-replay-acquired.png)
+
+![390px手机视口中的两张完整观测图](images/capture-replay-mobile.png)

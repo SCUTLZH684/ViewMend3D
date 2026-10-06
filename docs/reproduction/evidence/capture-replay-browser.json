@@ -1,0 +1,138 @@
+{
+  "schema": "viewmend-capture-replay-browser-v1",
+  "date": "2026-10-06",
+  "transition_ui_commit": "11e5570",
+  "responsive_ui_commit": "1ee819b",
+  "transitions": [
+    {
+      "planned": {
+        "counter": "当前已采集 1 / 8 帧 · 512 × 512",
+        "decision": "补拍第 2 帧：选中候选 #25 / 100（100 个可达）",
+        "map": "第 1 帧建图后 · 1 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0001_rgb.png"
+      },
+      "acquired": {
+        "hidden": true,
+        "loaded": true,
+        "map": "第 2 帧建图后 · 2 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png"
+      }
+    },
+    {
+      "planned": {
+        "counter": "当前已采集 2 / 8 帧 · 512 × 512",
+        "decision": "补拍第 3 帧：选中候选 #82 / 100（100 个可达）",
+        "map": "第 2 帧建图后 · 2 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0002_rgb.png"
+      },
+      "acquired": {
+        "hidden": true,
+        "loaded": true,
+        "map": "第 3 帧建图后 · 3 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png"
+      }
+    },
+    {
+      "planned": {
+        "counter": "当前已采集 3 / 8 帧 · 512 × 512",
+        "decision": "补拍第 4 帧：选中候选 #60 / 100（100 个可达）",
+        "map": "第 3 帧建图后 · 3 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0003_rgb.png"
+      },
+      "acquired": {
+        "hidden": true,
+        "loaded": true,
+        "map": "第 4 帧建图后 · 4 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png"
+      }
+    },
+    {
+      "planned": {
+        "counter": "当前已采集 4 / 8 帧 · 512 × 512",
+        "decision": "补拍第 5 帧：选中候选 #40 / 100（100 个可达）",
+        "map": "第 4 帧建图后 · 4 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0004_rgb.png"
+      },
+      "acquired": {
+        "hidden": true,
+        "loaded": true,
+        "map": "第 5 帧建图后 · 5 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png"
+      }
+    },
+    {
+      "planned": {
+        "counter": "当前已采集 5 / 8 帧 · 512 × 512",
+        "decision": "补拍第 6 帧：选中候选 #33 / 100（100 个可达）",
+        "map": "第 5 帧建图后 · 5 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0005_rgb.png"
+      },
+      "acquired": {
+        "hidden": true,
+        "loaded": true,
+        "map": "第 6 帧建图后 · 6 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png"
+      }
+    },
+    {
+      "planned": {
+        "counter": "当前已采集 6 / 8 帧 · 512 × 512",
+        "decision": "补拍第 7 帧：选中候选 #43 / 100（100 个可达）",
+        "map": "第 6 帧建图后 · 6 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0006_rgb.png"
+      },
+      "acquired": {
+        "hidden": true,
+        "loaded": true,
+        "map": "第 7 帧建图后 · 7 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png"
+      }
+    },
+    {
+      "planned": {
+        "counter": "当前已采集 7 / 8 帧 · 512 × 512",
+        "decision": "补拍第 8 帧：选中候选 #21 / 100（100 个可达）",
+        "map": "第 7 帧建图后 · 7 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0007_rgb.png"
+      },
+      "acquired": {
+        "hidden": true,
+        "loaded": true,
+        "map": "第 8 帧建图后 · 8 次观测的地图",
+        "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_rgb.png"
+      }
+    }
+  ],
+  "transitions_verified": 7,
+  "actual_frames": 8,
+  "second_frame_before_after_switch_verified": true,
+  "mobile": {
+    "clientWidth": 375,
+    "gridWidth": 311.6000061035156,
+    "imageWidths": [
+      151.8000030517578,
+      151.8000030517578
+    ],
+    "scrollWidth": 375,
+    "tableScrollWidth": 666,
+    "tableWidth": 311.6000061035156,
+    "viewport": 390
+  },
+  "final_frame": {
+    "acquireDisabled": true,
+    "clientWidth": 1265,
+    "counter": "当前已采集 8 / 8 帧 · 512 × 512",
+    "depth": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_depth.png",
+    "phase": "8 次采集已全部回放。可返回第一帧查看整个过程；这条短演示不证明方法质量提升。",
+    "planDisabled": true,
+    "rgb": "http://127.0.0.1:8765/assets/web-replay-20261006T141303Z-ae2d2b-defect_guarded-s0/replay/frame_0008_rgb.png",
+    "scrollWidth": 1265
+  },
+  "console_errors": 0,
+  "screenshots": [
+    "capture-replay-planning.png",
+    "capture-replay-scores.png",
+    "capture-replay-acquired.png",
+    "capture-replay-mobile.png"
+  ]
+}
