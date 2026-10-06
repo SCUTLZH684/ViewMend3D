@@ -9,7 +9,7 @@ export class CaptureReplay {
     host.innerHTML = `<div class="replay-heading"><div><span class="eyebrow">看懂一次采集与补拍</span><h2>相机看到了什么，下一帧为什么去这里？</h2></div><span class="badge" id="replay-badge">已完成结果回放</span></div>
       <p id="replay-empty">正在读取所选实验的逐帧记录…</p>
       <div id="replay-content" hidden>
-        <p class="replay-scope">独立 8 帧教学演示 · 使用实际采集的 RGB-D、位姿、评分日志和逐帧网格。额外保存与评估增加耗时，未纳入正式方法质量汇总。</p>
+        <p id="replay-source" class="replay-small"></p><p class="replay-scope">独立 8 帧教学演示 · 使用实际采集的 RGB-D、位姿、评分日志和逐帧网格。额外保存与评估增加耗时，未纳入正式方法质量汇总。</p>
         <ol class="replay-stages"><li id="replay-stage-observed">① 查看已采集 RGB-D</li><li id="replay-stage-plan">② 根据当前地图选择补拍</li><li>③ 回放下一次采集与建图</li></ol>
         <div class="replay-grid"><div class="replay-sensors"><div class="replay-counter" id="replay-counter"></div><div class="replay-images"><figure><img id="replay-rgb" alt="当前实际采集的彩色图"><figcaption id="replay-rgb-caption"></figcaption></figure><figure><img id="replay-depth" alt="当前实际采集的深度图"><figcaption id="replay-depth-caption"></figcaption></figure></div><div class="depth-legend"><span id="replay-depth-near"></span><i></i><span id="replay-depth-far"></span></div><p class="replay-small">固定线性色标 · 灰色表示无效深度，不是近处表面</p><p id="replay-pose" class="replay-small"></p><p id="replay-image-error" role="alert" hidden></p></div>
           <div><div class="replay-viewport" id="replay-view"><span id="replay-map-label" class="replay-overlay"></span><span id="replay-map-loading" class="replay-loading">读取网格…</span><button id="replay-reset" type="button">重置视角</button></div><div class="replay-legend"><span class="current">● 当前相机与朝向</span><span class="chosen">● 选中的下一视角</span><span>● 可达候选位置</span><span class="baseline">● 基线选点（不同时显示）</span></div><p class="replay-small">箭头表示镜头朝向，虚线只连接当前与选中位置，不是实际行走路线。绿色线连接已采集位置。</p><div class="replay-map-controls"><button id="replay-before" type="button">本帧采集前的网格</button><button id="replay-after" type="button">本帧建图后的网格</button><label><input id="replay-cut" type="checkbox" checked>剖切屋顶</label></div></div></div>
@@ -54,6 +54,7 @@ export class CaptureReplay {
         || data.frames?.length!==8 || data.frames.some((f,i)=>f.event!==i+1 || f.checkpoint_index!==i)) throw new Error('记录哈希或逐帧对应关系无效');
       if(version!==this.version) return;
       this.frames=data.frames; $('replay-empty').hidden=true; $('replay-content').hidden=false;
+      $('replay-source').textContent=`${manifest.scene} · ${manifest.method} · 种子 ${manifest.seed} · 已完成结果回放`;
       $('replay-badge').textContent='8 次真实采集 · 可回放';
       if(!this.scene) {
         try{this.scene=new ReplayScene($('replay-view'));}
@@ -107,7 +108,7 @@ export class CaptureReplay {
     $('replay-before').classList.toggle('active',before); $('replay-after').classList.toggle('active',!before);
     $('replay-map-label').textContent=before ? `第 ${frame.event} 帧采集前 · ${mapFrame.event} 次观测的地图` : `第 ${frame.event} 帧建图后 · ${frame.event} 次观测的地图`;
     const checkpoint=this.manifest.checkpoints[mapFrame.checkpoint_index];
-    $('replay-map-reading').textContent=`当前网格：Accuracy ${num(checkpoint.accuracy_cm)} cm ↓ · Completion ${num(checkpoint.completion_cm)} cm ↓ · 2 cm覆盖率 ${num(checkpoint.coverage_percent,2)}% ↑。切换前/后查看保存网格；左侧始终是第 ${frame.event} 帧观测。指标不保证逐帧改善。`;
+    $('replay-map-reading').textContent=`当前网格：Accuracy ${num(checkpoint.accuracy_cm)} cm ↓ · Completion ${num(checkpoint.completion_cm)} cm ↓ · 2 cm覆盖率 ${num(checkpoint.coverage_percent,2)}% ↑ · Chamfer ${num(checkpoint.chamfer_mm,2)} mm ↓。切换前/后查看保存网格；左侧始终是第 ${frame.event} 帧观测。指标不保证逐帧改善。本区与下方检查点回放分别浏览。`;
     this.renderDecision(decision,next?.event);
     this.scene?.show(frame,decision,this.frames.slice(0,index+1));
     if(!this.scene) return;
